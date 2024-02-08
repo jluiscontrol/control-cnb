@@ -1,4 +1,4 @@
-{
+{ "type": "module",
   "name": "control-cnb",
   "version": "1.0.0",
   "description": "",
@@ -28,4 +28,5 @@
     "@babel/preset-env": "^7.23.9",
     "nodemon": "^3.0.3"
   }
+  
 }
