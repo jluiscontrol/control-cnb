@@ -1,9 +1,17 @@
-import { getEntidadBancariaModel, addEntidadBancariaModel} from '../models/EntidadBancaria.js';
+//import { getEntidadBancariaModel, addEntidadBancariaModel} from '../models/EntidadBancaria.js';
+
+import EntidadBancaria from '../models/EntidadBancaria.js';
 
 
-export const createEntidadBancaria = (req, res) => {
-  console.log(req.body, 'quemado')  
-  res.json('creando entidad bancaria');
+export const createEntidadBancaria = async (req, res) => {
+   
+  const { entidad } = req.body
+
+  const newEntidadBancaria = new EntidadBancaria({ entidad });
+  
+  const entidadBancariaSave = await newEntidadBancaria.save()
+  res.status(201).json(entidadBancariaSave)
+
 }
 
 export const getEntidadBancarias = (req, res) => {

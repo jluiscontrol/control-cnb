@@ -1,7 +1,7 @@
 
 
 // Función para obtener todas las entidades bancarias
-async function getEntidadBancariaModel() {
+/*async function getEntidadBancaria() {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM entidadbancaria');
@@ -9,10 +9,10 @@ async function getEntidadBancariaModel() {
   } finally {
     client.release();
   }
-}
+}*/
 
 // Función para agregar un nueva entidad
-async function addEntidadBancariaModel(entidadBancaria) {
+async function addEntidadBancaria(entidadBancaria) {
   const client = await pool.connect();
   try {
     const { entidad } = entidadBancaria;
@@ -24,4 +24,4 @@ async function addEntidadBancariaModel(entidadBancaria) {
 }
 
 // Exportar las funciones del modelo
-export { getEntidadBancariaModel, addEntidadBancariaModel };
+export default { addEntidadBancaria };
