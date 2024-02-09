@@ -1,15 +1,5 @@
 
-
-// Función para obtener todas las entidades bancarias
-/*async function getEntidadBancaria() {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM entidadbancaria');
-    return result.rows;
-  } finally {
-    client.release();
-  }
-}*/
+import pool from '../database.js';
 
 // Función para agregar un nueva entidad
 async function addEntidadBancaria(entidadBancaria) {
