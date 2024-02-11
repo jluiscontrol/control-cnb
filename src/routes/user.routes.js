@@ -7,8 +7,8 @@ import * as userCtrl from '../controllers/user.controller.js'//importa todos mis
 router.post('/', userCtrl.createUser)
 router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
-router.get('/:userId', userCtrl.updateUserById)
-router.get('/:userId', userCtrl.deleteUserById)
+router.put('/:userId', userCtrl.updateUserById)
+router.delete('/:userId', userCtrl.deleteUserById)
 
 
 

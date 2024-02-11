@@ -7,8 +7,8 @@ import * as entidadBancariaCtrl from '../controllers/entidadBancaria.controller.
 router.post('/', entidadBancariaCtrl.createEntidadBancaria)
 router.get('/', entidadBancariaCtrl.getEntidadBancarias)
 router.get('/:entidadBancariaId', entidadBancariaCtrl.getEntidadBancariaById)
-router.get('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
-router.get('/:entidadBancariaId', entidadBancariaCtrl.deleteEntidadBancariaById)
+router.put('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
+router.delete('/:entidadBancariaId', entidadBancariaCtrl.deleteEntidadBancariaById)
 
 
 

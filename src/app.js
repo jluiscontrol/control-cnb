@@ -2,7 +2,6 @@ import express from 'express'
 import morgan from 'morgan'
 
 
-import productRout from './routes/products.routes.js'
 import entidadBancariaRoute from './routes/entidadBancarias.routes.js'
 import usersRoute from './routes/user.routes.js'
 
@@ -20,7 +19,7 @@ app.get('/', (req, res) => {
     })
 })
 
-app.use('/products',productRout)
+
 app.use('/entidadBancaria',entidadBancariaRoute)
 app.use('/users',usersRoute)
 
