@@ -1,14 +1,17 @@
 import express from 'express'
 import morgan from 'morgan'
 
+import { createRoles } from './libs/initialSetUp.js';
 
 import entidadBancariaRoute from './routes/entidadBancarias.routes.js'
 import usersRoute from './routes/user.routes.js'
+import authRoute from './routes/auth.routes.js'
 
 
 const app = express()
 app.use(morgan('dev'));
 app.use(express.json());
+createRoles();
 
 
 app.get('/', (req, res) => {
@@ -22,5 +25,6 @@ app.get('/', (req, res) => {
 
 app.use('/entidadBancaria',entidadBancariaRoute)
 app.use('/users',usersRoute)
+app.use('/auth',authRoute)
 
 export default app;

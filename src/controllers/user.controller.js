@@ -1,11 +1,13 @@
 
 import User from '../models/User.Model.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, fecha_registro, tipo_cuenta, estado } = req.body;
+  const { nombre_usuario, contrasenia, fecha_registro,  estado, roleId } = req.body;
 
   // Verificar si algún campo requerido está vacío
   if (!nombre_usuario || !contrasenia ) {
@@ -13,8 +15,9 @@ export const createUser = async (req, res) => {
   }
 
   try {
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro, tipo_cuenta, estado });
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro,  estado }, roleId);
     res.status(201).json(userSave);
+    
   } catch (error) {
     if (error.message === 'El nombre de usuario ya está en uso.') {
       return res.status(400).json({ error: error.message });
@@ -23,6 +26,7 @@ export const createUser = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
 
 //funcion para obtener todos los usuarios
 export const getUsers = async (req, res) => {
@@ -50,10 +54,10 @@ export const getUserById = async (req, res) => {
 
 export const updateUserById = async(req, res) => {
   const userId = req.params.userId;
-  const { nombre_usuario, contrasenia, tipo_cuenta, estado } = req.body; // Modifica para que incluya la nueva contraseña
+  const { nombre_usuario, contrasenia,  estado } = req.body; // Modifica para que incluya la nueva contraseña
 
   try {
-    const updated = await updateUser(userId, { nombre_usuario, contrasenia, tipo_cuenta, estado });
+    const updated = await updateUser(userId, { nombre_usuario, contrasenia,  estado });
     if (!updated) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
