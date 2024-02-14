@@ -28,9 +28,10 @@ async function addUser(User, roleId = null) {
 
     const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);
 
-    const token = jwt.sign({ usuario: nombre_usuario }, config.SECRET, {
-      expiresIn: 86400 // 24 horas
-    });
+   // Generar token JWT con el ID del usuario
+   const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
+    expiresIn: 86400 // 24 horas
+  });
 
     // Devolver el usuario y el token
     return { usuario: userInsertResult.rows[0], roleId, token };
