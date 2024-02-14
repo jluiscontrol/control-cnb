@@ -5,6 +5,6 @@ import * as authCtrl from '../controllers/auth.controller.js'//importa todos mis
 
 
 router.get('/signup', authCtrl.signUp)
-router.get('/signin', authCtrl.signIn)
+router.post('/signin', authCtrl.signIn)
 
 export default router;
