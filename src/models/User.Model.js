@@ -8,7 +8,7 @@ import config from '../config.js';
 async function addUser(User, roleId = null) {
   const user = await pool.connect();
   try {
-    const { nombre_usuario, estado,  contrasenia } = User;
+    const { nombre_usuario, estado, contrasenia } = User;
 
     // Verificar si el usuario ya existe
     const existingUser = await user.query('SELECT * FROM usuario WHERE nombre_usuario = $1', [nombre_usuario]);
@@ -16,22 +16,34 @@ async function addUser(User, roleId = null) {
       throw new Error('El nombre de usuario ya está en uso.');
     }
 
-    const hashedPassword = await bcrypt.hash(contrasenia, 10); // 10 es el número de rondas de encriptación
-    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado,  contrasenia) VALUES($1, $2, $3) RETURNING *', [nombre_usuario, estado,  hashedPassword]);
-    
-    const userId = userInsertResult.rows[0].id_usuario;
-
-    if (!roleId) {
+    // Verificar si se proporcionó un roleId y si el rol existe
+    if (roleId) {
+      const roleExists = await user.query('SELECT id_rol FROM rol WHERE id_rol = $1', [roleId]);
+      if (roleExists.rows.length === 0) {
+       
+        throw new Error('El rol seleccionado no está registrado.');
+      }
+    } else {
+      // Si no se proporcionó un roleId, obtener el primer rol registrado
       const defaultRoleQueryResult = await user.query('SELECT id_rol FROM rol ORDER BY id_rol LIMIT 1');
       roleId = defaultRoleQueryResult.rows[0].id_rol;
     }
 
+    // Encriptar la contraseña antes de almacenarla
+    const hashedPassword = await bcrypt.hash(contrasenia, 10); // 10 es el número de rondas de encriptación
+
+    // Insertar el nuevo usuario
+    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia) VALUES($1, $2, $3) RETURNING *', [nombre_usuario, estado, hashedPassword]);
+    
+    const userId = userInsertResult.rows[0].id_usuario;
+
+    // Insertar la relación entre el usuario y el rol en la tabla usuario_rol
     const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);
 
-   // Generar token JWT con el ID del usuario
-   const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
-    expiresIn: 86400 // 24 horas
-  });
+    // Generar token JWT con el ID del usuario
+    const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
+      expiresIn: 86400 // 24 horas
+    });
 
     // Devolver el usuario y el token
     return { usuario: userInsertResult.rows[0], roleId, token };
@@ -39,7 +51,6 @@ async function addUser(User, roleId = null) {
     user.release();
   }
 }
-
 
 //Funcion para obtener todos los usuarios
 async function getAllUsers() {
@@ -74,7 +85,7 @@ export const getUserId = async (req, res) => {
     res.status(500).json({ error: 'Error interno del seervidor' });
   }
 }
-
+//funcion para actualizar un usuario
 export const updateUser = async (userId, updatedData) => {
   try {
     const usuario = await pool.connect();

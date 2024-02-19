@@ -17,6 +17,11 @@ export const signin = async (username, password) => {
             throw new Error('Usuario no encontrado');
         }
 
+        // Verificar si el estado del usuario es true (activo)
+        if (!userData.estado) {
+            throw new Error('Usuario inactivo');
+        }
+
         // Verificar si la contraseña proporcionada coincide con la contraseña almacenada en la base de datos
         const passwordMatch = await bcrypt.compare(password, userData.contrasenia);
         if (!passwordMatch) {
@@ -34,6 +39,7 @@ export const signin = async (username, password) => {
         user.release();
     }
 }
+
 
 
 export default { signin }

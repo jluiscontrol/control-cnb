@@ -1,13 +1,14 @@
 
 import User from '../models/User.Model.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+//import jwt from 'jsonwebtoken';
+//import bcrypt from 'bcrypt';
 import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
 
 
+
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, fecha_registro,  estado, roleId } = req.body;
+  const { nombre_usuario, contrasenia, fecha_registro, estado, roleId } = req.body;
 
   // Verificar si algún campo requerido está vacío
   if (!nombre_usuario || !contrasenia ) {
@@ -15,17 +16,17 @@ export const createUser = async (req, res) => {
   }
 
   try {
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro,  estado }, roleId);
+    // Llama a la función addUser con los parámetros proporcionados
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro, estado }, roleId);
     res.status(201).json(userSave);
-    
   } catch (error) {
-    if (error.message === 'El nombre de usuario ya está en uso.') {
+    if (error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado.') {
       return res.status(400).json({ error: error.message });
     }
     console.error('Error al crear usuario:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+};
 
 
 //funcion para obtener todos los usuarios
@@ -35,7 +36,7 @@ export const getUsers = async (req, res) => {
 
        res.status(200).json(users)
     } catch(error){
-      console.error('Erro al obtener usuarios:', error);
+      console.error('Error al obtener usuarios:', error);
       res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
