@@ -5,10 +5,11 @@ import jwt from 'jsonwebtoken';
 import config from '../config.js';
 
 // Función para agregar un nuevo usuario
-async function addUser(User, roleId = null) {
+async function addUser(User, Persona, roleId = null) {
   const user = await pool.connect();
   try {
     const { nombre_usuario, estado, contrasenia } = User;
+    const { nombre, apellido, fecha_nacimiento, direccion, telefono } = Persona
 
     // Verificar si el usuario ya existe
     const existingUser = await user.query('SELECT * FROM usuario WHERE nombre_usuario = $1', [nombre_usuario]);
@@ -31,11 +32,18 @@ async function addUser(User, roleId = null) {
 
     // Encriptar la contraseña antes de almacenarla
     const hashedPassword = await bcrypt.hash(contrasenia, 10); // 10 es el número de rondas de encriptación
-
-    // Insertar el nuevo usuario
-    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia) VALUES($1, $2, $3) RETURNING *', [nombre_usuario, estado, hashedPassword]);
+     // Iniciar una transacción
+     await user.query('BEGIN');
     
+    //insertar datos personales
+     const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono) VALUES ($1, $2, $3, $4, $5) RETURNING id_persona',[nombre, apellido, fecha_nacimiento, direccion, telefono]);
+     const personaId = personaInsertResult.rows[0].id_persona;
+    // Insertar el nuevo usuario
+    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id) VALUES($1, $2, $3, $4) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId]);
     const userId = userInsertResult.rows[0].id_usuario;
+
+     // Commit la transacción
+     await user.query('COMMIT');
 
     // Insertar la relación entre el usuario y el rol en la tabla usuario_rol
     const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);

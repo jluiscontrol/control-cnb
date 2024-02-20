@@ -8,7 +8,7 @@ import { updateUser } from '../models/User.Model.js';
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, fecha_registro, estado, roleId } = req.body;
+  const { nombre_usuario, contrasenia, fecha_registro, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono } = req.body;
 
   // Verificar si algún campo requerido está vacío
   if (!nombre_usuario || !contrasenia ) {
@@ -17,7 +17,7 @@ export const createUser = async (req, res) => {
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro, estado }, roleId);
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono }, roleId);
     res.status(201).json(userSave);
   } catch (error) {
     if (error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado.') {
