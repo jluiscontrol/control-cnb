@@ -1,5 +1,7 @@
 import express from 'express'
 import morgan from 'morgan'
+import cors from 'cors'
+
 
 import { createRoles } from './libs/initialSetUp.js';
 
@@ -9,7 +11,6 @@ import authRoute from './routes/auth.routes.js'
 
 
 const app = express()
-const cors = require('cors');
 
 app.use(morgan('dev'));
 app.use(express.json());
