@@ -6,6 +6,9 @@ async function addEntidadBancaria(entidadBancaria) {
   const banco = await pool.connect();
   try {
     const { entidad, acronimo, estado, comision, sobregiro } = entidadBancaria;
+    if (!entidad || !acronimo || !estado || !comision || !sobregiro) {
+      throw new Error('Todos los campos son requeridos');
+    }
     //verificar si el banco ya existe
     const existingBanco = await banco.query('SELECT * FROM entidadbancaria WHERE entidad = $1', [entidad]);
     if (existingBanco.rows.length > 0) {
@@ -35,7 +38,7 @@ export const getEntidadBancariaById = async (req, res) => {
   try {
     const entidadBancariaId = req.params.entidadBancariaId;
     const client = await pool.connect();
-    const query = 'SELECT * FROM entidadbancaria WHERE id = $1';
+    const query = 'SELECT * FROM entidadbancaria WHERE id_entidadbancaria = $1';
     const result = await client.query(query, [entidadBancariaId]);
     client.release();
     if (result.rows.length === 0) {
@@ -51,12 +54,10 @@ export const getEntidadBancariaById = async (req, res) => {
 export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
   try {
     const client = await pool.connect();
-
     // Construir la consulta SQL de actualización
-    const query = 'UPDATE entidadbancaria  SET entidad = $1 WHERE id = $2;';
-    
+    const query = 'UPDATE entidadbancaria  SET entidad = $1, acronimo = $2, estado = $3, comision = $4, sobregiro = $5 WHERE id_entidadbancaria = $6';
     // Ejecutar la consulta SQL con los nuevos datos y el ID de la entidad bancaria
-    await client.query(query, [newData.entidad,  entidadBancariaId]);
+    await client.query(query, [newData.entidad, newData.acronimo, newData.estado, newData.comision, newData.sobregiro, entidadBancariaId]);
     
     // Liberar la conexión al pool de conexiones
     client.release();
