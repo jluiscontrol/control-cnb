@@ -53,23 +53,34 @@ export const getUserById = async (req, res) => {
 }
 //funcion para actulizar el usuario
 
-export const updateUserById = async(req, res) => {
+export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
-  const { nombre_usuario, contrasenia,  estado } = req.body; // Modifica para que incluya la nueva contraseña
+  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono } = req.body;
 
   try {
-    const updated = await updateUser(userId, { nombre_usuario, contrasenia,  estado });
+    // Convertir la fecha de nacimiento al formato esperado por la base de datos (yyyy-mm-dd)
+    const fechaNacimientoFormatted = fecha_nacimiento.split('-').reverse().join('-');
+
+    // Crear el objeto persona con los datos formateados
+    const persona = { nombre, apellido, fecha_nacimiento: fechaNacimientoFormatted, direccion, telefono };
+
+    // Llamar a updateUser con los datos actualizados, incluyendo los datos de persona
+    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona });
+
     if (!updated) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
+
     res.status(200).json({ message: 'Usuario actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar el usuario:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-   
-  
-}
+};
+
+
+
+
 export const deleteUserById = (req, res) => {
     
 }
