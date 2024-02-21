@@ -6,10 +6,14 @@ import { updateEntidadBancariaById as updateEntidadBancariaByIdModel } from '../
 //Funcion para crear una entidad bancaria
 export const createEntidadBancaria = async (req, res) => {
 
-  const { entidad } = req.body;
+  const { entidad, acronimo, estado, comision, sobregiro } = req.body;
+  
+  if (!entidad || !acronimo || !estado || !comision || !sobregiro ) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+  }
 
   try {
-    const entidadBancariaSave = await EntidadBancaria.addEntidadBancaria({ entidad });
+    const entidadBancariaSave = await EntidadBancaria.addEntidadBancaria({ entidad, acronimo, estado, comision, sobregiro });
     res.status(201).json(entidadBancariaSave);
   } catch (error) {
     if (error.message === 'La entidad bancaria ya existe') {

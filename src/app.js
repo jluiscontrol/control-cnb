@@ -9,8 +9,12 @@ import authRoute from './routes/auth.routes.js'
 
 
 const app = express()
+const cors = require('cors');
+
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(cors());
+
 createRoles();
 
 
