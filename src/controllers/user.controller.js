@@ -4,6 +4,8 @@ import User from '../models/User.Model.js';
 //import bcrypt from 'bcrypt';
 import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
+import { deleteUser } from '../models/User.Model.js';
+
 
 
 
@@ -79,8 +81,18 @@ export const updateUserById = async (req, res) => {
 };
 
 
-
-
-export const deleteUserById = (req, res) => {
-    
+export const deleteUserById = async (req, res) => {
+     const userId = req.params.userId;
+     const { estado } = req.body;
+     try {
+      const updated = await deleteUser(userId, { estado });
+        if (!updated) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        res.status(200).json({ message: 'Usuario actualizado correctamente' });
+     } catch (error) {
+         console.error('Error al actualizar el usuario:', error);
+          res.status(500).json({ error: 'Error interno del servidor' });
+      
+     }
 }

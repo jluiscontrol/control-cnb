@@ -125,7 +125,6 @@ export const getUserId = async (req, res) => {
 //funcion para actualizar un usuario
 export const updateUser = async (userId, updatedData) => {
   const { nombre_usuario, contrasenia, estado, roleId, persona } = updatedData;
-
   const usuario = await pool.connect();
 
   try {
@@ -172,7 +171,26 @@ export const updateUser = async (userId, updatedData) => {
   }
 };
 
+//FUNCION PARA ELIMINAR USUARIO
+export const deleteUser = async (userId, deleteData) => {
+   const { estado} = deleteData;
+   const usuario = await pool.connect();
+  
+   try {
+    const userQuery = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
+    await usuario.query(userQuery, [estado, userId]);
+    return true; // Éxito en la actualización
+    
+   } catch (error) {
+    console.error('Error al actualizar el usuario:', error);
+    // Rollback en caso de error
+    await usuario.query('ROLLBACK');
+    throw error;
+   }finally {
+    usuario.release();
+  }
 
+};
 
 // Exportar las funciones del modelo
-export default { addUser, getAllUsers, getUserId, updateUser };
+export default { addUser, getAllUsers, getUserId, updateUser, deleteUser };

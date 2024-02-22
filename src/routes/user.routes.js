@@ -9,7 +9,7 @@ router.post('/',[verifyToken, verifyAdmin], userCtrl.createUser)
 router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)
-router.delete('/:userId', userCtrl.deleteUserById)
+router.patch('/:userId', userCtrl.deleteUserById)
 
 
 
