@@ -1,6 +1,8 @@
 import addTipoTransaccion from "../models/tipotransaccion.model.js"
 import  getAllTiposTransaccion from "../models/tipotransaccion.model.js"
-import { getTipoTransaccionId} from "../models/tipotransaccion.model.js"
+import  { updateTipoTransaccionId } from "../models/tipotransaccion.model.js"
+import { getTipoTransaccionById as getTipoTransaccionByIdModel } from "../models/tipotransaccion.model.js"
+
 
 
 export const createTipoTransaccion = async (req, res) => {
@@ -39,19 +41,31 @@ export const getTipoTransacciones = async (req, res) => {
 
 //funcion para obtener un tipo de transaccion 
 export const getTipoTransaccionById = async (req, res) => {
-  try {
-    const usuario = await getTipoTransaccionId(req, res);
-    res.status(200).json(usuario)
-  } catch (error){
-    console.error('Error al obtener el tipo de transacción por ID:', error);
-    res.status(500).json({ error: 'Error interno del seervidor' });
-  }
+  /*try {
+    // Llamar a la función del modelo para obtener la entidad bancaria por su ID
+    const tipotransa = await getTipoTransaccionByIdModel(req, res);
+    res.status(200).json(tipotransa);
+  } catch (error) {
+    // Manejar cualquier error que ocurra durante el proceso
+    console.error('Error al obtener el tipo transaccion por ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }*/
 }
 
 //funcion para actulizar un tipo de transaccion
-
 export const updateTipoTransaccionById = async (req, res) => {
-  
+  try {
+    
+    const tipoTransacccionId = req.params.tipoTransacccionId;
+    const newData = req.body;
+
+    const result = await updateTipoTransaccionId(tipoTransacccionId, newData); // Aquí utilizamos la función del modelo
+    
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al actualizar el tipo de transaccion por  ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 };
 
 //funcion para eliminar un tipo de transacion

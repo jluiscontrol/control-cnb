@@ -54,7 +54,7 @@ export const updateEntidadBancariaById = async (req, res) => {
   try {
     // Extraer el ID de la entidad bancaria de los parámetros de la solicitud
     const entidadBancariaId = req.params.entidadBancariaId;
-    
+    console.log(entidadBancariaId)
     // Obtener los datos actualizados del cuerpo de la solicitud
     const newData = req.body;
     

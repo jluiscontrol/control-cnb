@@ -78,7 +78,8 @@ async function getAllUsers() {
     usuario u
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
-    LEFT JOIN persona p ON u.persona_id = p.id_persona;
+    LEFT JOIN persona p ON u.persona_id = p.id_persona
+    WHERE u.estado = true;
     `);
     return resultado.rows;
   } finally {
@@ -107,7 +108,7 @@ export const getUserId = async (req, res) => {
         LEFT JOIN rol r ON ur.id_rol = r.id_rol
         LEFT JOIN persona p ON u.persona_id = p.id_persona
       WHERE 
-        u.id_usuario = $1
+        u.id_usuario = $1;
     `;
     const result = await usuario.query(query, [userId]);
     usuario.release();
@@ -170,12 +171,6 @@ export const updateUser = async (userId, updatedData) => {
     usuario.release();
   }
 };
-
-
-
-
-
-
 
 
 
