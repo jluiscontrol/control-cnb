@@ -50,6 +50,7 @@ export const getEntidadBancariaById = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
   //funcion para actualizar la entidad bancaria
 export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
   try {
