@@ -9,7 +9,7 @@ async function addUser(User, Persona, roleId = null) {
   const user = await pool.connect();
   try {
     const { nombre_usuario, estado, contrasenia } = User;
-    const { nombre, apellido, fecha_nacimiento, direccion, telefono } = Persona
+    const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona
 
     // Verificar si el usuario ya existe
     const existingUser = await user.query('SELECT * FROM usuario WHERE nombre_usuario = $1', [nombre_usuario]);
@@ -36,7 +36,7 @@ async function addUser(User, Persona, roleId = null) {
     await user.query('BEGIN');
 
     //insertar datos personales
-    const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono) VALUES ($1, $2, $3, $4, $5) RETURNING id_persona', [nombre, apellido, fecha_nacimiento, direccion, telefono]);
+    const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono, cedula) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona', [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
     const personaId = personaInsertResult.rows[0].id_persona;
     // Insertar el nuevo usuario
     const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id) VALUES($1, $2, $3, $4) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId]);

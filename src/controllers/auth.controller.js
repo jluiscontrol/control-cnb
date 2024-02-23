@@ -1,5 +1,6 @@
 //import User from '../models/User.Model.js';
 import { signin } from '../models/auth.model.js' // Importar la función de autenticación
+import  {isTokenExpired } from '../models/auth.model.js' // Importar la función de autenticación
 
 
 export const signIn = async (req, res) => {
@@ -14,7 +15,13 @@ export const signIn = async (req, res) => {
     // Llamar a la función de autenticación para verificar las credenciales
     const token = await signin(nombre_usuario, contrasenia);
 
-    // Si las credenciales son válidas, devolver el token en la respuesta
+    // Verificar si el token ha caducado
+    const isExpired = await isTokenExpired(token);
+    if (isExpired) {
+      return res.status(401).json({ error: 'Token ha caducado' });
+    }
+
+    // Si las credenciales son válidas y el token no ha caducado, devolver el token en la respuesta
     res.status(200).json({ token });
   } catch (error) {
     // Manejar los errores que puedan ocurrir durante la autenticación
@@ -27,6 +34,7 @@ export const signIn = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
 
 
 
