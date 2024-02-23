@@ -7,7 +7,7 @@ import { createRoles } from './libs/initialSetUp.js';
 
 import entidadBancariaRoute from './routes/entidadBancarias.routes.js'
 import tipoTransaccion from './routes/tipotransaccion.routes.js'
-
+import operaciones from './routes/operaciones.routes.js'
 import usersRoute from './routes/user.routes.js'
 import authRoute from './routes/auth.routes.js'
 
@@ -30,6 +30,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/tipoTransaccion',tipoTransaccion)
+app.use('/operaciones',operaciones)
 app.use('/entidadBancaria',entidadBancariaRoute)
 app.use('/users',usersRoute)
 app.use('/auth',authRoute)
