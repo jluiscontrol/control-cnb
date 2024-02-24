@@ -2,6 +2,7 @@
 import pool from '../database.js';
 import config from '../config.js';
 import jwt from 'jsonwebtoken';
+import { isTokenExpired } from '../helpers/funciones.js'
 
 export const verifyToken = async (req, res, next) => {
     const token = req.headers["x-access-token"];
@@ -9,8 +10,14 @@ export const verifyToken = async (req, res, next) => {
     if (!token) return res.status(403).json({ message: "No token provided" });
 
     try {
-        const decoded = jwt.verify(token, config.SECRET);
+        // Verificar si el token ha caducado
+        const isExpired = await isTokenExpired(token);
+        if (isExpired) {
+            return res.status(401).json({ message: 'Token ha caducado' });
+        }
 
+        // Si el token no ha caducado, decodificarlo y continuar con la lógica de verificación
+        const decoded = jwt.verify(token, config.SECRET);
         const { rows } = await pool.query('SELECT * FROM usuario WHERE id_usuario = $1', [decoded.userId]);
 
         if (!rows[0]) return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -22,6 +29,7 @@ export const verifyToken = async (req, res, next) => {
         return res.status(401).json({ message: 'Token inválido' });
     }
 };
+
 // Verificar si es admin
 export const verifyAdmin = async (req, res, next) => {
     try {

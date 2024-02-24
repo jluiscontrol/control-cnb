@@ -1,6 +1,6 @@
 //import User from '../models/User.Model.js';
 import { signin } from '../models/auth.model.js' // Importar la función de autenticación
-import  {isTokenExpired } from '../models/auth.model.js' // Importar la función de autenticación
+import { isTokenExpired } from '../helpers/funciones.js'
 
 
 export const signIn = async (req, res) => {

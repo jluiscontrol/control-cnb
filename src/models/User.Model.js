@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config.js';
 
+
 // Función para agregar un nuevo usuario
 async function addUser(User, Persona, roleId = null) {
   const user = await pool.connect();
@@ -11,11 +12,6 @@ async function addUser(User, Persona, roleId = null) {
     const { nombre_usuario, estado, contrasenia } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona
 
-    // Verificar si el usuario ya existe
-    const existingUser = await user.query('SELECT * FROM usuario WHERE nombre_usuario = $1', [nombre_usuario]);
-    if (existingUser.rows.length > 0) {
-      throw new Error('El nombre de usuario ya está en uso.');
-    }
 
     // Verificar si se proporcionó un roleId y si el rol existe
     if (roleId) {
@@ -29,12 +25,28 @@ async function addUser(User, Persona, roleId = null) {
       const defaultRoleQueryResult = await user.query('SELECT id_rol FROM rol ORDER BY id_rol LIMIT 1');
       roleId = defaultRoleQueryResult.rows[0].id_rol;
     }
+    // Verificar si el usuario ya existe o si la cédula ya existe y el usuario asociado está inactivo
+      const existingUserQuery = `
+      SELECT u.*, p.cedula 
+      FROM usuario u 
+      LEFT JOIN persona p ON u.persona_id = p.id_persona 
+      WHERE u.nombre_usuario = $1 OR (p.cedula = $2 AND (u.estado = true OR u.estado IS NULL))
+      `;
+      const existingUserResult = await user.query(existingUserQuery, [nombre_usuario, cedula]);
 
+      if (existingUserResult.rows.length > 0) {
+      const existingRecord = existingUserResult.rows[0];
+      if (existingRecord.nombre_usuario === nombre_usuario) {
+        throw new Error('El nombre de usuario ya está en uso.');
+      } else {
+        throw new Error('El usuario ya está registrado pero se encuentra inactivo.');
+      }
+      }
     // Encriptar la contraseña antes de almacenarla
     const hashedPassword = await bcrypt.hash(contrasenia, 10); // 10 es el número de rondas de encriptación
     // Iniciar una transacción
     await user.query('BEGIN');
-
+    
     //insertar datos personales
     const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono, cedula) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona', [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
     const personaId = personaInsertResult.rows[0].id_persona;
@@ -47,7 +59,7 @@ async function addUser(User, Persona, roleId = null) {
 
     // Insertar la relación entre el usuario y el rol en la tabla usuario_rol
     const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);
-
+    
     // Generar token JWT con el ID del usuario
     const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
       expiresIn: 86400 // 24 horas
@@ -73,13 +85,13 @@ async function getAllUsers() {
     p.apellido AS apellido_persona, 
     p.fecha_nacimiento AS fecha_nacimiento_persona, 
     p.direccion AS direccion_persona, 
-    p.telefono AS telefono_persona
+    p.telefono AS telefono_persona,
+    p.cedula AS cedula_persona
   FROM 
     usuario u
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
-    LEFT JOIN persona p ON u.persona_id = p.id_persona
-    WHERE u.estado = true;
+    LEFT JOIN persona p ON u.persona_id = p.id_persona;
     `);
     return resultado.rows;
   } finally {
