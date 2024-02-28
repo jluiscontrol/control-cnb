@@ -10,14 +10,24 @@ async function addUser(User, Persona, roleId = null) {
   const user = await pool.connect();
   try {
     const { nombre_usuario, estado, contrasenia } = User;
-    const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona
+    const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
 
+    // Verificar si la cédula ya está registrada
+    const existingCedulaQuery = `
+      SELECT u.*
+      FROM usuario u
+      LEFT JOIN persona p ON u.persona_id = p.id_persona
+      WHERE p.cedula = $1 AND (u.estado = true OR u.estado IS NULL)
+    `;
+    const existingCedulaResult = await user.query(existingCedulaQuery, [cedula]);
+    if (existingCedulaResult.rows.length > 0) {
+      throw new Error('La cédula ya está registrada.');
+    }
 
     // Verificar si se proporcionó un roleId y si el rol existe
     if (roleId) {
       const roleExists = await user.query('SELECT id_rol FROM rol WHERE id_rol = $1', [roleId]);
       if (roleExists.rows.length === 0) {
-
         throw new Error('El rol seleccionado no está registrado.');
       }
     } else {
@@ -25,31 +35,28 @@ async function addUser(User, Persona, roleId = null) {
       const defaultRoleQueryResult = await user.query('SELECT id_rol FROM rol ORDER BY id_rol LIMIT 1');
       roleId = defaultRoleQueryResult.rows[0].id_rol;
     }
-    // Verificar si el usuario ya existe o si la cédula ya existe y el usuario asociado está inactivo
-      const existingUserQuery = `
-      SELECT u.*, p.cedula 
-      FROM usuario u 
-      LEFT JOIN persona p ON u.persona_id = p.id_persona 
-      WHERE u.nombre_usuario = $1 OR (p.cedula = $2 AND (u.estado = true OR u.estado IS NULL))
-      `;
-      const existingUserResult = await user.query(existingUserQuery, [nombre_usuario, cedula]);
 
-      if (existingUserResult.rows.length > 0) {
-      const existingRecord = existingUserResult.rows[0];
-      if (existingRecord.nombre_usuario === nombre_usuario) {
-        throw new Error('El nombre de usuario ya está en uso.');
-      } else {
-        throw new Error('El usuario ya está registrado pero se encuentra inactivo.');
-      }
-      }
+    // Verificar si el usuario ya existe
+    const existingUsernameQuery = `
+      SELECT u.*
+      FROM usuario u
+      WHERE u.nombre_usuario = $1
+    `;
+    const existingUsernameResult = await user.query(existingUsernameQuery, [nombre_usuario]);
+    if (existingUsernameResult.rows.length > 0) {
+      throw new Error('El nombre de usuario ya está en uso.');
+    }
+
     // Encriptar la contraseña antes de almacenarla
     const hashedPassword = await bcrypt.hash(contrasenia, 10); // 10 es el número de rondas de encriptación
+
     // Iniciar una transacción
     await user.query('BEGIN');
     
-    //insertar datos personales
+    // Insertar datos personales
     const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono, cedula) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona', [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
     const personaId = personaInsertResult.rows[0].id_persona;
+
     // Insertar el nuevo usuario
     const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id) VALUES($1, $2, $3, $4) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId]);
     const userId = userInsertResult.rows[0].id_usuario;

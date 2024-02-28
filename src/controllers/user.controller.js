@@ -8,27 +8,28 @@ import { deleteUser } from '../models/User.Model.js';
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, fecha_registro, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
 
   // Verificar si algún campo requerido está vacío
-  if (!nombre_usuario || !contrasenia ) {
+  if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, fecha_registro, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
     res.status(201).json(userSave);
    
 
   } catch (error) {
-    if (error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado.') {
+    if (error.message === 'La cédula ya está registrada.' || error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado.') {
       return res.status(400).json({ error: error.message });
     }
     console.error('Error al crear usuario:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 
 
 //funcion para obtener todos los usuarios
