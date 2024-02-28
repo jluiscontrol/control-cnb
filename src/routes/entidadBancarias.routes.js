@@ -9,7 +9,7 @@ router.post('/', [ verifyToken, verifyAdmin ], entidadBancariaCtrl.createEntidad
 router.get('/', entidadBancariaCtrl.getEntidadBancarias)
 router.get('/:entidadBancariaId', entidadBancariaCtrl.getEntidadBancariaById)
 router.put('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
-router.delete('/:entidadBancariaId', entidadBancariaCtrl.deleteEntidadBancariaById)
+router.delete('/:entidadBancariaDelete', entidadBancariaCtrl.deleteEntidadBancariaById)
 
 
 

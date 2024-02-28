@@ -2,6 +2,7 @@
 import EntidadBancaria from '../models/EntidadBancaria.Model.js';
 import { getEntidadBancariaById as getEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
 import { updateEntidadBancariaById as updateEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
+import { deleteEntidadBancariaById as deleteEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
 
 //Funcion para crear una entidad bancaria
 export const createEntidadBancaria = async (req, res) => {
@@ -54,7 +55,7 @@ export const updateEntidadBancariaById = async (req, res) => {
   try {
     // Extraer el ID de la entidad bancaria de los parámetros de la solicitud
     const entidadBancariaId = req.params.entidadBancariaId;
-    console.log(entidadBancariaId)
+  
     // Obtener los datos actualizados del cuerpo de la solicitud
     const newData = req.body;
     
@@ -72,5 +73,20 @@ export const updateEntidadBancariaById = async (req, res) => {
 
 
 export const deleteEntidadBancariaById = async (req, res) => {
-
+  try {
+    // Extraer el ID de la entidad bancaria de los parámetros de la solicitud
+    const deleteEntidadBancariaId = req.params.entidadBancariaDelete;
+    // Obtener los datos actualizados del cuerpo de la solicitud
+    const newData = req.body;
+    
+    // Llamar a la función del modelo para actualizar la entidad bancaria
+    const result = await deleteEntidadBancariaByIdModel(deleteEntidadBancariaId, newData); // Aquí utilizamos la función del modelo
+   
+    // Devolver un mensaje de éxito en la respuesta
+    res.status(200).json(result);
+  } catch (error) {
+    // Manejar cualquier error que ocurra durante el proceso
+    console.error('Error al eliminar una entidad bancaria:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }

@@ -131,7 +131,7 @@ ALTER TABLE operaciones
 ALTER COLUMN valor TYPE NUMERIC(10, 2);
 
 ALTER TABLE comision
-ALTER COLUMN valor TYPE JSON USING 
+ALTER COLUMN valorcomision TYPE JSON USING 
   ('{"valorcomision": ' || valorcomision || ', "desde": "' || desde || '", "hasta": "' || hasta || '"}')::JSON;
 
   --inert a la tabla comision
