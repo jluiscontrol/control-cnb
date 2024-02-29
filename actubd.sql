@@ -178,125 +178,6 @@ CREATE TABLE saldos (
     FOREIGN KEY (caja_id) REFERENCES caja(id_caja)
 );
 
---procedimiento si la operacion suma a la caja y resta a la cuenta
-  
-  
-    -- Obtener el id_tipotransaccion y el valor de la inserción en la tabla operaciones
-   /* CREATE OR REPLACE FUNCTION agregaSaldo()
-RETURNS TRIGGER AS
-$$
-DECLARE
-    v_id_tipotransaccion INTEGER;
-    v_valor NUMERIC(10,2);
-BEGIN
-    -- Obtener el id_tipotransaccion y el valor de la inserción en la tabla operaciones
-    v_id_tipotransaccion := NEW.id_tipotransaccion;
-    v_valor := NEW.valor;
-
-    -- Mostrar un mensaje con los valores obtenidos
-    IF v_id_tipotransaccion IS NOT NULL AND v_valor IS NOT NULL THEN
-        RAISE NOTICE 'id_tipotransaccion: %, valor: %', v_id_tipotransaccion, v_valor;
-    ELSE
-        RAISE NOTICE 'No se pudo obtener el id_tipotransaccion y el valor de la inserción en la tabla operaciones.';
-        RETURN NULL; -- Si no se obtienen los valores, salimos de la función
-    END IF;
-
-    -- Validacion cuando SUMA CAJA RESTA CUENTA
-    IF EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 1
-          AND afectacuenta_id = 2
-    ) THEN
-        RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: SUMA CAJA RESTA CUENTA.', v_id_tipotransaccion;
-
-       --insertamos datos
-        INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (v_valor, -v_valor, NEW.id_entidadbancaria);
-
-    -- Validacion cuando RESTA CAJA SUMA CUENTA
-    ELSE IF  EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 2
-          AND afectacuenta_id = 1
-    ) THEN
-      RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: RESTA CAJA SUMA CUENTA.', v_id_tipotransaccion;
-       --insertamos datos
-       INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (-v_valor, v_valor, NEW.id_entidadbancaria);
-   
-    -- validacion cuando SUMA CAJA - NO AFECTA A CUENTA
-    ELSE IF  EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 1
-          AND afectacuenta_id = 3
-    ) THEN
-      RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: SUMA CAJA - NO AFECTA A CUENTA.', v_id_tipotransaccion;
-       --insertamos datos
-       INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (v_valor, 0 , NEW.id_entidadbancaria);
-
-    -- validacion cuando NO AFECTA - SUMA A CUENTA
-     ELSE IF  EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 3
-          AND afectacuenta_id = 1
-    ) THEN
-      RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: NO AFECTA - SUMA A CUENTA.', v_id_tipotransaccion;
-       --insertamos datos
-       INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (0, v_valor , NEW.id_entidadbancaria);
-
-     -- validacion cuando RESTA CAJA  - NO AFECTA
-     ELSE IF  EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 2
-          AND afectacuenta_id = 3
-    ) THEN
-      RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: RESTA CAJA  - NO AFECTA.', v_id_tipotransaccion;
-       --insertamos datos
-       INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (v_valor, 0 , NEW.id_entidadbancaria);
-    
-    -- validacion cuando NO AFECTA CAJA  - RESTA CUENTA
-        ELSE IF  EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 3
-          AND afectacuenta_id = 2
-    ) THEN
-      RAISE NOTICE 'El id_tipotransaccion % cumple con la condición: NO AFECTA CAJA  - RESTA CUENTA.', v_id_tipotransaccion;
-       --insertamos datos
-       INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (0, v_valor , NEW.id_entidadbancaria);
-   
-   
-
-    ELSE
-        RAISE NOTICE 'El id_tipotransaccion % no cumple con la condición.', v_id_tipotransaccion;
-    END IF;
-
-    RETURN NEW;
-END;
-$$
-LANGUAGE plpgsql;
-
-  --creamos el trigger para que se ejecute cuando haya una insercion en la tabla operaciones
-    CREATE TRIGGER trigger_sumarCajaRestaCuenta
-AFTER INSERT ON operaciones
-FOR EACH ROW
-EXECUTE FUNCTION sumarCajaRestaCuenta();
-*/
 
 --funcion coregida y renombrada
 CREATE OR REPLACE FUNCTION agregaSaldo()
@@ -370,55 +251,6 @@ EXECUTE FUNCTION agregaSaldo();
 
 
 
--- funcion de respaldo
-/*CREATE OR REPLACE FUNCTION public.sumarcajarestacuenta()
-    RETURNS trigger
-    LANGUAGE 'plpgsql'
-    COST 100
-    VOLATILE NOT LEAKPROOF
-AS $BODY$
-DECLARE
-    v_id_tipotransaccion INTEGER;
-    v_valor NUMERIC(10,2);
-BEGIN
-    -- Obtener el id_tipotransaccion y el valor de la inserción en la tabla operaciones
-    v_id_tipotransaccion := NEW.id_tipotransaccion;
-    v_valor := NEW.valor;
-
-    -- Mostrar un mensaje con los valores obtenidos
-    IF v_id_tipotransaccion IS NOT NULL AND v_valor IS NOT NULL THEN
-        RAISE NOTICE 'id_tipotransaccion: %, valor: %', v_id_tipotransaccion, v_valor;
-    ELSE
-        RAISE NOTICE 'No se pudo obtener el id_tipotransaccion y el valor de la inserción en la tabla operaciones.';
-        RETURN NULL; -- Si no se obtienen los valores, salimos de la función
-    END IF;
-
-    -- Realizar la validación del id_tipotransaccion recibido
-    IF EXISTS (
-        SELECT 1
-        FROM tipotransaccion
-        WHERE id_tipotransaccion = v_id_tipotransaccion
-          AND afectacaja_id = 1
-          AND afectacuenta_id = 2
-    ) THEN
-        RAISE NOTICE 'El id_tipotransaccion % cumple con la condición.', v_id_tipotransaccion;
-
-        -- Insertar el valor en la tabla saldos
-        INSERT INTO saldos (saldocaja, saldocuenta, entidadbancaria_id)
-        VALUES (v_valor, -v_valor, NEW.id_entidadbancaria);
-    ELSE
-        RAISE NOTICE 'El id_tipotransaccion % no cumple con la condición.', v_id_tipotransaccion;
-    END IF;
-
-    RETURN NEW;
-END;
-$BODY$;
-
-ALTER FUNCTION public.sumarcajarestacuenta()
-    OWNER TO postgres;
-*/
-
-
 
 
 
@@ -426,3 +258,5 @@ ALTER FUNCTION public.sumarcajarestacuenta()
 
 INSERT INTO public.operaciones (id_entidadbancaria, id_tipotransaccion, id_cliente, valor, referencia, comentario, numtransaccion)
 VALUES (5, 2, 1, 100.00, 'es una prueba de pago', 'comentario', '44545236');
+----29-02-2024 
+alter table entidadbancaria drop table id_comision

@@ -7,6 +7,7 @@ import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jw
 
 router.post('/', [ verifyToken, verifyAdmin ], entidadBancariaCtrl.createEntidadBancaria)
 router.get('/', entidadBancariaCtrl.getEntidadBancarias)
+router.get('/activas', entidadBancariaCtrl.getEntidadBancariasActivas)
 router.get('/:entidadBancariaId', entidadBancariaCtrl.getEntidadBancariaById)
 router.put('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
 router.delete('/:entidadBancariaDelete', entidadBancariaCtrl.deleteEntidadBancariaById)
