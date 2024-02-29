@@ -11,18 +11,31 @@ export const createUser = async (req, res) => {
   const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
 
   // Verificar si algún campo requerido está vacío
-  if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
-  }
+ // Verificar si algún campo requerido está vacío
+if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
+  const camposFaltantes = [];
+  if (!nombre_usuario) camposFaltantes.push('Nombre de usuario');
+  if (!contrasenia) camposFaltantes.push('Contraseña');
+  if (!cedula) camposFaltantes.push('Cédula');
+  if (!nombre) camposFaltantes.push('Nombres');
+  if (!apellido) camposFaltantes.push('Apellidos');
+  
+  return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
+}
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
     const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
-    res.status(201).json(userSave);
-   
 
+    // Verificar si la función addUser devolvió un error relacionado con la cédula ya registrada
+    if (userSave.error) {
+      return res.status(400).json({ error: userSave.error }); // Devolver código de estado 401
+    }
+
+    res.status(201).json(userSave);
   } catch (error) {
-    if (error.message === 'La cédula ya está registrada.' || error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado.') {
+    // Manejar otros errores
+    if (error.message === 'El nombre de usuario ya está en uso.' || error.message === 'El rol seleccionado no está registrado. ') {
       return res.status(400).json({ error: error.message });
     }
     console.error('Error al crear usuario:', error);

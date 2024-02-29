@@ -11,6 +11,21 @@ async function addUser(User, Persona, roleId = null) {
   try {
     const { nombre_usuario, estado, contrasenia } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
+   
+    /*// Validar longitud de la cédula
+     if (cedula.length > 13) {
+      return { error: 'La cédula no puede tener más de 13 caracteres..' };
+    }*/
+    // Verificar si el nombre de usuario ya está en uso
+    const existingUsernameQuery = `
+      SELECT *
+      FROM usuario
+      WHERE nombre_usuario = $1
+    `;
+    const existingUsernameResult = await user.query(existingUsernameQuery, [nombre_usuario]);
+    if (existingUsernameResult.rows.length > 0) {
+      return { error: 'El nombre de usuario ya está en uso.' };
+    }
 
     // Verificar si la cédula ya está registrada
     const existingCedulaQuery = `
@@ -20,8 +35,9 @@ async function addUser(User, Persona, roleId = null) {
       WHERE p.cedula = $1 AND (u.estado = true OR u.estado IS NULL)
     `;
     const existingCedulaResult = await user.query(existingCedulaQuery, [cedula]);
+   
     if (existingCedulaResult.rows.length > 0) {
-      throw new Error('La cédula ya está registrada.');
+      return { error:'Cédula ya registrada, la cedula ya pertenece a un usuario registrado.' };
     }
 
     // Verificar si se proporcionó un roleId y si el rol existe
@@ -34,17 +50,6 @@ async function addUser(User, Persona, roleId = null) {
       // Si no se proporcionó un roleId, obtener el primer rol registrado
       const defaultRoleQueryResult = await user.query('SELECT id_rol FROM rol ORDER BY id_rol LIMIT 1');
       roleId = defaultRoleQueryResult.rows[0].id_rol;
-    }
-
-    // Verificar si el usuario ya existe
-    const existingUsernameQuery = `
-      SELECT u.*
-      FROM usuario u
-      WHERE u.nombre_usuario = $1
-    `;
-    const existingUsernameResult = await user.query(existingUsernameQuery, [nombre_usuario]);
-    if (existingUsernameResult.rows.length > 0) {
-      throw new Error('El nombre de usuario ya está en uso.');
     }
 
     // Encriptar la contraseña antes de almacenarla
@@ -78,6 +83,7 @@ async function addUser(User, Persona, roleId = null) {
     user.release();
   }
 }
+
 
 
 //Funcion para obtener todos los usuarios
