@@ -26,7 +26,7 @@ async function addEntidadBancaria(entidadBancaria) {
 async function getAllEntidadesBancarias() {
   const entidadBancaria = await pool.connect();
   try {
-    const entidad = await entidadBancaria.query('SELECT * FROM entidadbancaria');
+    const entidad = await entidadBancaria.query('SELECT * FROM entidadbancaria ORDER BY id_entidadbancaria');
     return entidad.rows;
   } finally {
     entidadBancaria.release();
@@ -85,12 +85,16 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
     const client = await pool.connect();
     const query = 'UPDATE entidadbancaria SET estado = $1  WHERE id_entidadbancaria = $2';
     const result = await client.query(query, [newData.estado, entidadBancariaId]);
-
     if (result.rowCount === 0) {
       return { error: 'La entidad bancaria con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
     client.release();
+   if(newData.estado == true){
+     return { message: 'Entidad bancaria activada correctamente' };
+   }else{
     return { message: 'Entidad bancaria inactivada correctamente' };
+
+   }
   } catch (error) {
     throw new Error('Error al inactivar la entidad bancaria: ' + error.message);
   }

@@ -120,8 +120,14 @@ export const deleteEntidadBancariaById = async (req, res) => {
     if (result.error) {
       return res.status(404).json({ error: result.error });
     }
-
+  
+   if(newData.estado == true){
+     res.status(200).json({ message: 'Entidad bancaria activada correctamente' });
+   }else{
     res.status(200).json({ message: 'Entidad bancaria inactivada correctamente' });
+
+   }
+   
   } catch (error) {
     
     console.error('Error al inactivar la entidad bancaria por ID:', error);
