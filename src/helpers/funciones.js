@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import pool from '../database.js';
 
 //funcion para validar cuando el token ha expirado
 export const isTokenExpired = (token) => {
@@ -22,4 +23,22 @@ export const isTokenExpired = (token) => {
   });
 };
 
-export default { isTokenExpired }
+//funcion para validar cuando el numero de transacion de una transferencia esta duplicada
+export async function existeNumTransaccion(numtransaccion) {
+    const operacion = await pool.connect();
+    try {
+        const existeTransaccion = await operacion.query('SELECT id_operacion FROM operaciones WHERE numtransaccion = $1', [numtransaccion]);
+        if (existeTransaccion.rows.length > 0) {
+            // Si existe una transacción con el número de transacción dado, devuelve su id_operacion
+            return existeTransaccion.rows[0].id_operacion;
+        } else {
+            // Si no existe una transacción con el número de transacción dado, devuelve null
+            return null;
+        }
+    } finally {
+        operacion.release();
+    }
+}
+
+
+export default { isTokenExpired, existeNumTransaccion }

@@ -2,7 +2,7 @@
 import EntidadBancaria from '../models/EntidadBancaria.Model.js';
 import { getEntidadBancariaById as getEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
 import { updateEntidadBancariaById as updateEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
-import { deleteEntidadBancariaById as deleteEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
+import { deleteEntidadBancariaById as estadoEntidadBancariaByIdModel } from '../models/EntidadBancaria.Model.js'; 
 
 //Funcion para crear una entidad bancaria
 export const createEntidadBancaria = async (req, res) => {
@@ -102,20 +102,20 @@ export const updateEntidadBancariaById = async (req, res) => {
   }
 };
 //funcion para eliminar una entidad bancaria
-export const deleteEntidadBancariaById = async (req, res) => {
+export const estadoEntidadBancariaById = async (req, res) => {
   try {
-    const entidadBancariaDelete = req.params.entidadBancariaDelete;
+    const entidadBancariaEstado = req.params.entidadBancariaEstado;
     const newData = req.body;
     
     if (!newData || Object.keys(newData).length === 0) {
       return res.status(400).json({ error: 'Se requieren datos actualizados para editar la entidad bancaria' });
     }
 
-    const existingEntidadBancaria = await getEntidadBancariaByIdModel(entidadBancariaDelete);
+    const existingEntidadBancaria = await getEntidadBancariaByIdModel(entidadBancariaEstado);
     if (!existingEntidadBancaria) {
       return res.status(404).json({ error: 'La entidad bancaria con el ID proporcionado no existe' });
     }
-    const result = await deleteEntidadBancariaByIdModel(entidadBancariaDelete, newData);
+    const result = await estadoEntidadBancariaByIdModel(entidadBancariaEstado, newData);
 
     if (result.error) {
       return res.status(404).json({ error: result.error });

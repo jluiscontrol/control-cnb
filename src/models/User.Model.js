@@ -12,10 +12,6 @@ async function addUser(User, Persona, roleId = null) {
     const { nombre_usuario, estado, contrasenia } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
    
-    /*// Validar longitud de la cédula
-     if (cedula.length > 13) {
-      return { error: 'La cédula no puede tener más de 13 caracteres..' };
-    }*/
     // Verificar si el nombre de usuario ya está en uso
     const existingUsernameQuery = `
       SELECT *

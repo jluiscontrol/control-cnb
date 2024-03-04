@@ -259,4 +259,148 @@ EXECUTE FUNCTION agregaSaldo();
 INSERT INTO public.operaciones (id_entidadbancaria, id_tipotransaccion, id_cliente, valor, referencia, comentario, numtransaccion)
 VALUES (5, 2, 1, 100.00, 'es una prueba de pago', 'comentario', '44545236');
 ----29-02-2024 
-alter table entidadbancaria drop table id_comision
+alter table entidadbancaria drop column comision_id
+
+---funcion para traer toda la necesaria de la tabla operaciones ya relacionadas
+SELECT 
+    e.entidad AS entidad,
+    tt.nombre AS tipotransaccion,
+    c.cedula AS cedula_cliente,
+    c.nombres AS nombres_cliente,
+    c.telefono AS telefono_cliente,
+    o.valor AS valor_operacion,
+    o.comentario AS comentario_operacion,
+    o.numtransaccion AS num_transaccion,
+    o.fecha_registro AS fecha_registro_operacion,
+    o.fecha_actualizacion AS fecha_actualizacion_operacion,
+    co.valorcomision AS valor_comision,
+    ac.nombre AS afectacion_caja,
+    au.nombre AS afectacion_cuenta
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    cliente c ON o.id_cliente = c.id_cliente
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+LEFT JOIN
+    comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+LEFT JOIN
+    afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+LEFT JOIN
+    afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+ORDER BY 
+    afectacion_caja,
+    afectacion_cuenta;
+--ejemplo de como llamrarlo en el modelo
+
+async function getOperaciones() {
+  const query = 'SELECT * FROM operaciones_view'; // Utiliza la vista en lugar de la tabla
+  const { rows } = await pool.query(query);
+  return rows;
+}
+
+module.exports = {
+  getOperaciones
+};
+--fin de funcnion en el modelo
+
+--- CONSULTA PARA FILTRAR LA INFORMACION DE OPERACIONES POR FECHAS INCLUYENDO LA HORA
+SELECT 
+    e.entidad AS entidad,
+    tt.nombre AS tipotransaccion,
+    c.cedula AS cedula_cliente,
+    c.nombres AS nombres_cliente,
+    c.telefono AS telefono_cliente,
+    o.valor AS valor_operacion,
+    o.comentario AS comentario_operacion,
+    o.numtransaccion AS num_transaccion,
+    o.fecha_registro AS fecha_registro_operacion,
+    o.fecha_actualizacion AS fecha_actualizacion_operacion,
+    co.valorcomision AS valor_comision,
+    ac.nombre AS afectacion_caja,
+    au.nombre AS afectacion_cuenta
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    cliente c ON o.id_cliente = c.id_cliente
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+LEFT JOIN
+    comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+LEFT JOIN
+    afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+LEFT JOIN
+    afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+WHERE
+    o.fecha_registro >= '2024-03-03 00:00:00' -- Fecha desde con hora inicial
+    AND o.fecha_registro <= '2024-03-03 23:59:59' -- Fecha hasta con hora final
+ORDER BY 
+    afectacion_caja,
+    afectacion_cuenta;
+
+--- CONSULTA PARA FILTRAR LA INFORMACION DE OPERACIONES POR FECHAS Y NO LA HORA
+SELECT 
+    e.entidad AS entidad,
+    tt.nombre AS tipotransaccion,
+    c.cedula AS cedula_cliente,
+    c.nombres AS nombres_cliente,
+    c.telefono AS telefono_cliente,
+    o.valor AS valor_operacion,
+    o.comentario AS comentario_operacion,
+    o.numtransaccion AS num_transaccion,
+    o.fecha_registro AS fecha_registro_operacion,
+    o.fecha_actualizacion AS fecha_actualizacion_operacion,
+    co.valorcomision AS valor_comision,
+    ac.nombre AS afectacion_caja,
+    au.nombre AS afectacion_cuenta
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    cliente c ON o.id_cliente = c.id_cliente
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+LEFT JOIN
+    comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+LEFT JOIN
+    afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+LEFT JOIN
+    afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+WHERE
+    DATE(o.fecha_registro) >= '2024-03-03' -- Fecha desde
+    AND DATE(o.fecha_registro) <= '2024-03-03' -- Fecha hasta
+ORDER BY 
+    afectacion_caja,
+    afectacion_cuenta;
+
+---consulta donde me traiga el valor total de todo lo recaudado sin validacion de algun campo
+SELECT SUM(valor) AS total_valor_operaciones
+FROM operaciones;
+---en esta consulta mostrara el valor total de todas la entidades bancarias
+SELECT 
+    e.entidad AS entidad,
+    SUM(o.valor) AS total_valor_operaciones
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+GROUP BY 
+    e.entidad;
+
+---consulta del valor total de una entidad en especifico
+SELECT 
+    e.entidad AS entidad,
+    SUM(o.valor) AS total_valor_operaciones
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+WHERE 
+    e.id_entidadbancaria = 5
+GROUP BY 
+    e.entidad;

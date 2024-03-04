@@ -10,7 +10,7 @@ router.get('/', entidadBancariaCtrl.getEntidadBancarias)
 router.get('/activas', entidadBancariaCtrl.getEntidadBancariasActivas)
 router.get('/:entidadBancariaId', entidadBancariaCtrl.getEntidadBancariaById)
 router.put('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
-router.delete('/:entidadBancariaDelete', entidadBancariaCtrl.deleteEntidadBancariaById)
+router.put('/estado/:entidadBancariaEstado', entidadBancariaCtrl.estadoEntidadBancariaById)
 
 
 
