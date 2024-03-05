@@ -1,6 +1,7 @@
 import * as operaciones from '../models/Operaciones.Model.js'
 import  {existeNumTransaccion}  from '../helpers/funciones.js';
 
+
 export const createOperaciones = async (req, res) => {
     const { id_entidadbancaria,
         id_tipotransaccion,
@@ -49,9 +50,37 @@ export const createOperaciones = async (req, res) => {
     }
 
 }
-export const getOperaciones = async (req, res) => {
 
-}
+
+//Funcion para obtener todas las operaciones
+export const getOperaciones = async (req, res) => {
+    try {
+      // Llamar a la función que obtiene todas las operaciones desde el modelo
+      const result = await operaciones.getAllOperaciones();
+  
+      // Devolver las operaciones en la respuesta
+      res.status(200).json(result);
+    } catch (error) {
+      console.error('Error al obtener operaciones:', error);
+      res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+  };
+//Funcion para obtener todas las operaciones filtado por fechas
+export const getOperacionesFilter = async (req, res) => {
+    try {
+        // Obtener los parámetros de fecha desde el cuerpo de la solicitud
+        const { fechaDesde, fechaHasta } = req.body;
+    
+        // Llamar a la función para obtener todas las operaciones filtradas por fechas
+        const resultado = await operaciones.getAllOperacionesFilter(fechaDesde, fechaHasta);
+    
+        // Enviar la respuesta con las operaciones obtenidas
+        res.status(200).json(resultado);
+      } catch (error) {
+        console.error('Error al obtener operaciones filtradas:', error);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+      }
+  };
 export const getOperacionesById = async (req, res) => {
 
 }

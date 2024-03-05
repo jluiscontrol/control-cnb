@@ -66,7 +66,105 @@ export async function addOperaciones(operaciones) {
   }
 }
 
+//Funcion para obtener todas las operaciones
+export async function getAllOperaciones() {
+  try {
+    const operaciones = await pool.connect();
+    try {
+      const resultado = await operaciones.query(`
+        SELECT 
+            e.entidad AS entidad,
+            tt.nombre AS tipotransaccion,
+            c.cedula AS cedula_cliente,
+            c.nombres AS nombres_cliente,
+            c.telefono AS telefono_cliente,
+            o.valor AS valor_operacion,
+            o.comentario AS comentario_operacion,
+            o.numtransaccion AS num_transaccion,
+            o.fecha_registro AS fecha_registro_operacion,
+            o.fecha_actualizacion AS fecha_actualizacion_operacion,
+            co.valorcomision AS valor_comision,
+            ac.nombre AS afectacion_caja,
+            au.nombre AS afectacion_cuenta
+        FROM 
+            operaciones o
+        JOIN 
+            entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+        JOIN 
+            cliente c ON o.id_cliente = c.id_cliente
+        JOIN 
+            tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+        LEFT JOIN
+            comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+        LEFT JOIN
+            afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+        LEFT JOIN
+            afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+        ORDER BY 
+            afectacion_caja,
+            afectacion_cuenta;
+      `);
+      return resultado.rows;
+    } finally {
+      operaciones.release();
+    }
+  } catch (error) {
+    
+    throw error; // Re-lanzar el error para que el llamador también pueda manejarlo
+  }
+}
+//Funcion para obtener todas las operaciones filtrando por fechas
+export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
+  try {
+    const operaciones = await pool.connect();
+    try {
+      const resultado = await operaciones.query(`
+      SELECT 
+          e.entidad AS entidad,
+          tt.nombre AS tipotransaccion,
+          c.cedula AS cedula_cliente,
+          c.nombres AS nombres_cliente,
+          c.telefono AS telefono_cliente,
+          o.valor AS valor_operacion,
+          o.comentario AS comentario_operacion,
+          o.numtransaccion AS num_transaccion,
+          o.fecha_registro AS fecha_registro_operacion,
+          o.fecha_actualizacion AS fecha_actualizacion_operacion,
+          co.valorcomision AS valor_comision,
+          ac.nombre AS afectacion_caja,
+          au.nombre AS afectacion_cuenta
+      FROM 
+          operaciones o
+      JOIN 
+          entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+      JOIN 
+          cliente c ON o.id_cliente = c.id_cliente
+      JOIN 
+          tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      LEFT JOIN
+          comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+      LEFT JOIN
+          afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+      LEFT JOIN
+          afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+      WHERE
+          DATE(o.fecha_registro) >= $1 -- Fecha desde
+          AND DATE(o.fecha_registro) <= $2 -- Fecha hasta
+      ORDER BY 
+          afectacion_caja,
+          afectacion_cuenta;
+      `, [fechaDesde, fechaHasta]);
+      return resultado.rows;
+    } finally {
+      operaciones.release();
+    }
+  } catch (error) {
+    throw error; // Re-lanzar el error para que el llamador también pueda manejarlo
+  }
+}
 
 
 
-export default { addOperaciones }
+
+
+export default { addOperaciones,  getAllOperaciones, getAllOperacionesFilter }

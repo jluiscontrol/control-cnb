@@ -8,6 +8,7 @@ import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jw
 
 router.post('/',operacionesCtrl.createOperaciones)
 router.get('/', operacionesCtrl.getOperaciones)
+router.get('/filter', operacionesCtrl.getOperacionesFilter)
 router.get('/:operacionesId', operacionesCtrl.getOperacionesById)
 router.put('/:operacionesId', operacionesCtrl.updateOperacionesById)
 router.delete('/:operacionesId', operacionesCtrl.deleteOperacionesById)

@@ -30,6 +30,7 @@ export const getEntidadBancarias = async (req, res) => {
   try {
     // Llamar a la función que obtiene todas las entidades bancarias desde tu modelo o servicio
     const entidadesBancarias = await EntidadBancaria.getAllEntidadesBancarias();
+    console.log(entidadesBancarias)
     if (!entidadesBancarias) {
       return res.status(404).json({ error: 'Entidad bancaria no encontrada' });
     }
