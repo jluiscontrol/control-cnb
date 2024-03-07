@@ -41,14 +41,17 @@ async function getAllTiposTransaccion() {
     client.release();
   }
 }
+
 // funcion para el tipo de transacion por Id
-export const getTipoTransaccionById = async (req, res) => {
-  /*try {
-    const tipotransaccionId = req.params.userId;
+export const getTipoTransaccionById = async (tipotransaccionId) => {
+  try {
+
     const transaccion = await pool.connect();
     const query = `
       SELECT tt.id_tipotransaccion, tt.nombre AS tipo_transaccion, 
+      ac.id_afectacaja AS id_afectacaja, 
       ac.nombre AS afectacion_caja, 
+      acc.id_afectacuenta AS id_afectacuenta,
       acc.nombre AS afectacion_cuenta
       FROM tipotransaccion tt 
       INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
@@ -58,13 +61,13 @@ export const getTipoTransaccionById = async (req, res) => {
     const result = await transaccion.query(query, [tipotransaccionId]);
     transaccion.release();
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'transaccion no encontrado' });
+      return { error: 'Tipo transaccion no encontrada' }; // Devuelve un objeto con el mensaje de error
     }
-    res.status(200).json(result.rows[0]);
+    return result.rows[0]; // Devuelve la Tipo transaccion encontrada
   } catch (error) {
     console.error('Error al obtener el tipo transaccion por ID:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }*/
+    return { error: 'Error en el servidor' }; // Devuelve un objeto con el mensaje de error
+  }
 }
 export const updateTipoTransaccionId = async (tipotransaccionId, newData) => {
   try {
@@ -83,5 +86,38 @@ export const updateTipoTransaccionId = async (tipotransaccionId, newData) => {
   }
 };
 
+//funcion para obtener todos los datos de Afecta caja
+async function getAllAfectaCaja() {
+  const client = await pool.connect();
+  try {
+    const query = `
+          SELECT * FROM afectacaja ORDER BY id_afectacaja
+    `;
+    const result = await client.query(query);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+//funcion para obtener todos los datos de Afecta cuenta
+async function getAllAfectaCuenta() {
+  const client = await pool.connect();
+  try {
+    const query = `
+          SELECT * FROM afectacuenta ORDER BY id_afectacuenta
+    `;
+    const result = await client.query(query);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
 // Exportar las funciones del modelo
-export default { addTipoTransaccion, getAllTiposTransaccion,updateTipoTransaccionId, getTipoTransaccionById };
+export default { addTipoTransaccion, 
+              getAllTiposTransaccion,
+              updateTipoTransaccionId, 
+              getTipoTransaccionById, 
+              getAllAfectaCaja,
+              getAllAfectaCuenta};
