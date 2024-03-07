@@ -163,8 +163,46 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
   }
 }
 
+//funcion para editar una operacion
+export const updateOperacionesById = async (operacionesId, newData) => {
+  try {
+    const client = await pool.connect();
+    const query = `
+          UPDATE opeaciones 
+          SET id_entidadbancaria = $1, 
+              id_tipotransaccion = $2, 
+              id_cliente = $3,
+              valor = $4,
+              referencia = $5,
+              comentario = $6,
+              numtransaccion = $7
+          WHERE id_operacion = $8`
+          ;
+    const result = await client.query(query, [newData.id_entidadbancaria, 
+                                              newData.id_tipotransaccion,  
+                                              newData.id_cliente, 
+                                              newData.valor, 
+                                              newData.referencia,
+                                              newData.comentario,
+                                              newData.numtransaccion, 
+                                              operacionesId]);
+
+    if (result.rowCount === 0) {
+      return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
+    }
+
+    client.release();
+    return { message: 'Operaciòn actualizada correctamente' };
+  } catch (error) {
+    throw new Error('Error al actualizar la operación: ' + error.message);
+  }
+};
 
 
 
 
-export default { addOperaciones,  getAllOperaciones, getAllOperacionesFilter }
+
+export default { addOperaciones,  
+              getAllOperaciones, 
+          updateOperacionesById,
+          getAllOperacionesFilter }

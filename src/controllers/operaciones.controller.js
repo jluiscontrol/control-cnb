@@ -65,6 +65,7 @@ export const getOperaciones = async (req, res) => {
       res.status(500).json({ error: 'Error interno del servidor.' });
     }
   };
+
 //Funcion para obtener todas las operaciones filtado por fechas
 export const getOperacionesFilter = async (req, res) => {
     try {
@@ -81,7 +82,9 @@ export const getOperacionesFilter = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor.' });
       }
   };
+
 export const getOperacionesById = async (req, res) => {
+    console.log(res)
 
 }
 export const updateOperacionesById = async (req, res) => {
