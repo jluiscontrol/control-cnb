@@ -74,11 +74,9 @@ export const updateUserById = async (req, res) => {
   const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono } = req.body;
 
   try {
-    // Convertir la fecha de nacimiento al formato esperado por la base de datos (yyyy-mm-dd)
-    const fechaNacimientoFormatted = fecha_nacimiento.split('-').reverse().join('-');
 
     // Crear el objeto persona con los datos formateados
-    const persona = { nombre, apellido, fecha_nacimiento: fechaNacimientoFormatted, direccion, telefono };
+    const persona = { nombre, apellido, fecha_nacimiento: fecha_nacimiento, direccion, telefono };
 
     // Llamar a updateUser con los datos actualizados, incluyendo los datos de persona
     const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona });
