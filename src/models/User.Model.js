@@ -242,7 +242,20 @@ export async function addCaja(info) {
     cajaDatos.release();
   }
 }
+//Obtener todas las cajas
+async function getAllCajas() {
+  const cajas = await pool.connect();
+  try {
+    const resultado = await cajas.query(`
+    SELECT * FROM  caja;
+    `);
+    console.log(resultado)
+    return resultado.rows;
+  } finally {
+    cajas.release()
+  }
+}
 
 
 // Exportar las funciones del modelo
-export default { addUser, getAllUsers, getUserId, updateUser, deleteUser, addCaja };
+export default { addUser, getAllUsers, getUserId, updateUser, deleteUser, addCaja, getAllCajas };

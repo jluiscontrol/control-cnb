@@ -52,7 +52,7 @@ export const getUsers = async (req, res) => {
        res.status(200).json(users)
     } catch(error){
       console.error('Error al obtener usuarios:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+      res.status(500).json({ error: 'Error interno del servidors' });
     }
 }
 
@@ -70,15 +70,15 @@ export const getUserById = async (req, res) => {
 
 export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
-  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono } = req.body;
-
+  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, caja_id } = req.body;
+  
   try {
 
     // Crear el objeto persona con los datos formateados
     const persona = { nombre, apellido, fecha_nacimiento: fecha_nacimiento, direccion, telefono };
 
     // Llamar a updateUser con los datos actualizados, incluyendo los datos de persona
-    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona });
+    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona,caja_id });
 
     if (!updated) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -134,3 +134,15 @@ export const createCaja = async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
       }
 };
+//obtener todas las cajas
+//funcion para obtener todos los usuarios
+export const getCajas = async (res) => {
+  try{
+     const cajas = await User.getAllCajas();
+    console.log(res)
+     res.status(200).json(cajas)
+  } catch(error){
+    console.error('Error al obtener las cajas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
