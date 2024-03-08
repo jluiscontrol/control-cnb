@@ -404,3 +404,40 @@ WHERE
     e.id_entidadbancaria = 5
 GROUP BY 
     e.entidad;
+
+    /********* 07/03/2024 **********/
+    /* eliminar primero la tabla creada*/
+    CREATE TABLE caja (
+    id_caja SERIAL PRIMARY KEY,
+    nombre VARCHAR(100),
+    estado BOOLEAN,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    ALTER TABLE public.usuario
+    ADD COLUMN caja_id INTEGER,
+    ADD CONSTRAINT usuario_caja_id_fkey FOREIGN KEY (caja_id) REFERENCES public.caja(id_caja);
+
+
+    ALTER TABLE public.operaciones
+    ADD COLUMN id_usuario integer,
+    ADD CONSTRAINT operaciones_id_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES public.usuario(id_usuario);
+
+
+    ALTER TABLE public.operaciones
+    ADD COLUMN saldocomision numeric(10,2);
+
+
+----consulta para traer el saldo total de una entidad bancaria ubicando la entidad bancaria
+    SELECT SUM(saldocuenta) AS total_saldocuenta
+    FROM public.saldos
+    WHERE entidadbancaria_id = 5;
+
+-----saldo total de cuenta y caja general
+    SELECT SUM(saldocuenta) AS total_saldocuenta, SUM(saldocaja) AS total_saldocaja
+    FROM public.saldos;
+    
+----saldo caja general
+   SELECT SUM(saldocaja) AS total_saldocaja
+   FROM public.saldos;
