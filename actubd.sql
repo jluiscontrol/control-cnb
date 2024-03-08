@@ -250,12 +250,6 @@ FOR EACH ROW
 EXECUTE FUNCTION agregaSaldo();
 
 
-
-
-
-
-
-
 INSERT INTO public.operaciones (id_entidadbancaria, id_tipotransaccion, id_cliente, valor, referencia, comentario, numtransaccion)
 VALUES (5, 2, 1, 100.00, 'es una prueba de pago', 'comentario', '44545236');
 ----29-02-2024 
@@ -439,6 +433,6 @@ GROUP BY
    SELECT SUM(saldocaja) AS total_saldocaja
    FROM public.saldos;
 ---suma total por canda entidad bacanria
-SELECT entidadbancaria_id, SUM(saldocuenta) AS saldo_total_cuenta
-FROM public.saldos
-GROUP BY entidadbancaria_id;
+    SELECT entidadbancaria_id, SUM(saldocuenta) AS saldo_total_cuenta
+    FROM public.saldos
+    GROUP BY entidadbancaria_id;

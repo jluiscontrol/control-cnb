@@ -1,16 +1,14 @@
 
 import User from '../models/User.Model.js';
-//import jwt from 'jsonwebtoken';
-//import bcrypt from 'bcrypt';
+
 import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
 import { deleteUser } from '../models/User.Model.js';
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
 
-  // Verificar si algún campo requerido está vacío
  // Verificar si algún campo requerido está vacío
 if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
   const camposFaltantes = [];
@@ -19,13 +17,14 @@ if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
   if (!cedula) camposFaltantes.push('Cédula');
   if (!nombre) camposFaltantes.push('Nombres');
   if (!apellido) camposFaltantes.push('Apellidos');
+  if (!cajaid_) camposFaltantes.push('Caja');
   
   return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
 }
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado, caja_id },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
 
     // Verificar si la función addUser devolvió un error relacionado con la cédula ya registrada
     if (userSave.error) {
@@ -108,3 +107,30 @@ export const deleteUserById = async (req, res) => {
       
      }
 }
+
+//funcion para crear caja
+export const createCaja = async (req, res) => {
+      const { nombre, estado } = req.body;
+  
+    if (!nombre || !estado ) {
+      const camposFaltantes = [];
+      if (!nombre) camposFaltantes.push('Nombre de caja');
+      if (!estado) camposFaltantes.push('estado');
+    
+      return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
+    }
+
+      try {
+        // Llama a la función addUser con los parámetros proporcionados  
+        const resultSave = await User.addCaja({ nombre, estado });
+              
+        res.status(201).json(resultSave);
+      } catch (error) {
+        // Manejar otros errores
+        if (error.message === 'Esta caja ya se encuentra registrada.') {
+          return res.status(400).json({ error: error.message });
+        }
+        console.error('Error al crear caja:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+      }
+};

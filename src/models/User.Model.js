@@ -9,7 +9,7 @@ import config from '../config.js';
 async function addUser(User, Persona, roleId = null) {
   const user = await pool.connect();
   try {
-    const { nombre_usuario, estado, contrasenia } = User;
+    const { nombre_usuario, estado, contrasenia, caja_id } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
    
     // Verificar si el nombre de usuario ya está en uso
@@ -59,7 +59,7 @@ async function addUser(User, Persona, roleId = null) {
     const personaId = personaInsertResult.rows[0].id_persona;
 
     // Insertar el nuevo usuario
-    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id) VALUES($1, $2, $3, $4) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId]);
+    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id, caja_id) VALUES($1, $2, $3, $4, $5) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId, caja_id]);
     const userId = userInsertResult.rows[0].id_usuario;
 
     // Commit la transacción
@@ -145,7 +145,7 @@ export const getUserId = async (req, res) => {
 
 //funcion para actualizar un usuario
 export const updateUser = async (userId, updatedData) => {
-  const { nombre_usuario, contrasenia, estado, roleId, persona } = updatedData;
+  const { nombre_usuario, contrasenia, estado, roleId, persona, caja_id } = updatedData;
   const usuario = await pool.connect();
 
   try {
@@ -160,8 +160,8 @@ export const updateUser = async (userId, updatedData) => {
         hashedPassword = await bcrypt.hash(contrasenia, 10);
       }
 
-      const userQuery = 'UPDATE usuario SET nombre_usuario = $1, contrasenia = $2, estado = $3 WHERE id_usuario = $4';
-      await usuario.query(userQuery, [nombre_usuario, hashedPassword, estado, userId]);
+      const userQuery = 'UPDATE usuario SET nombre_usuario = $1, contrasenia = $2, estado = $3, caja_id = $4 WHERE id_usuario = $5';
+      await usuario.query(userQuery, [nombre_usuario, hashedPassword, estado, caja_id, userId]);
     }
 
     // Actualizar rol del usuario si se proporciona roleId
@@ -173,7 +173,7 @@ export const updateUser = async (userId, updatedData) => {
     // Actualizar datos de persona si se proporcionan
     if (persona) {
       const { nombre, apellido, fecha_nacimiento, direccion, telefono } = persona;
-      const personaQuery = 'UPDATE persona SET nombre = $1, apellido = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5 WHERE id_persona = (SELECT persona_id FROM usuario WHERE id_usuario = $6)';
+      const personaQuery = 'UPDATE persona SET nombre = $1, apellido = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5  WHERE id_persona = (SELECT persona_id FROM usuario WHERE id_usuario = $6)';
       await usuario.query(personaQuery, [nombre, apellido, fecha_nacimiento, direccion, telefono, userId]);
     }
 
@@ -212,6 +212,37 @@ export const deleteUser = async (userId, deleteData) => {
   }
 
 };
+//agregar una nueva caja
+export async function addCaja(info) {
+  const cajaDatos = await pool.connect();
+  let box;
+  try {
+    await cajaDatos.query("BEGIN");
+
+    const { nombre, estado } = info;
+    
+     // Verificar si el nombre de usuario ya está en uso
+    const existingUsernameQuery = ` SELECT * FROM caja WHERE nombre = $1
+  `;
+    const existingUsernameResult = await cajaDatos.query(existingUsernameQuery, [nombre]);
+    if (existingUsernameResult.rows.length > 0) {
+      return { error: 'Esta caja ya se encuentra registrada.' };
+    }
+
+    // Insertar caja
+    const result = await cajaDatos.query(`INSERT INTO caja(nombre, estado) VALUES ($1, $2) RETURNING *`, [nombre, estado]);
+
+    await cajaDatos.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    if (box) await cajaDatos.query("ROLLBACK");
+    throw new Error('Error al agregar caja: ' + error.message);
+  } finally {
+    cajaDatos.release();
+  }
+}
+
 
 // Exportar las funciones del modelo
-export default { addUser, getAllUsers, getUserId, updateUser, deleteUser };
+export default { addUser, getAllUsers, getUserId, updateUser, deleteUser, addCaja };
