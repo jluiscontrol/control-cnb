@@ -434,10 +434,11 @@ GROUP BY
     FROM public.saldos
     WHERE entidadbancaria_id = 5;
 
------saldo total de cuenta y caja general
-    SELECT SUM(saldocuenta) AS total_saldocuenta, SUM(saldocaja) AS total_saldocaja
-    FROM public.saldos;
-    
+
 ----saldo caja general
    SELECT SUM(saldocaja) AS total_saldocaja
    FROM public.saldos;
+---suma total por canda entidad bacanria
+SELECT entidadbancaria_id, SUM(saldocuenta) AS saldo_total_cuenta
+FROM public.saldos
+GROUP BY entidadbancaria_id;
