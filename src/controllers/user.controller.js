@@ -70,15 +70,15 @@ export const getUserById = async (req, res) => {
 
 export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
-  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, caja_id } = req.body;
-  
+  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
+  console.log(req.body)
   try {
 
     // Crear el objeto persona con los datos formateados
-    const persona = { nombre, apellido, fecha_nacimiento: fecha_nacimiento, direccion, telefono };
+    const persona = { nombre, apellido, fecha_nacimiento: fecha_nacimiento, direccion, telefono, cedula };
 
     // Llamar a updateUser con los datos actualizados, incluyendo los datos de persona
-    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona,caja_id });
+    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona, caja_id });
 
     if (!updated) {
       return res.status(404).json({ error: 'Usuario no encontrado' });

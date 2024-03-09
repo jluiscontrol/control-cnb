@@ -172,9 +172,9 @@ export const updateUser = async (userId, updatedData) => {
 
     // Actualizar datos de persona si se proporcionan
     if (persona) {
-      const { nombre, apellido, fecha_nacimiento, direccion, telefono } = persona;
-      const personaQuery = 'UPDATE persona SET nombre = $1, apellido = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5  WHERE id_persona = (SELECT persona_id FROM usuario WHERE id_usuario = $6)';
-      await usuario.query(personaQuery, [nombre, apellido, fecha_nacimiento, direccion, telefono, userId]);
+      const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = persona;
+      const personaQuery = 'UPDATE persona SET nombre = $1, apellido = $2, fecha_nacimiento = $3, direccion = $4, telefono = $5, cedula= $6  WHERE id_persona = (SELECT persona_id FROM usuario WHERE id_usuario = $7)';
+      await usuario.query(personaQuery, [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, userId]);
     }
 
     // Commit la transacción
