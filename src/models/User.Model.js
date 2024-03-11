@@ -6,10 +6,12 @@ import config from '../config.js';
 
 
 // Función para agregar un nuevo usuario
-async function addUser(User, Persona, roleId = null) {
+async function addUser(User, Persona, roleId ) {
+  console.log(roleId)
+  
   const user = await pool.connect();
   try {
-    const { nombre_usuario, estado, contrasenia, caja_id } = User;
+    const { nombre_usuario, estado, contrasenia } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
 
     // Verificar si el nombre de usuario ya está en uso
@@ -73,10 +75,10 @@ async function addUser(User, Persona, roleId = null) {
                 (nombre_usuario, 
                          estado, 
                     contrasenia, 
-                    persona_id, 
-                       caja_id) 
-            VALUES($1, $2, $3, $4, $5) RETURNING *`, 
-            [nombre_usuario, estado, hashedPassword, personaId, caja_id]);
+                    persona_id
+                       ) 
+            VALUES($1, $2, $3, $4) RETURNING *`, 
+            [nombre_usuario, estado, hashedPassword, personaId]);
     const userId = userInsertResult.rows[0].id_usuario;
 
     // Commit la transacción
