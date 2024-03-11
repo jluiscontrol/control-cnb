@@ -11,7 +11,7 @@ async function addUser(User, Persona, roleId = null) {
   try {
     const { nombre_usuario, estado, contrasenia, caja_id } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
-   
+
     // Verificar si el nombre de usuario ya está en uso
     const existingUsernameQuery = `
       SELECT *
@@ -31,9 +31,9 @@ async function addUser(User, Persona, roleId = null) {
       WHERE p.cedula = $1 AND (u.estado = true OR u.estado IS NULL)
     `;
     const existingCedulaResult = await user.query(existingCedulaQuery, [cedula]);
-   
+
     if (existingCedulaResult.rows.length > 0) {
-      return { error:'Cédula ya registrada, la cedula ya pertenece a un usuario registrado.' };
+      return { error: 'Cédula ya registrada, la cedula ya pertenece a un usuario registrado.' };
     }
 
     // Verificar si se proporcionó un roleId y si el rol existe
@@ -53,13 +53,30 @@ async function addUser(User, Persona, roleId = null) {
 
     // Iniciar una transacción
     await user.query('BEGIN');
-    
+
     // Insertar datos personales
-    const personaInsertResult = await user.query('INSERT INTO persona(nombre, apellido, fecha_nacimiento, direccion, telefono, cedula) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona', [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
+    const personaInsertResult = await user.query(`
+            INSERT INTO  persona
+                  (nombre, 
+                  apellido, 
+                  fecha_nacimiento, 
+                  direccion, 
+                  telefono, 
+                  cedula) 
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona`, 
+            [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
     const personaId = personaInsertResult.rows[0].id_persona;
 
     // Insertar el nuevo usuario
-    const userInsertResult = await user.query('INSERT INTO usuario(nombre_usuario, estado, contrasenia, persona_id, caja_id) VALUES($1, $2, $3, $4, $5) RETURNING *', [nombre_usuario, estado, hashedPassword, personaId, caja_id]);
+    const userInsertResult = await user.query(`
+          INSERT INTO  usuario
+                (nombre_usuario, 
+                         estado, 
+                    contrasenia, 
+                    persona_id, 
+                       caja_id) 
+            VALUES($1, $2, $3, $4, $5) RETURNING *`, 
+            [nombre_usuario, estado, hashedPassword, personaId, caja_id]);
     const userId = userInsertResult.rows[0].id_usuario;
 
     // Commit la transacción
@@ -67,7 +84,7 @@ async function addUser(User, Persona, roleId = null) {
 
     // Insertar la relación entre el usuario y el rol en la tabla usuario_rol
     const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);
-    
+
     // Generar token JWT con el ID del usuario
     const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
       expiresIn: 86400 // 24 horas
@@ -194,20 +211,20 @@ export const updateUser = async (userId, updatedData) => {
 
 //FUNCION PARA ELIMINAR USUARIO
 export const deleteUser = async (userId, deleteData) => {
-   const { estado} = deleteData;
-   const usuario = await pool.connect();
-  
-   try {
+  const { estado } = deleteData;
+  const usuario = await pool.connect();
+
+  try {
     const userQuery = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
     await usuario.query(userQuery, [estado, userId]);
     return true; // Éxito en la actualización
-    
-   } catch (error) {
+
+  } catch (error) {
     console.error('Error al actualizar el usuario:', error);
     // Rollback en caso de error
     await usuario.query('ROLLBACK');
     throw error;
-   }finally {
+  } finally {
     usuario.release();
   }
 
@@ -220,13 +237,12 @@ export async function addCaja(info) {
     await cajaDatos.query("BEGIN");
 
     const { nombre, estado } = info;
-    
-     // Verificar si el nombre de usuario ya está en uso
-    const existingUsernameQuery = ` SELECT * FROM caja WHERE nombre = $1
-  `;
+
+    // Verificar si el nombre de usuario ya está en uso
+    const existingUsernameQuery = `SELECT * FROM caja WHERE nombre = $1`;
     const existingUsernameResult = await cajaDatos.query(existingUsernameQuery, [nombre]);
     if (existingUsernameResult.rows.length > 0) {
-      return { error: 'Esta caja ya se encuentra registrada.' };
+      return { exists: true };
     }
 
     // Insertar caja
@@ -237,25 +253,67 @@ export async function addCaja(info) {
     return result.rows[0];
   } catch (error) {
     if (box) await cajaDatos.query("ROLLBACK");
-    throw new Error('Error al agregar caja: ' + error.message);
+    throw error; // Se lanza el error sin modificar
   } finally {
     cajaDatos.release();
   }
 }
-//Obtener todas las cajas
-async function getAllCajas() {
+
+
+//Obtener todas las cajas / activas e inactivas
+export async function getAllCajas() {
   const cajas = await pool.connect();
   try {
-    const resultado = await cajas.query(`
-    SELECT * FROM  caja;
-    `);
-    console.log(resultado)
+    const query = `SELECT * FROM caja`;
+    const resultado = await cajas.query(query);
     return resultado.rows;
   } finally {
-    cajas.release()
+    cajas.release();
+  }
+}
+//obtener cajas solo estado activas
+export async function getAllCajasActivas() {
+  const cajas = await pool.connect();
+  try {
+    const query = `SELECT * FROM caja where estado = true`;
+    const resultado = await cajas.query(query);
+    return resultado.rows;
+  } finally {
+    cajas.release();
   }
 }
 
+export const updateCajaById = async (cajaId, newData) => {
+  try {
+    const caja = await pool.connect();
+    const query = 'UPDATE caja SET nombre = $1, estado = $2 WHERE id_caja = $3';
+    const result = await caja.query(query, [newData.nombre, newData.estado, cajaId]);
+
+    if (result.rowCount === 0) {
+      return { error: 'La caja con el ID proporcionado no existe' };
+    }
+
+    caja.release();
+    return { message: 'Caja actualizada correctamente' };
+  } catch (error) {
+    // Manejo de errores de consulta SQL
+
+    // Manejo de errores de conexión
+    throw new Error('Error al actualizar caja: ' + error.message);
+  }
+};
+
+
 
 // Exportar las funciones del modelo
-export default { addUser, getAllUsers, getUserId, updateUser, deleteUser, addCaja, getAllCajas };
+export default {
+      addUser,
+      getAllUsers,
+      getUserId,
+      updateUser,
+      deleteUser,
+      addCaja,
+      getAllCajas,
+      getAllCajasActivas,
+      updateCajaById
+};

@@ -103,4 +103,8 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
 
 
 // Exportar las funciones del modelo
-export default { addEntidadBancaria, getAllEntidadesBancarias,getAllEntidadesBancariasActivas, getEntidadBancariaById, deleteEntidadBancariaById };
+export default { addEntidadBancaria, 
+           getAllEntidadesBancarias,
+    getAllEntidadesBancariasActivas, 
+             getEntidadBancariaById, 
+          deleteEntidadBancariaById };

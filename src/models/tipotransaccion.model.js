@@ -42,6 +42,28 @@ async function getAllTiposTransaccion() {
   }
 }
 
+//funcion para obtener todos los tipos de transacciones activas
+async function getAllTiposTransaccionActivos() {
+  const client = await pool.connect();
+  try {
+    const query = `
+    SELECT tt.id_tipotransaccion,
+    tt.nombre AS tipo_transaccion, 
+    tt.estado AS estado,
+    ac.nombre AS afectacion_caja, 
+    acc.nombre AS afectacion_cuenta
+          FROM tipotransaccion tt
+          INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+          INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta 
+        WHERE tt.estado = true;
+    `;
+    const result = await client.query(query);
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
 // funcion para el tipo de transacion por Id
 export const getTipoTransaccionById = async (tipotransaccionId) => {
   try {
@@ -120,4 +142,5 @@ export default { addTipoTransaccion,
               updateTipoTransaccionId, 
               getTipoTransaccionById, 
               getAllAfectaCaja,
-              getAllAfectaCuenta};
+              getAllAfectaCuenta,
+              getAllTiposTransaccionActivos};

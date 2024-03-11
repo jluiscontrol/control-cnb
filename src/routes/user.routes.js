@@ -10,9 +10,12 @@ router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)
 router.put('/:userDeleteId', userCtrl.deleteUserById)
+
 //creacion de caja
 router.post('/caja', userCtrl.createCaja)
-router.get('/cajas', userCtrl.getCajas)
+router.get('/caja/getAll', userCtrl.getCajas)
+router.get('/caja/activas', userCtrl.getCajasActivas)
+router.put('/caja/:cajaId', userCtrl.updateCaja)
 
 
 

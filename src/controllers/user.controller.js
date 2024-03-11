@@ -5,6 +5,8 @@ import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
 import { deleteUser } from '../models/User.Model.js';
 
+import { updateCajaById } from '../models/User.Model.js';
+
 
 export const createUser = async (req, res) => {
   const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
@@ -71,7 +73,7 @@ export const getUserById = async (req, res) => {
 export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
   const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
-  console.log(req.body)
+  
   try {
 
     // Crear el objeto persona con los datos formateados
@@ -110,39 +112,78 @@ export const deleteUserById = async (req, res) => {
 
 //funcion para crear caja
 export const createCaja = async (req, res) => {
-      const { nombre, estado } = req.body;
+  const { nombre, estado } = req.body;
+
+  if (!nombre ) {
+    const camposFaltantes = [];
+    if (!nombre) camposFaltantes.push('Nombre de caja');
   
-    if (!nombre || !estado ) {
-      const camposFaltantes = [];
-      if (!nombre) camposFaltantes.push('Nombre de caja');
-      if (!estado) camposFaltantes.push('estado');
-    
-      return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
+
+    return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
+  }
+
+  try {
+    // Llama a la función addCaja con los parámetros proporcionados
+    const resultSave = await User.addCaja({ nombre, estado });
+
+    // Verificar si la caja ya existe
+    if (resultSave && resultSave.exists) {
+      return res.status(400).json({ error: 'Esta caja ya se encuentra registrada.' });
     }
 
-      try {
-        // Llama a la función addUser con los parámetros proporcionados  
-        const resultSave = await User.addCaja({ nombre, estado });
-              
-        res.status(201).json(resultSave);
-      } catch (error) {
-        // Manejar otros errores
-        if (error.message === 'Esta caja ya se encuentra registrada.') {
-          return res.status(400).json({ error: error.message });
-        }
-        console.error('Error al crear caja:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-      }
+    res.status(201).json(resultSave);
+  } catch (error) {
+    console.error('Error al crear caja:', error);
+
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 };
-//obtener todas las cajas
+
+
+
 //funcion para obtener todos los usuarios
-export const getCajas = async (res) => {
-  try{
-     const cajas = await User.getAllCajas();
-    console.log(res)
-     res.status(200).json(cajas)
-  } catch(error){
+export const getCajas = async (req, res) => {
+  try {
+    const cajas = await User.getAllCajas();
+    res.status(200).json(cajas);
+  } catch (error) {
     console.error('Error al obtener las cajas:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+};
+
+//funcion para obtener todos los usuarios
+export const getCajasActivas = async (req, res) => {
+  try {
+    const cajas = await User.getAllCajasActivas();
+    res.status(200).json(cajas);
+  } catch (error) {
+    console.error('Error al obtener las cajas:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+//funcion para actulizar el usuario
+
+export const updateCaja = async (req, res) => {
+  try {
+    const cajaId = req.params.cajaId;
+    const newData = req.body;
+    
+    if (!newData || Object.keys(newData).length === 0) {
+      return res.status(400).json({ error: 'Se requieren datos actualizados para editar la caja' });
+    }
+
+    const existingCaja = await updateCajaById(cajaId, newData); // Pasa newData a la función updateCajaById
+    if (existingCaja.error) {
+      return res.status(404).json({ error: existingCaja.error });
+    }
+  
+    res.status(200).json({ message: 'Caja actualizada correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar la caja por ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+

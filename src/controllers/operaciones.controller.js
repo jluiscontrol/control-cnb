@@ -1,5 +1,7 @@
 import * as operaciones from '../models/Operaciones.Model.js'
 import  {existeNumTransaccion}  from '../helpers/funciones.js';
+import  {updateOperacionesById}  from '../models/Operaciones.Model.js';
+import  {deleteOperacionesById}  from '../models/Operaciones.Model.js';
 
 
 export const createOperaciones = async (req, res) => {
@@ -9,7 +11,11 @@ export const createOperaciones = async (req, res) => {
         valor,
         referencia,
         comentario,
-        numtransaccion } = req.body;
+        numtransaccion,
+        id_usuario,
+        saldocomision,
+        estado
+             } = req.body;
 
     if (!id_entidadbancaria || !id_tipotransaccion || !id_cliente || !valor || !numtransaccion) {
         return res.status(400).json('Algunos campo son obligatorios');
@@ -41,7 +47,9 @@ export const createOperaciones = async (req, res) => {
             valor,
             referencia,
             comentario,
-            numtransaccion
+            numtransaccion,
+            id_usuario,
+            saldocomision
         });
         res.status(201).json(operacionSave);
     } catch (error) {
@@ -87,9 +95,51 @@ export const getOperacionesById = async (req, res) => {
     console.log(res)
 
 }
-export const updateOperacionesById = async (req, res) => {
-
+export const updateOperacionesId = async (req, res) => {
+    try {
+        const operacionesId = req.params.operacionesId; // Obtén el ID de la operación de los parámetros de la solicitud
+        const newData = req.body; // Obtén los nuevos datos de la operación del cuerpo de la solicitud
+        
+        // Verifica si los nuevos datos son válidos
+        if (!newData || Object.keys(newData).length === 0) {
+          return res.status(400).json({ error: 'Se requieren datos actualizados para editar la operación' });
+        }
+    
+        // Llama a la función para actualizar la operación con los datos proporcionados
+        const result = await updateOperacionesById(operacionesId, newData);
+        // Verifica si hubo un error al actualizar la operación
+        if (result.error) {
+          return res.status(404).json({ error: result.error });
+        }
+    
+        // Devuelve un mensaje de éxito si la operación se actualizó correctamente
+        res.status(200).json({ message: 'Operación actualizada correctamente' });
+      } catch (error) {
+        // Maneja cualquier error interno del servidor
+        console.error('Error al actualizar la operación:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+      }
 }
-export const deleteOperacionesById = async (req, res) => {
 
+export const deleteOperacionesId = async (req, res) => {
+  try {
+    const operacionesDeleteId = req.params.operacionesDeleteId; 
+    const newData = req.body; 
+    
+    // Verifica si los nuevos datos son válidos
+    if (!newData || Object.keys(newData).length === 0) {
+      return res.status(400).json({ error: 'Se requieren datos actualizados para eliminar la operación' });
+    }
+
+    const result = await deleteOperacionesById(operacionesDeleteId, newData);
+    if (result.error) {
+      return res.status(404).json({ error: result.error });
+    }
+
+    res.status(200).json({ message: 'Operación eliminada correctamente' });
+  } catch (error) {
+
+    console.error('Error al eliminar la operación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }

@@ -40,10 +40,10 @@ export const verifyAdmin = async (req, res, next) => {
         }
 
         const query = `SELECT EXISTS (
-        SELECT 1 FROM usuario u
-        JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
-        JOIN rol r ON ur.id_rol = r.id_rol
-        WHERE u.id_usuario = $1 AND r.nombre = 'administrador'
+                        SELECT 1 FROM usuario u
+                        JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+                        JOIN rol r ON ur.id_rol = r.id_rol
+                        WHERE u.id_usuario = $1 AND r.nombre = 'administrador'
       ) AS is_admin;`; // Consulta SQL para verificar si el usuario tiene el rol de administrador
 
         const { rows } = await pool.query(query, [userId]); // Ejecuta la consulta con el ID del usuario

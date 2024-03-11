@@ -7,13 +7,17 @@ export async function addOperaciones(operaciones) {
   try {
     client = await operacion.query("BEGIN");
 
-    const { id_entidadbancaria, 
-            id_tipotransaccion, 
-                    id_cliente, 
-                         valor, 
-                    referencia, 
-                    comentario, 
-                 numtransaccion } = operaciones;
+    const { id_entidadbancaria,
+      id_tipotransaccion,
+      id_cliente,
+      valor,
+      referencia,
+      comentario,
+      numtransaccion,
+      id_usuario,
+      saldocomision,
+      estado = true
+    } = operaciones;
 
     // Validar campos obligatorios
     if (!id_entidadbancaria || !id_tipotransaccion || !id_cliente || !valor || !numtransaccion) {
@@ -21,12 +25,12 @@ export async function addOperaciones(operaciones) {
     }
 
     // Validar tipos de datos
-         if (typeof id_entidadbancaria !== 'number' 
-          || typeof id_tipotransaccion !== 'number' 
-          || typeof id_cliente !== 'number' 
-          || typeof numtransaccion !== 'number' 
-          || typeof valor !== 'number') {
-      
+    if (typeof id_entidadbancaria !== 'number'
+      || typeof id_tipotransaccion !== 'number'
+      || typeof id_cliente !== 'number'
+      || typeof numtransaccion !== 'number'
+      || typeof valor !== 'number') {
+
       throw new Error;
     }
 
@@ -36,7 +40,7 @@ export async function addOperaciones(operaciones) {
       throw new Error('El número de transacción debe contener solo letras y números');
     }
 
-      // Insertar operación
+    // Insertar operación
     const result = await operacion.query(`
           INSERT INTO 
           operaciones(id_entidadbancaria, 
@@ -45,15 +49,22 @@ export async function addOperaciones(operaciones) {
                                    valor, 
                               referencia, 
                               comentario, 
-                           numtransaccion) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7) 
-          RETURNING *`, [id_entidadbancaria, 
-                         id_tipotransaccion, 
-                                 id_cliente, 
-                                      valor, 
-                                 referencia, 
-                                 comentario, 
-                              numtransaccion]);
+                           numtransaccion, 
+                               id_usuario,
+                               saldocomision,
+                               estado) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+          RETURNING *`, [id_entidadbancaria,
+      id_tipotransaccion,
+      id_cliente,
+      valor,
+      referencia,
+      comentario,
+      numtransaccion,
+      id_usuario,
+      saldocomision,
+      estado,
+    ]);
 
     await operacion.query("COMMIT");
 
@@ -72,7 +83,7 @@ export async function getAllOperaciones() {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-        SELECT 
+            SELECT 
             e.entidad AS entidad,
             tt.nombre AS tipotransaccion,
             c.cedula AS cedula_cliente,
@@ -83,9 +94,12 @@ export async function getAllOperaciones() {
             o.numtransaccion AS num_transaccion,
             o.fecha_registro AS fecha_registro_operacion,
             o.fecha_actualizacion AS fecha_actualizacion_operacion,
+            o.saldocomision saldocomision_operacion,
+      o.estado AS estado_operacion,
             co.valorcomision AS valor_comision,
             ac.nombre AS afectacion_caja,
-            au.nombre AS afectacion_cuenta
+            au.nombre AS afectacion_cuenta,
+            u.nombre_usuario AS nombre_usuario_operacion -- Nuevo campo para el nombre de usuario
         FROM 
             operaciones o
         JOIN 
@@ -100,16 +114,19 @@ export async function getAllOperaciones() {
             afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
         LEFT JOIN
             afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+        LEFT JOIN
+            usuario u ON o.id_usuario = u.id_usuario -- Nueva relación con la tabla usuario
+        WHERE o.estado = true
         ORDER BY 
-            afectacion_caja,
-            afectacion_cuenta;
+              id_operacion;
+  
       `);
       return resultado.rows;
     } finally {
       operaciones.release();
     }
   } catch (error) {
-    
+
     throw error; // Re-lanzar el error para que el llamador también pueda manejarlo
   }
 }
@@ -165,28 +182,30 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
 
 //funcion para editar una operacion
 export const updateOperacionesById = async (operacionesId, newData) => {
+
   try {
     const client = await pool.connect();
     const query = `
-          UPDATE opeaciones 
+          UPDATE operaciones 
           SET id_entidadbancaria = $1, 
               id_tipotransaccion = $2, 
               id_cliente = $3,
               valor = $4,
               referencia = $5,
               comentario = $6,
-              numtransaccion = $7
-          WHERE id_operacion = $8`
-          ;
-    const result = await client.query(query, [newData.id_entidadbancaria, 
-                                              newData.id_tipotransaccion,  
-                                              newData.id_cliente, 
-                                              newData.valor, 
+              numtransaccion = $7,
+              saldocomision = $8
+          WHERE id_operacion = $9`
+      ;
+    const result = await client.query(query, [newData.id_entidadbancaria,
+                                              newData.id_tipotransaccion,
+                                              newData.id_cliente,
+                                              newData.valor,
                                               newData.referencia,
                                               newData.comentario,
-                                              newData.numtransaccion, 
+                                              newData.numtransaccion,
+                                              newData.saldocomision,
                                               operacionesId]);
-
     if (result.rowCount === 0) {
       return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
@@ -198,11 +217,36 @@ export const updateOperacionesById = async (operacionesId, newData) => {
   }
 };
 
+//funcion para eliminar una operacion
+export const deleteOperacionesById = async (operacionesId, newData) => {
+
+  try {
+    const client = await pool.connect();
+    const query = `
+          UPDATE operaciones 
+          SET estado = $1 
+          WHERE id_operacion = $2`
+      ;
+    const result = await client.query(query, [newData.estado,  operacionesId]);
+    if (result.rowCount === 0) {
+      return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
+    }
+
+    client.release();
+    return { message: 'Operación eliminada correctamente' };
+  } catch (error) {
+    throw new Error('Error al eliminar la operación: ' + error.message);
+  }
+};
 
 
 
 
-export default { addOperaciones,  
-              getAllOperaciones, 
-          updateOperacionesById,
-          getAllOperacionesFilter }
+
+export default {
+  addOperaciones,
+  getAllOperaciones,
+  updateOperacionesById,
+  getAllOperacionesFilter,
+  deleteOperacionesById
+}

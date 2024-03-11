@@ -1,5 +1,6 @@
 import addTipoTransaccion from "../models/tipotransaccion.model.js"
 import  getAllTiposTransaccion from "../models/tipotransaccion.model.js"
+import  getAllTiposTransaccionActivos from "../models/tipotransaccion.model.js"
 import  { updateTipoTransaccionId } from "../models/tipotransaccion.model.js"
 import { getTipoTransaccionById as getTipoTransaccionByIdModel } from "../models/tipotransaccion.model.js"
 
@@ -33,6 +34,20 @@ export const getTipoTransacciones = async (req, res) => {
 
     // Devolver las entidades bancarias en la respuesta
     res.status(200).json(tiposTransaccion);
+  } catch (error) {
+    console.error('Error al obtener entidades bancarias:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+//funcion para obtener todos tipo de transaciones
+export const getTTransaccionesActivas = async (req, res) => {
+  try {
+    // Llamar a la función que obtiene todas las entidades bancarias desde tu modelo o servicio
+    const tiposTransaccionactivos = await getAllTiposTransaccionActivos.getAllTiposTransaccionActivos();
+
+    // Devolver las entidades bancarias en la respuesta
+    res.status(200).json(tiposTransaccionactivos);
   } catch (error) {
     console.error('Error al obtener entidades bancarias:', error);
     res.status(500).json({ error: 'Error interno del servidor' });

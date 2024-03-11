@@ -5,6 +5,7 @@ import cors from 'cors'
 
 import { createRoles } from './libs/initialSetUp.js';
 
+import roles from './routes/roles.routes.js'
 import entidadBancariaRoute from './routes/entidadBancarias.routes.js'
 import tipoTransaccion from './routes/tipotransaccion.routes.js'
 import operaciones from './routes/operaciones.routes.js'
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
     })
 })
 
+app.use('/roles',roles)
 app.use('/tipoTransaccion',tipoTransaccion)
 app.use('/operaciones',operaciones)
 app.use('/entidadBancaria',entidadBancariaRoute)

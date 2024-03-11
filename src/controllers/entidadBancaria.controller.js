@@ -102,6 +102,7 @@ export const updateEntidadBancariaById = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 //funcion para eliminar una entidad bancaria
 export const estadoEntidadBancariaById = async (req, res) => {
   try {

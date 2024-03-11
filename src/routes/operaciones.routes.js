@@ -10,8 +10,8 @@ router.post('/',operacionesCtrl.createOperaciones)
 router.get('/', operacionesCtrl.getOperaciones)
 router.get('/filter', operacionesCtrl.getOperacionesFilter)
 router.get('/:operacionesId', operacionesCtrl.getOperacionesById)
-router.put('/:operacionesId', operacionesCtrl.updateOperacionesById)
-router.delete('/:operacionesId', operacionesCtrl.deleteOperacionesById)
+router.put('/:operacionesId', operacionesCtrl.updateOperacionesId)
+router.put('/eliminar/:operacionesDeleteId', operacionesCtrl.deleteOperacionesId)
 
 
 

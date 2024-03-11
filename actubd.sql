@@ -436,3 +436,10 @@ GROUP BY
     SELECT entidadbancaria_id, SUM(saldocuenta) AS saldo_total_cuenta
     FROM public.saldos
     GROUP BY entidadbancaria_id;
+
+    -----10/03/2024
+    ALTER TABLE public.operaciones
+    ADD COLUMN estado boolean;  
+
+    ALTER TABLE public.tipotransaccion
+    ADD COLUMN estado boolean;
