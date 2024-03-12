@@ -171,14 +171,18 @@ export const updateUser = async (userId, updatedData) => {
     // Iniciar una transacción
     await usuario.query('BEGIN');
 
+    // Obtener la contraseña actual del usuario
+    const { rows } = await usuario.query('SELECT contrasenia FROM usuario WHERE id_usuario = $1', [userId]);
+    const { contrasenia: currentPassword } = rows[0] || {}; // Obtener la contraseña actual o establecerla como nula si no hay resultados
+
+    // Encriptar la nueva contraseña si se proporciona y no está vacía
+    let hashedPassword = currentPassword; // Por defecto, mantener la contraseña actual
+    if (contrasenia && contrasenia.trim() !== "") {
+      hashedPassword = await bcrypt.hash(contrasenia, 10);
+    }
+
     // Actualizar datos de usuario si se proporcionan
     if (nombre_usuario || contrasenia || estado) {
-      // Encriptar la nueva contraseña si se proporciona
-      let hashedPassword = contrasenia;
-      if (contrasenia) {
-        hashedPassword = await bcrypt.hash(contrasenia, 10);
-      }
-
       const userQuery = 'UPDATE usuario SET nombre_usuario = $1, contrasenia = $2, estado = $3, caja_id = $4 WHERE id_usuario = $5';
       await usuario.query(userQuery, [nombre_usuario, hashedPassword, estado, caja_id, userId]);
     }
@@ -210,6 +214,8 @@ export const updateUser = async (userId, updatedData) => {
     usuario.release();
   }
 };
+
+
 
 //FUNCION PARA ELIMINAR USUARIO
 export const deleteUser = async (userId, deleteData) => {
