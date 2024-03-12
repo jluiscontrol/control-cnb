@@ -443,3 +443,7 @@ GROUP BY
 
     ALTER TABLE public.tipotransaccion
     ADD COLUMN estado boolean;
+--12/03/2024------
+    ALTER TABLE public.comision
+    DROP COLUMN desde,
+    DROP COLUMN hasta;
