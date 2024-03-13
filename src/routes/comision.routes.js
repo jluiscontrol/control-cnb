@@ -7,6 +7,7 @@ import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jw
 
 router.post('/',comisionCtrl.createComision)
 router.get('/', comisionCtrl.getComision)
+router.get('/activas', comisionCtrl.getComisionActivas)
 router.get('/:comisionId', comisionCtrl.getComisionId)
 router.put('/:comisionId', comisionCtrl.updateComisionId)
 router.put('/eliminar/:comisionDeleteId', comisionCtrl.deleteComision)

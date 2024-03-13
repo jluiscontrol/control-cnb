@@ -1,7 +1,7 @@
 
 import pool from '../database.js';
 
-//agregar una nueva caja
+//agregar una nueva comision
 export async function addComision({ valorcomision, entidadbancaria_id, tipotransaccion_id, estado = true }) {
   const comisionDatos = await pool.connect();
   let comision;
@@ -29,19 +29,96 @@ export async function addComision({ valorcomision, entidadbancaria_id, tipotrans
     comisionDatos.release();
   }
 }
-export async function getAllCajas() {
-  const cajas = await pool.connect();
+//funcion para traer las comisiones 
+export async function getAllComisiones() {
+  const comision = await pool.connect();
   try {
-    const query = `SELECT * FROM comision`;
-    const resultado = await cajas.query(query);
+    const query = `
+    SELECT 
+        c.id_comision,
+        c.valorcomision,
+        c.entidadbancaria_id,
+        c.tipotransaccion_id,
+        e.entidad AS nombre_entidad,
+        t.nombre AS nombre_tipotransaccion,
+      
+        c.estado
+      
+    FROM 
+        public.comision c
+    JOIN 
+        public.entidadbancaria e ON c.entidadbancaria_id = e.id_entidadbancaria
+    JOIN 
+        public.tipotransaccion t ON c.tipotransaccion_id = t.id_tipotransaccion;
+  `;
+    const resultado = await comision.query(query);
     return resultado.rows;
   } finally {
-    cajas.release();
+    comision.release();
+  }
+}
+//funcion para traer comisiones activas
+export async function getAllComisionesActivas() {
+  const comision = await pool.connect();
+  try {
+    const query = `
+    SELECT 
+        c.id_comision,
+        c.valorcomision,
+        c.entidadbancaria_id,
+        c.tipotransaccion_id,
+        e.entidad AS nombre_entidad,
+        t.nombre AS nombre_tipotransaccion,
+        c.estado
+      
+    FROM 
+        public.comision c
+    JOIN 
+        public.entidadbancaria e ON c.entidadbancaria_id = e.id_entidadbancaria
+    JOIN 
+        public.tipotransaccion t ON c.tipotransaccion_id = t.id_tipotransaccion
+    WHERE  c.estado = true;
+  `;
+    const resultado = await comision.query(query);
+    return resultado.rows;
+  } finally {
+    comision.release();
+  }
+}
+
+//funcion para actualizar una comisi{on}
+export async function updateComision({ comisionId, valorcomision, entidadbancaria_id, tipotransaccion_id, estado }) {
+  const comisionDatos = await pool.connect();
+  let comision;
+  try {
+    await comisionDatos.query("BEGIN");
+   // return console.log('entidad:',entidadbancaria_id)
+
+    // Verificar si la comisión existe
+    const existingComisionQuery = `SELECT * FROM comision WHERE id_comision = $1`;
+    const existingComisionResult = await comisionDatos.query(existingComisionQuery, [comisionId]);
+    if (existingComisionResult.rows.length === 0) {
+      throw new Error("Comisión no encontrada.");
+    }
+    
+    // Actualizar comisión
+    const updateQuery = `UPDATE comision SET valorcomision = $1, entidadbancaria_id = $2, tipotransaccion_id = $3, estado = $4 WHERE id_comision = $5 RETURNING *`;
+    const result = await comisionDatos.query(updateQuery, [JSON.stringify(valorcomision), entidadbancaria_id, tipotransaccion_id, estado, comisionId]);
+   
+    await comisionDatos.query("COMMIT");
+
+    return result.rows[0];
+  } catch (error) {
+    if (comision) await comisionDatos.query("ROLLBACK");
+    throw error;
+  } finally {
+    comisionDatos.release();
   }
 }
 
 
 
-
-
-export default { addComision }
+export default { addComision, 
+            getAllComisiones, 
+     getAllComisionesActivas, 
+             updateComision }

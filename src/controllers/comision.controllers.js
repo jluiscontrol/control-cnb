@@ -28,15 +28,55 @@ export const createComision = async (req, res) => {
   }
 }
 
-
-export const getComision = async (req, res) => {
-
+//funcion para obtener todas las comisiones
+export const getComision= async (req, res) => {
+  try {
+    const comision = await Comision.getAllComisiones();
+    res.status(200).json(comision);
+  } catch (error) {
+    console.error('Error al obtener las comisiones:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+//funcion para obtener todas las comisiones activas
+export const getComisionActivas = async (req, res) => {
+  try {
+    const comision = await Comision.getAllComisionesActivas();
+    res.status(200).json(comision);
+  } catch (error) {
+    console.error('Error al obtener las comisiones:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }
 export const getComisionId = async (req, res) => {
 
 }
-export const updateComisionId = async (req, res) => {
 
+
+//funcion para actualizar las comisiones
+export const updateComisionId = async (req, res) => {
+  
+  const comisionId = req.params.comisionId;
+  console.log(comisionId)
+  const { valorcomision, entidadbancaria_id, tipotransaccion_id, estado } = req.body;
+
+  if ( !valorcomision || !entidadbancaria_id || !tipotransaccion_id) {
+    return res.status(400).json({ error: 'Los campos  valorcomision, entidadbancaria_id y tipotransaccion_id son obligatorios.' });
+  }
+
+  try {
+    // Actualizar la comisión
+    const result = await Comision.updateComision({ comisionId, valorcomision, entidadbancaria_id, tipotransaccion_id, estado });
+    
+    if (!result) {
+      return res.status(404).json({ error: 'La comisión a actualizar no fue encontrada.' });
+    }
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error('Error al actualizar comisión:', error);
+    res.status(500).json({ error: 'Se produjo un error al actualizar la comisión.' });
+  }
 }
 export const deleteComision = async (req, res) => {
 
