@@ -88,7 +88,6 @@ export const updateEntidadBancariaById = async (req, res) => {
     if (!existingEntidadBancaria) {
       return res.status(404).json({ error: 'La entidad bancaria con el ID proporcionado no existe' });
     }
-    console.log(existingEntidadBancaria)
     const result = await updateEntidadBancariaByIdModel(entidadBancariaId, newData);
 
     if (result.error) {

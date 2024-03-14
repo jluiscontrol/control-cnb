@@ -84,6 +84,7 @@ export async function getAllOperaciones() {
     try {
       const resultado = await operaciones.query(`
             SELECT 
+            id_operacion,
             e.entidad AS entidad,
             tt.nombre AS tipotransaccion,
             c.cedula AS cedula_cliente,
@@ -136,7 +137,8 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-      SELECT 
+      SELECT
+          
           e.entidad AS entidad,
           tt.nombre AS tipotransaccion,
           c.cedula AS cedula_cliente,
@@ -182,7 +184,6 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
 
 //funcion para editar una operacion
 export const updateOperacionesById = async (operacionesId, newData) => {
-
   try {
     const client = await pool.connect();
     const query = `

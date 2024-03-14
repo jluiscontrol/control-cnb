@@ -46,7 +46,7 @@ export const createOperaciones = async (req, res) => {
             id_cliente,
             valor,
             referencia,
-            comentario,
+            comentario, 
             numtransaccion,
             id_usuario,
             saldocomision
@@ -107,6 +107,7 @@ export const updateOperacionesId = async (req, res) => {
     
         // Llama a la función para actualizar la operación con los datos proporcionados
         const result = await updateOperacionesById(operacionesId, newData);
+        
         // Verifica si hubo un error al actualizar la operación
         if (result.error) {
           return res.status(404).json({ error: result.error });
