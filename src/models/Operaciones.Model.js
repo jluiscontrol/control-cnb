@@ -92,6 +92,7 @@ export async function getAllOperaciones() {
             c.nombres AS nombres_cliente,
             c.telefono AS telefono_cliente,
             o.valor AS valor_operacion,
+            o.referencia AS referencia,
             o.comentario AS comentario_operacion,
             o.numtransaccion AS num_transaccion,
             o.fecha_registro AS fecha_registro_operacion,
