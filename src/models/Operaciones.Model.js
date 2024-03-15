@@ -85,6 +85,7 @@ export async function getAllOperaciones() {
       const resultado = await operaciones.query(`
             SELECT 
             id_operacion,
+            c.id_cliente AS id_cliente,
             e.entidad AS entidad,
             tt.nombre AS tipotransaccion,
             c.cedula AS cedula_cliente,
