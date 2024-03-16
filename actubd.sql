@@ -447,3 +447,16 @@ GROUP BY
     ALTER TABLE public.comision
     DROP COLUMN desde,
     DROP COLUMN hasta;
+    ----16-03-2024----
+
+     CREATE TABLE detallearqueo (
+    id_detalle_arqueo SERIAL PRIMARY KEY,
+    tipodinero VARCHAR(50),
+    valor integer,
+    usuario_id INT,
+    estado BOOLEAN,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario)
+    );
+

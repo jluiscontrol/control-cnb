@@ -47,7 +47,7 @@ async function getAllEntidadesBancariasActivas() {
 export const getEntidadBancariaById = async (entidadBancariaId ) => {
   try {
     const client = await pool.connect();
-    const query = 'SELECT * FROM entidadbancaria WHERE id_entidadbancaria = $1 and estado = true';
+    const query = 'SELECT * FROM entidadbancaria WHERE id_entidadbancaria = $1';
     const result = await client.query(query, [entidadBancariaId]);
     client.release();
     if (result.rows.length === 0) {
