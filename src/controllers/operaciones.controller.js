@@ -144,3 +144,7 @@ export const deleteOperacionesId = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
+export const getComisionByBankandTransa = async (req , res) => {
+
+}

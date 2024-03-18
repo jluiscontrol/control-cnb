@@ -201,14 +201,14 @@ export const updateOperacionesById = async (operacionesId, newData) => {
           WHERE id_operacion = $9`
       ;
     const result = await client.query(query, [newData.id_entidadbancaria,
-                                              newData.id_tipotransaccion,
-                                              newData.id_cliente,
-                                              newData.valor,
-                                              newData.referencia,
-                                              newData.comentario,
-                                              newData.numtransaccion,
-                                              newData.saldocomision,
-                                              operacionesId]);
+    newData.id_tipotransaccion,
+    newData.id_cliente,
+    newData.valor,
+    newData.referencia,
+    newData.comentario,
+    newData.numtransaccion,
+    newData.saldocomision,
+      operacionesId]);
     if (result.rowCount === 0) {
       return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
@@ -230,7 +230,7 @@ export const deleteOperacionesById = async (operacionesId, newData) => {
           SET estado = $1 
           WHERE id_operacion = $2`
       ;
-    const result = await client.query(query, [newData.estado,  operacionesId]);
+    const result = await client.query(query, [newData.estado, operacionesId]);
     if (result.rowCount === 0) {
       return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
@@ -243,6 +243,28 @@ export const deleteOperacionesById = async (operacionesId, newData) => {
 };
 
 
+export const ObtenerComisionByBankandTransa = async (newData) => {
+  try {
+    const client = await pool.connect();
+    const query = `SELECT          
+          e.valorcomision AS saldocomision,    
+          WHERE entidadbancaria_id = $1 && tipotransaccion_id = $2`;
+          const result = await client.query(query, [
+            newData.id_tipotransaccion,
+            newData.id_entidadbancaria,
+          
+          ]);    
+    
+    if (result.rowCount === 0) {
+      return { error: 'no existe comision en esta operacion' }; // Devuelve un objeto con el mensaje de error
+    }
+
+  } catch (error) {
+    throw new Error('Error al seleccionar la operación: ' + error.message);
+  }
+}
+
+
 
 
 
@@ -251,5 +273,6 @@ export default {
   getAllOperaciones,
   updateOperacionesById,
   getAllOperacionesFilter,
-  deleteOperacionesById
+  deleteOperacionesById,
+  ObtenerComisionByBankandTransa
 }

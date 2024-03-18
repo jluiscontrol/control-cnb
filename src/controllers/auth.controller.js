@@ -2,7 +2,6 @@
 import { signin } from '../models/auth.model.js' // Importar la función de autenticación
 import { isTokenExpired } from '../helpers/funciones.js'
 
-
 export const signIn = async (req, res) => {
   const { nombre_usuario, contrasenia } = req.body;
 
@@ -13,7 +12,7 @@ export const signIn = async (req, res) => {
     }
 
     // Llamar a la función de autenticación para verificar las credenciales
-    const token = await signin(nombre_usuario, contrasenia);
+    const { token, id_usuario, nombre_usuario: nombre } = await signin(nombre_usuario, contrasenia);
 
     // Verificar si el token ha caducado
     const isExpired = await isTokenExpired(token);
@@ -21,8 +20,8 @@ export const signIn = async (req, res) => {
       return res.status(401).json({ error: 'Token ha caducado' });
     }
 
-    // Si las credenciales son válidas y el token no ha caducado, devolver el token en la respuesta
-    res.status(200).json({ token });
+    // Si las credenciales son válidas y el token no ha caducado, devolver el token, id_usuario y nombre_usuario en la respuesta
+    res.status(200).json({ token, id_usuario, nombre_usuario: nombre });
   } catch (error) {
     // Manejar los errores que puedan ocurrir durante la autenticación
     if (error.message === 'Usuario no encontrado' || error.message === 'Contraseña incorrecta') {
@@ -34,7 +33,3 @@ export const signIn = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
-
-
-
-

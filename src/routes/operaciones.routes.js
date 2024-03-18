@@ -13,6 +13,9 @@ router.get('/:operacionesId', operacionesCtrl.getOperacionesById)
 router.put('/:operacionesId', operacionesCtrl.updateOperacionesId)
 router.put('/eliminar/:operacionesDeleteId', operacionesCtrl.deleteOperacionesId)
 
+router.get('/list/comisiones/:id_entidadbancaria/:id_tipotransaccion', operacionesCtrl.getComisionByBankandTransa);
+
+
 
 
 export default router;
