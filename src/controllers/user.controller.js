@@ -4,12 +4,11 @@ import User from '../models/User.Model.js';
 import { getUserId } from '../models/User.Model.js';
 import { updateUser } from '../models/User.Model.js';
 import { deleteUser } from '../models/User.Model.js';
-
 import { updateCajaById } from '../models/User.Model.js';
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
  // Verificar si algún campo requerido está vacío
 if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
   const camposFaltantes = [];
@@ -25,7 +24,7 @@ if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, roleId);
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, id_rol);
     // Verificar si la función addUser devolvió un error relacionado con la cédula ya registrada
     if (userSave.error) {
       return res.status(400).json({ error: userSave.error }); // Devolver código de estado 401
@@ -70,15 +69,13 @@ export const getUserById = async (req, res) => {
 
 export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
-  const { nombre_usuario, contrasenia, estado, roleId, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
+  const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
   
   try {
-
     // Crear el objeto persona con los datos formateados
-    const persona = { nombre, apellido, fecha_nacimiento: fecha_nacimiento, direccion, telefono, cedula };
-
-    // Llamar a updateUser con los datos actualizados, incluyendo los datos de persona
-    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, roleId, persona, caja_id });
+    const persona = { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula };
+    // Llamar a updateUser con los datos actualizados, incluyendo el id_rol y los datos de persona
+    const updated = await updateUser(userId, { nombre_usuario, contrasenia, estado, id_rol, persona, caja_id });
 
     if (!updated) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -91,22 +88,6 @@ export const updateUserById = async (req, res) => {
   }
 };
 
-
-export const deleteUserById = async (req, res) => {
-     const userId = req.params.userId;
-     const { estado } = req.body;
-     try {
-      const updated = await deleteUser(userId, { estado });
-        if (!updated) {
-          return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-        res.status(200).json({ message: 'Usuario actualizado correctamente' });
-     } catch (error) {
-         console.error('Error al actualizar el usuario:', error);
-          res.status(500).json({ error: 'Error interno del servidor' });
-      
-     }
-}
 
 //funcion para crear caja
 export const createCaja = async (req, res) => {
@@ -136,7 +117,6 @@ export const createCaja = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-
 
 
 //funcion para obtener todos los usuarios
@@ -183,5 +163,30 @@ export const updateCaja = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+
+export const deleteUserById = async (req, res) => {
+  try {
+   const userDeleteId = req.params.userDeleteId;
+   const newData = req.body;
+  // console.log('desde el controlador',newData)
+  // console.log('desde el controlador',userDeleteId)      
+   if (!newData || Object.keys(newData).length === 0) {
+     return res.status(400).json({ error: 'Se requieren datos actualizados para editar el usuario' });
+   }     
+   const result = await deleteUser(userDeleteId, newData);
+   if (result.error) {
+     return res.status(404).json({ error: result.error });
+   }          
+  if(newData.estado == true){
+    res.status(200).json({ message: 'Usuario activado correctamente' });
+  }else{
+   res.status(200).json({ message: 'Usuario desactivado correctamente' });
+  }     
+ } catch (error) {
+  // console.error('Error al inactivar el usuario por ID:', error);
+   res.status(500).json({ error: 'Error interno del servidor' });
+ }
+}
 
 

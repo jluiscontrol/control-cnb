@@ -9,7 +9,7 @@ router.post('/',[verifyToken, verifyAdmin], userCtrl.createUser)
 router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)
-router.put('/:userDeleteId', userCtrl.deleteUserById)
+router.put('/estado/:userDeleteId', userCtrl.deleteUserById)
 
 //creacion de caja
 router.post('/caja', userCtrl.createCaja)

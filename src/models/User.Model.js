@@ -6,9 +6,7 @@ import config from '../config.js';
 
 
 // Función para agregar un nuevo usuario
-async function addUser(User, Persona, roleId ) {
-  console.log(roleId)
-  
+async function addUser(User, Persona, roleId) {
   const user = await pool.connect();
   try {
     const { nombre_usuario, estado, contrasenia } = User;
@@ -39,15 +37,15 @@ async function addUser(User, Persona, roleId ) {
     }
 
     // Verificar si se proporcionó un roleId y si el rol existe
-    if (roleId) {
-      const roleExists = await user.query('SELECT id_rol FROM rol WHERE id_rol = $1', [roleId]);
+    if (id_rol) {
+      const roleExists = await user.query('SELECT id_rol FROM rol WHERE id_rol = $1', [id_rol]);
       if (roleExists.rows.length === 0) {
         throw new Error('El rol seleccionado no está registrado.');
       }
     } else {
-      // Si no se proporcionó un roleId, obtener el primer rol registrado
+      // Si no se proporcionó un id_rol, obtener el primer rol registrado
       const defaultRoleQueryResult = await user.query('SELECT id_rol FROM rol ORDER BY id_rol LIMIT 1');
-      roleId = defaultRoleQueryResult.rows[0].id_rol;
+      id_rol = defaultRoleQueryResult.rows[0].id_rol;
     }
 
     // Encriptar la contraseña antes de almacenarla
@@ -85,19 +83,20 @@ async function addUser(User, Persona, roleId ) {
     await user.query('COMMIT');
 
     // Insertar la relación entre el usuario y el rol en la tabla usuario_rol
-    const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, roleId]);
+    const userRoleInsertResult = await user.query('INSERT INTO usuario_rol(id_usuario, id_rol) VALUES($1, $2) RETURNING *', [userId, id_rol]);
 
     // Generar token JWT con el ID del usuario
     const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
       expiresIn: 86400 // 24 horas
     });
 
-    // Devolver el usuario y el token
-    return { usuario: userInsertResult.rows[0], roleId, token };
+    // Devolver el usuario, el id_rol y el token
+    return { usuario: userInsertResult.rows[0], id_rol, token };
   } finally {
     user.release();
   }
 }
+
 
 
 
@@ -109,6 +108,7 @@ async function getAllUsers() {
     SELECT 
     u.*, 
     r.nombre AS rol, 
+    r.id_rol AS rol_id,
     p.nombre AS nombre_persona, 
     p.apellido AS apellido_persona, 
     p.fecha_nacimiento AS fecha_nacimiento_persona, 
@@ -137,6 +137,7 @@ export const getUserId = async (req, res) => {
       SELECT 
         u.*, 
         r.nombre AS rol,
+        r.id_rol AS rol_id,
         p.nombre AS nombre_persona,
         p.apellido AS apellido_persona,
         p.fecha_nacimiento AS fecha_nacimiento_persona,
@@ -164,7 +165,7 @@ export const getUserId = async (req, res) => {
 
 //funcion para actualizar un usuario
 export const updateUser = async (userId, updatedData) => {
-  const { nombre_usuario, contrasenia, estado, roleId, persona, caja_id } = updatedData;
+  const { nombre_usuario, contrasenia, estado, id_rol, persona, caja_id } = updatedData;
   const usuario = await pool.connect();
 
   try {
@@ -187,10 +188,11 @@ export const updateUser = async (userId, updatedData) => {
       await usuario.query(userQuery, [nombre_usuario, hashedPassword, estado, caja_id, userId]);
     }
 
-    // Actualizar rol del usuario si se proporciona roleId
-    if (roleId) {
+    // Actualizar rol del usuario si se proporciona id_rol
+    if (id_rol) {
       const userRoleQuery = 'UPDATE usuario_rol SET id_rol = $1 WHERE id_usuario = $2';
-      await usuario.query(userRoleQuery, [roleId, userId]);
+      console.log(userRoleQuery)
+      await usuario.query(userRoleQuery, [id_rol, userId]);
     }
 
     // Actualizar datos de persona si se proporcionan
@@ -217,26 +219,8 @@ export const updateUser = async (userId, updatedData) => {
 
 
 
-//FUNCION PARA ELIMINAR USUARIO
-export const deleteUser = async (userId, deleteData) => {
-  const { estado } = deleteData;
-  const usuario = await pool.connect();
 
-  try {
-    const userQuery = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
-    await usuario.query(userQuery, [estado, userId]);
-    return true; // Éxito en la actualización
 
-  } catch (error) {
-    console.error('Error al actualizar el usuario:', error);
-    // Rollback en caso de error
-    await usuario.query('ROLLBACK');
-    throw error;
-  } finally {
-    usuario.release();
-  }
-
-};
 //agregar una nueva caja
 export async function addCaja(info) {
   const cajaDatos = await pool.connect();
@@ -312,6 +296,28 @@ export const updateCajaById = async (cajaId, newData) => {
 };
 
 
+//FUNCION PARA ELIMINAR USUARIO
+export const deleteUser = async (userDeleteId, newData) => {
+ // console.log('resultado modelo', newData)
+  try {
+    const client = await pool.connect();
+    const query = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
+    const result = await client.query(query, [newData.estado, userDeleteId]);
+    if (result.rowCount === 0) {
+      return { error: 'El usuario con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
+    }       
+    client.release();
+   if(newData.estado == true){
+     return { message: 'Usuario activado correctamente' };
+   }else{
+    return { message: 'Usuario desactivado correctamente' };
+
+   }
+  } catch (error) {
+    throw new Error('Error al desactivar el usuario: ' + error.message);
+  }
+
+};
 
 // Exportar las funciones del modelo
 export default {
