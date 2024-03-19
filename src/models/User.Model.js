@@ -6,7 +6,7 @@ import config from '../config.js';
 
 
 // Función para agregar un nuevo usuario
-async function addUser(User, Persona, roleId) {
+async function addUser(User, Persona, id_rol) {
   const user = await pool.connect();
   try {
     const { nombre_usuario, estado, contrasenia } = User;
@@ -36,7 +36,7 @@ async function addUser(User, Persona, roleId) {
       return { error: 'Cédula ya registrada, la cedula ya pertenece a un usuario registrado.' };
     }
 
-    // Verificar si se proporcionó un roleId y si el rol existe
+    // Verificar si se proporcionó un id_rol y si el rol existe
     if (id_rol) {
       const roleExists = await user.query('SELECT id_rol FROM rol WHERE id_rol = $1', [id_rol]);
       if (roleExists.rows.length === 0) {
@@ -98,8 +98,6 @@ async function addUser(User, Persona, roleId) {
 }
 
 
-
-
 //Funcion para obtener todos los usuarios
 async function getAllUsers() {
   const users = await pool.connect();
@@ -119,7 +117,8 @@ async function getAllUsers() {
     usuario u
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
-    LEFT JOIN persona p ON u.persona_id = p.id_persona;
+    LEFT JOIN persona p ON u.persona_id = p.id_persona
+    ORDER BY u.id_usuario; 
     `);
     return resultado.rows;
   } finally {
@@ -256,7 +255,7 @@ export async function addCaja(info) {
 export async function getAllCajas() {
   const cajas = await pool.connect();
   try {
-    const query = `SELECT * FROM caja`;
+    const query = `SELECT * FROM caja ORDER BY id_caja`;
     const resultado = await cajas.query(query);
     return resultado.rows;
   } finally {

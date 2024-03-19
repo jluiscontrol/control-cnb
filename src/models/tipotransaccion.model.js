@@ -33,7 +33,8 @@ async function getAllTiposTransaccion() {
       SELECT tt.id_tipotransaccion, tt.nombre AS tipo_transaccion, ac.nombre AS afectacion_caja, acc.nombre AS afectacion_cuenta
       FROM tipotransaccion tt
       INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
-      INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta;
+      INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
+      ORDER BY tt.id_tipotransaccion; 
     `;
     const result = await client.query(query);
     return result.rows;
@@ -55,7 +56,8 @@ async function getAllTiposTransaccionActivos() {
           FROM tipotransaccion tt
           INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
           INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta 
-        WHERE tt.estado = true;
+        WHERE tt.estado = true
+        ORDER BY tt.id_tipotransaccion; 
     `;
     const result = await client.query(query);
     return result.rows;
@@ -79,6 +81,7 @@ export const getTipoTransaccionById = async (tipotransaccionId) => {
       INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
       INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
       WHERE tt.id_tipotransaccion = $1
+      ORDER tt.id_tipotransaccion;
     `;
     const result = await transaccion.query(query, [tipotransaccionId]);
     transaccion.release();

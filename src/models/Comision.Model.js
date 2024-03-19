@@ -49,7 +49,8 @@ export async function getAllComisiones() {
     JOIN 
         public.entidadbancaria e ON c.entidadbancaria_id = e.id_entidadbancaria
     JOIN 
-        public.tipotransaccion t ON c.tipotransaccion_id = t.id_tipotransaccion;
+        public.tipotransaccion t ON c.tipotransaccion_id = t.id_tipotransaccion
+        ORDER BY c.id_comision;
   `;
     const resultado = await comision.query(query);
     return resultado.rows;
@@ -77,7 +78,8 @@ export async function getAllComisionesActivas() {
         public.entidadbancaria e ON c.entidadbancaria_id = e.id_entidadbancaria
     JOIN 
         public.tipotransaccion t ON c.tipotransaccion_id = t.id_tipotransaccion
-    WHERE  c.estado = true;
+    WHERE  c.estado = true
+    ORDER BY c.id_comision;
   `;
     const resultado = await comision.query(query);
     return resultado.rows;
