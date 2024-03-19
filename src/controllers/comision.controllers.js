@@ -1,4 +1,5 @@
 import Comision from '../models/Comision.Model.js'
+import obtenerValorComisionByEntidadYtipoTransaccion from '../models/Comision.Model.js'
 
 export const createComision = async (req, res) => {
   const { valorcomision, entidadbancaria_id, tipotransaccion_id, estado } = req.body;
@@ -81,3 +82,20 @@ export const updateComisionId = async (req, res) => {
 export const deleteComision = async (req, res) => {
 
 }
+
+  
+export const getByEntidadYtipoTransaccion = async (req, res) => {
+  const { entidadId, tipoTransaccionId } = req.params;
+  try {
+    const comisiones = await Comision.obtenerValorComisionByEntidadYtipoTransaccion(parseInt(entidadId), parseInt(tipoTransaccionId));
+    console.log(comisiones)
+    
+    // Extraer solo el valor de la comisión de cada resultado
+    const valoresComision = comisiones.map(comision => comision.valorcomision);
+    
+    res.json(valoresComision);
+  } catch (error) {
+    console.error('Error al obtener las comisiones:', error);
+    res.status(500).json({ mensaje: 'Error al obtener las comisiones' });
+  }
+};

@@ -116,9 +116,29 @@ export async function updateComision({ comisionId, valorcomision, entidadbancari
   }
 }
 
+//funcion para traer comisiones activas
+export async function  obtenerValorComisionByEntidadYtipoTransaccion(entidadId, tipoTransaccionId) {
+  const comision = await pool.connect();
+  try {
+    const query = `
+    SELECT valorcomision
+        FROM public.comision 
+        WHERE entidadbancaria_id = $1 AND tipotransaccion_id = $2 and estado = true;
+  `;
+  const resultado = await comision.query(query, [entidadId, tipoTransaccionId]);
+    return resultado.rows;
+  } finally {
+    comision.release();
+  }
+}
+
+
+
 
 
 export default { addComision, 
             getAllComisiones, 
      getAllComisionesActivas, 
-             updateComision }
+             updateComision,
+             obtenerValorComisionByEntidadYtipoTransaccion
+            }
