@@ -28,7 +28,7 @@ export const signin = async (username, password) => {
         }
         
         // Generar token JWT con la información del usuario, incluyendo el ID de usuario
-        const token = jwt.sign({ userId: userData.id_usuario, nombre_usuario: userData.nombre_usuario }, config.SECRET, {
+        const token = jwt.sign({ userId: userData.id_usuario, nombre_usuario: userData.nombre_usuario, caja_id: userData.caja_id }, config.SECRET, {
             expiresIn: 86400 // 24 horas
         });
 
@@ -39,7 +39,7 @@ export const signin = async (username, password) => {
         }
         
         // Devolver el id_usuario, nombre_usuario y el token en un objeto
-        return { id_usuario: userData.id_usuario, nombre_usuario: userData.nombre_usuario, token };
+        return { id_usuario: userData.id_usuario, nombre_usuario: userData.nombre_usuario, caja_id: userData.caja_id, token };
     } finally {
         user.release();
     }
