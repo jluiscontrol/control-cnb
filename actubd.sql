@@ -449,14 +449,28 @@ GROUP BY
     DROP COLUMN hasta;
     ----16-03-2024----
 
-     CREATE TABLE detallearqueo (
-    id_detalle_arqueo SERIAL PRIMARY KEY,
-    tipodinero VARCHAR(50),
-    valor integer,
-    usuario_id INT,
-    estado BOOLEAN,
-    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario)
+    CREATE TABLE encabezadoarqueo (
+            id_encabezadoarqueo SERIAL PRIMARY KEY,
+            caja_id INT,
+            usuario_id INT,
+            comentario TEXT,
+            estado BOOLEAN,
+            fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+     CREATE TABLE detallearqueo (
+            id_detalle_arqueo SERIAL PRIMARY KEY,
+            tipodinero VARCHAR(50),
+            valor integer,
+            usuario_id INT,
+            estado BOOLEAN,
+            encabezadoarqueo_id int,
+            
+            fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
+            FOREIGN KEY (encabezadoarqueo_id) REFERENCES encabezadoarqueo(id_encabezadoarqueo)
+    );
+
+
 

@@ -12,5 +12,8 @@ router.get('/:comisionId', comisionCtrl.getComisionId)
 router.put('/:comisionId', comisionCtrl.updateComisionId)
 router.put('/eliminar/:comisionDeleteId', comisionCtrl.deleteComision)
 
+router.get('/:entidadId/:tipoTransaccionId', comisionCtrl.getByEntidadYtipoTransaccion);
+
+
 
 export default router;
