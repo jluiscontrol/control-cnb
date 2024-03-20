@@ -2,22 +2,27 @@ import ArqueoModel from '../models/Arqueo.Model.js';
 import { getArqueoById as getArqueoByIdModel } from '../models/Arqueo.Model.js';
 import { updateArqueoById as getUpdateArqueoByIdModel } from '../models/Arqueo.Model.js';
 
-//Funcion para crear un arqueo
+
+// Funcion para crear un arqueo
 export const createArqueo = async (req, res) => {
-  const { caja_id, usuario_id, comentario } = req.body;
+  const { caja_id, usuario_id, comentario, tipodinero, valor, cantidad, estado } = req.body;
   
-  if (!caja_id || !usuario_id || !comentario) {
+  // Verificar si el estado no se proporcionó o es null, y establecerlo en true
+  const estadoFinal = estado !== undefined && estado !== null ? estado : true;
+  
+  if (!caja_id || !usuario_id || !comentario || !tipodinero || !valor || !cantidad) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
 
   try {
-    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario });
+    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario, estado: estadoFinal }, { tipodinero, valor, cantidad });
     res.status(201).json(arqueoSave);
   } catch (error) {
     console.error('Error al crear el arqueo:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 
 //Funcion para obtener todos los arqueos
 export const getArqueo = async (req, res) => {
@@ -32,6 +37,8 @@ export const getArqueo = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+
 
 //Funcion para obtener un arqueo en especifico
 export const getArqueoById = async (req, res) => {
