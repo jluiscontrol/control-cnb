@@ -5,6 +5,7 @@ import cors from 'cors'
 
 import { createRoles } from './libs/initialSetUp.js';
 
+import arqueo from './routes/arqueo.routes.js'
 import roles from './routes/roles.routes.js'
 import comisiones from './routes/comision.routes.js'
 import entidadBancariaRoute from './routes/entidadBancarias.routes.js'
@@ -12,6 +13,7 @@ import tipoTransaccion from './routes/tipotransaccion.routes.js'
 import operaciones from './routes/operaciones.routes.js'
 import usersRoute from './routes/user.routes.js'
 import authRoute from './routes/auth.routes.js'
+
 
 
 const app = express()
@@ -30,7 +32,7 @@ app.get('/', (req, res) => {
 
     })
 })
-
+app.use('/arqueo',arqueo)
 app.use('/roles',roles)
 app.use('/comisiones',comisiones)
 app.use('/tipoTransaccion',tipoTransaccion)

@@ -462,10 +462,10 @@ GROUP BY
             id_detalle_arqueo SERIAL PRIMARY KEY,
             tipodinero VARCHAR(50),
             valor integer,
+            cantidad integer,
             usuario_id INT,
             estado BOOLEAN,
-            encabezadoarqueo_id int,
-            
+            encabezadoarqueo_id int,            
             fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
