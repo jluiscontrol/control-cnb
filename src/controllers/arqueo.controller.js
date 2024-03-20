@@ -3,25 +3,24 @@ import { getArqueoById as getArqueoByIdModel } from '../models/Arqueo.Model.js';
 import { updateArqueoById as getUpdateArqueoByIdModel } from '../models/Arqueo.Model.js';
 
 
-// Funcion para crear un arqueo
+// Función para crear un arqueo
 export const createArqueo = async (req, res) => {
-  const { caja_id, usuario_id, comentario, tipodinero, valor, cantidad, estado } = req.body;
-  
-  // Verificar si el estado no se proporcionó o es null, y establecerlo en true
-  const estadoFinal = estado !== undefined && estado !== null ? estado : true;
-  
-  if (!caja_id || !usuario_id || !comentario || !tipodinero || !valor || !cantidad) {
+  const { caja_id, usuario_id, comentarios, detalles } = req.body;
+
+  if (!caja_id || !usuario_id || !comentarios || !detalles || detalles.length === 0) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
 
   try {
-    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario, estado: estadoFinal }, { tipodinero, valor, cantidad });
+    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario: comentarios }, detalles);
     res.status(201).json(arqueoSave);
   } catch (error) {
     console.error('Error al crear el arqueo:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+
 
 
 //Funcion para obtener todos los arqueos

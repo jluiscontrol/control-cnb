@@ -461,7 +461,7 @@ GROUP BY
      CREATE TABLE detallearqueo (
             id_detalle_arqueo SERIAL PRIMARY KEY,
             tipodinero VARCHAR(50),
-            valor integer,
+            valor numeric(10,2),
             cantidad integer,
             usuario_id INT,
             estado BOOLEAN,

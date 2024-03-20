@@ -1,25 +1,29 @@
 import pool from '../database.js';
 
-async function addEncabezadoarqueo(encabezadoarqueo, detallearqueo) {
+async function addEncabezadoarqueo(encabezadoarqueo, detalles) {
   const arqueo = await pool.connect();
   try {
     const { caja_id, usuario_id, comentario } = encabezadoarqueo;
-    const { tipodinero, valor, cantidad } = detallearqueo;
 
-    if (!caja_id || !usuario_id || !comentario || !tipodinero || !valor || !cantidad) {
+    if (!caja_id || !usuario_id || !comentario || !detalles || detalles.length === 0) {
       throw new Error('Todos los campos son requeridos');
     }
 
-    const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario) VALUES($1, $2, $3) RETURNING *', [caja_id, usuario_id, comentario]);
-    const encabezadoar = arqueoInsertResult.rows[0].id_encabezadoarqueo;
-    
-    const detallearqueoInsertResult = await arqueo.query('INSERT INTO detallearqueo(tipodinero, valor, cantidad, encabezadoarqueo_id) VALUES($1, $2, $3, $4) RETURNING *', [tipodinero, valor, cantidad, encabezadoar]);
-    return detallearqueoInsertResult.rows[0];
+    // Insertar el encabezado del arqueo
+    const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario) VALUES($1, $2, $3) RETURNING id_encabezadoarqueo', [caja_id, usuario_id, comentario]);
+    const encabezadoarqueoId = arqueoInsertResult.rows[0].id_encabezadoarqueo;
+
+    // Insertar cada detalle del arqueo
+    for (const detalle of detalles) {
+      const { tipodinero, valor, cantidad } = detalle;
+      await arqueo.query('INSERT INTO detallearqueo(tipodinero, valor, cantidad, encabezadoarqueo_id) VALUES($1, $2, $3, $4)', [tipodinero, valor, cantidad, encabezadoarqueoId]);
+    }
+
+    return encabezadoarqueoId; // Devuelve el ID del encabezado del arqueo insertado
   } finally {
     arqueo.release();
   }
 }
-
 
 async function getAllArqueo() {
   const arqueo = await pool.connect();
@@ -43,7 +47,6 @@ async function getAllArqueo() {
     arqueo.release();
   }
 }
-
 
 // Función para obtener un arqueo por su ID
 export const getArqueoById = async (encabezadoarqueoId ) => {
@@ -85,6 +88,5 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
     throw new Error('Error al actualizar el arqueo: ' + error.message);
   }
 };
-
 
 export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById };
