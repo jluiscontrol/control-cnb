@@ -445,7 +445,7 @@ GROUP BY
     ADD COLUMN estado boolean;
 --12/03/2024------
     ALTER TABLE public.comision
-    DROP COLUMN desde,
+    DROP COLUMN desde, 
     DROP COLUMN hasta;
     ----16-03-2024----
 
@@ -471,6 +471,12 @@ GROUP BY
             FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
             FOREIGN KEY (encabezadoarqueo_id) REFERENCES encabezadoarqueo(id_encabezadoarqueo)
     );
+    ------2024-03-21-----
+    ALTER TABLE public.saldos
+    ADD COLUMN operacion_id integer,
+    ADD CONSTRAINT operacion_id_fkey FOREIGN KEY (operacion_id) REFERENCES public.operaciones(operacion_id);
 
 
-
+ALTER TABLE public.operaciones
+    ADD COLUMN id_usuario integer,
+    ADD CONSTRAINT operaciones_id_usuario_fkey FOREIGN KEY (id_usuario) REFERENCES public.usuario(id_usuario);

@@ -16,7 +16,8 @@ export async function addOperaciones(operaciones) {
       numtransaccion,
       id_usuario,
       saldocomision,
-      estado = true
+      estado = true,
+      tipodocumento
     } = operaciones;
 
     // Validar campos obligatorios
@@ -52,8 +53,9 @@ export async function addOperaciones(operaciones) {
                            numtransaccion, 
                                id_usuario,
                                saldocomision,
-                               estado) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+                               estado,
+                               tipodocumento) 
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
           RETURNING *`, [id_entidadbancaria,
       id_tipotransaccion,
       id_cliente,
@@ -64,6 +66,7 @@ export async function addOperaciones(operaciones) {
       id_usuario,
       saldocomision,
       estado,
+      tipodocumento
     ]);
 
     await operacion.query("COMMIT");
@@ -98,11 +101,13 @@ export async function getAllOperaciones() {
             o.fecha_registro AS fecha_registro_operacion,
             o.fecha_actualizacion AS fecha_actualizacion_operacion,
             o.saldocomision saldocomision_operacion,
+            o.tipodocumento AS tipodocumento_operacion,
       o.estado AS estado_operacion,
             co.valorcomision AS valor_comision,
             ac.nombre AS afectacion_caja,
             au.nombre AS afectacion_cuenta,
-            u.nombre_usuario AS nombre_usuario_operacion -- Nuevo campo para el nombre de usuario
+            u.nombre_usuario AS nombre_usuario_operacion
+        
         FROM 
             operaciones o
         JOIN 
@@ -139,8 +144,7 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-      SELECT
-          
+      SELECT          
           e.entidad AS entidad,
           tt.nombre AS tipotransaccion,
           c.cedula AS cedula_cliente,
@@ -197,8 +201,9 @@ export const updateOperacionesById = async (operacionesId, newData) => {
               referencia = $5,
               comentario = $6,
               numtransaccion = $7,
-              saldocomision = $8
-          WHERE id_operacion = $9`
+              saldocomision = $8,
+              tipodocumento = $9,
+          WHERE id_operacion = $10`
       ;
     const result = await client.query(query, [newData.id_entidadbancaria,
     newData.id_tipotransaccion,
@@ -208,6 +213,7 @@ export const updateOperacionesById = async (operacionesId, newData) => {
     newData.comentario,
     newData.numtransaccion,
     newData.saldocomision,
+    newData.tipodocumento,
       operacionesId]);
     if (result.rowCount === 0) {
       return { error: 'La operacion con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
@@ -263,10 +269,6 @@ export const ObtenerComisionByBankandTransa = async (newData) => {
     throw new Error('Error al seleccionar la operación: ' + error.message);
   }
 }
-
-
-
-
 
 export default {
   addOperaciones,
