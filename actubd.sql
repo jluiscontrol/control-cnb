@@ -471,6 +471,11 @@ GROUP BY
             FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
             FOREIGN KEY (encabezadoarqueo_id) REFERENCES encabezadoarqueo(id_encabezadoarqueo)
     );
+-------2024-03-21---------
+    ALTER TABLE public.saldos
+    ADD COLUMN operacion_id INTEGER,
+    ADD CONSTRAINT saldos_operacion_id_fkey FOREIGN KEY (operacion_id) REFERENCES public.operaciones(id_operacion);
+
 
 
 
