@@ -18,7 +18,7 @@ export const createOperaciones = async (req, res) => {
     tipodocumento
   } = req.body;
 
-  if (!id_entidadbancaria || !id_tipotransaccion || !id_cliente || !valor || !numtransaccion) {
+  if (!id_entidadbancaria || !id_tipotransaccion || !id_cliente || !valor || !numtransaccion || !comentario || !tipodocumento) {
     return res.status(400).json('Algunos campo son obligatorios');
   }
   // Validar tipos de datos
