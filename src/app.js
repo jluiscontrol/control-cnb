@@ -13,8 +13,7 @@ import tipoTransaccion from './routes/tipotransaccion.routes.js'
 import operaciones from './routes/operaciones.routes.js'
 import usersRoute from './routes/user.routes.js'
 import authRoute from './routes/auth.routes.js'
-
-
+import dashboard from './routes/dashboard.js'
 
 const app = express()
 
@@ -40,5 +39,7 @@ app.use('/operaciones',operaciones)
 app.use('/entidadBancaria',entidadBancariaRoute)
 app.use('/users',usersRoute)
 app.use('/auth',authRoute)
+app.use('/dashboard',dashboard)
+
 
 export default app;
