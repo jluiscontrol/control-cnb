@@ -455,8 +455,10 @@ GROUP BY
             usuario_id INT,
             comentario TEXT,
             estado BOOLEAN,
+            entidadbancaria_id INT,
             fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            FOREIGN KEY (entidadbancaria_id) REFERENCES entidadbancaria(id_entidadbancaria)
     );
      CREATE TABLE detallearqueo (
             id_detalle_arqueo SERIAL PRIMARY KEY,
@@ -466,10 +468,12 @@ GROUP BY
             usuario_id INT,
             estado BOOLEAN,
             encabezadoarqueo_id int,            
+            entidadbancaria_id INT,
             fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             fechamodificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario),
             FOREIGN KEY (encabezadoarqueo_id) REFERENCES encabezadoarqueo(id_encabezadoarqueo)
+            FOREIGN KEY (entidadbancaria_id) REFERENCES entidadbancaria(id_entidadbancaria)
     );
     ------2024-03-21-----
     ALTER TABLE public.saldos

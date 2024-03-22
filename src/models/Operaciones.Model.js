@@ -89,6 +89,8 @@ export async function getAllOperaciones() {
             id_operacion,
             c.id_cliente AS id_cliente,
             e.entidad AS entidad,
+            e.acronimo AS acronimo,
+            e.sobregiro AS sobregiro,
             tt.nombre AS tipotransaccion,
             c.cedula AS cedula_cliente,
             c.nombres AS nombres_cliente,
@@ -105,7 +107,8 @@ export async function getAllOperaciones() {
             co.valorcomision AS valor_comision,
             ac.nombre AS afectacion_caja,
             au.nombre AS afectacion_cuenta,
-            u.nombre_usuario AS nombre_usuario_operacion
+            u.nombre_usuario AS nombre_usuario_operacion,
+            s.saldocuenta AS saldocuenta
         
         FROM 
             operaciones o
@@ -123,6 +126,8 @@ export async function getAllOperaciones() {
             afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
         LEFT JOIN
             usuario u ON o.id_usuario = u.id_usuario -- Nueva relación con la tabla usuario
+        LEFT JOIN
+            saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
         WHERE o.estado = true
         ORDER BY 
               id_operacion;

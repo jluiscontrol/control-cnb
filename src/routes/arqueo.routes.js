@@ -9,4 +9,7 @@ router.get('/', arqueoEncabezadoCtrl.getArqueo)
 router.get('/:encabezadoarqueoId', arqueoEncabezadoCtrl.getArqueoById)
 router.put('/:encabezadoarqueoId', arqueoEncabezadoCtrl.updateArqueoById)
 
+//ruta para obtener los reportes
+router.get('/reporte', arqueoEncabezadoCtrl.getArqueo)
+
 export default router;
