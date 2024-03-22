@@ -21,25 +21,24 @@ export async function addOperaciones(operaciones) {
     } = operaciones;
 
     // Validar campos obligatorios
-    if (!id_entidadbancaria || !id_tipotransaccion || !id_cliente || !valor || !numtransaccion || !comentario || !tipodocumento) {
+    if (!id_entidadbancaria || !id_tipotransaccion || !valor || !comentario || !tipodocumento) {
       throw new Error;
     }
 
     // Validar tipos de datos
     if (typeof id_entidadbancaria !== 'number'
-      || typeof id_tipotransaccion !== 'number'
-      || typeof id_cliente !== 'number'
-      || typeof numtransaccion !== 'number'
+      || typeof id_tipotransaccion !== 'number'     
+     
       || typeof valor !== 'number') {
 
       throw new Error;
     }
 
-    // Validar formato de numtransaccion con expresión regular
-    const numTransaccionRegex = /^[0-9]+$/; // Solo números
-    if (!numTransaccionRegex.test(numtransaccion)) {
-      throw new Error('El número de transacción debe contener solo letras y números');
-    }
+    // // Validar formato de numtransaccion con expresión regular
+    // const numTransaccionRegex = /^[0-9]+$/; // Solo números
+    // if (!numTransaccionRegex.test(numtransaccion)) {
+    //   throw new Error('El número de transacción debe contener solo números');
+    // }
 
     // Insertar operación
     const result = await operacion.query(`
