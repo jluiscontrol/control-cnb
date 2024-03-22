@@ -2,6 +2,7 @@ import { getLast15Operations, getTotalCommissions, getTodayCommissionsByBank } f
 
 export async function getDashboardData(req, res) {
     try {
+        
         const operations = await getLast15Operations();
         const totalCommissions = await getTotalCommissions();
         const totalCommissionsByBank = await getTodayCommissionsByBank();

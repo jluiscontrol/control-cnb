@@ -2,6 +2,7 @@ import pool from '../database.js';
 
 export async function getLast15Operations() {
     const client = await pool.connect();
+    
     try {
       const result = await client.query(`
         SELECT o.*, e.entidad, t.nombre as tipo_transaccion 

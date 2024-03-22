@@ -42,4 +42,5 @@ app.use('/auth',authRoute)
 app.use('/dashboard',dashboard)
 
 
+
 export default app;
