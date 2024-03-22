@@ -10,7 +10,7 @@ export async function getLast15Operations() {
         JOIN tipotransaccion t ON o.id_tipotransaccion = t.id_tipotransaccion 
         WHERE DATE(o.fecha_registro) = CURRENT_DATE 
         ORDER BY o.fecha_registro DESC 
-        LIMIT 10
+        LIMIT 15
       `);
       return result.rows;
     } finally {
