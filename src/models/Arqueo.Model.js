@@ -69,17 +69,22 @@ export const getArqueoById = async (encabezadoarqueoId ) => {
 export const updateArqueoById = async (encabezadoarqueoId, newData) => {
   try {
     const client = await pool.connect();
+
+    // Actualizar los datos del encabezado del arqueo
     const query = 'UPDATE encabezadoarqueo SET caja_id = $1, usuario_id = $2, comentario = $3 WHERE id_encabezadoarqueo = $4';
-    const result = await client.query(query, [newData.caja_id, newData.usuario_id,  newData.comentario, encabezadoarqueoId]);
+    const result = await client.query(query, [newData.caja_id, newData.usuario_id, newData.comentario, encabezadoarqueoId]);
 
     if (result.rowCount === 0) {
-      return { error: 'El arqueo con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
+      return { error: 'El arqueo con el ID proporcionado no existe' };
     }
-    
-    // Actualizar los datos en la tabla detallearqueo si se proporcionaron
-    if (newData.tipodinero !== undefined || newData.valor !== undefined || newData.cantidad !== undefined) {
-      const detallearqueoQuery = 'UPDATE detallearqueo SET tipodinero = $1, valor = $2, cantidad = $3 WHERE encabezadoarqueo_id = $4';
-      await client.query(detallearqueoQuery, [newData.tipodinero, newData.valor, newData.cantidad, encabezadoarqueoId]);
+
+    // Actualizar los detalles del arqueo si se proporcionaron
+    if (newData.detalles && newData.detalles.length > 0) {
+      for (const detalle of newData.detalles) {
+        const { id_detallearqueo, tipodinero, valor, cantidad } = detalle;
+        const updateDetalleQuery = 'UPDATE detallearqueo SET tipodinero = $1, valor = $2, cantidad = $3 WHERE id_detalle_arqueo = $4';
+        await client.query(updateDetalleQuery, [tipodinero, valor, cantidad, id_detallearqueo]);
+      }
     }
 
     client.release();
@@ -88,5 +93,6 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
     throw new Error('Error al actualizar el arqueo: ' + error.message);
   }
 };
+
 
 export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById };
