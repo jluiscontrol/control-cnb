@@ -1,6 +1,7 @@
 import ArqueoModel from '../models/Arqueo.Model.js';
 import { getArqueoById as getArqueoByIdModel } from '../models/Arqueo.Model.js';
-import { updateArqueoById as getUpdateArqueoByIdModel } from '../models/Arqueo.Model.js';
+
+import { updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
 
 
 // Función para crear un arqueo
@@ -57,30 +58,33 @@ export const getArqueoById = async (req, res) => {
     }
   };
   
-// Función para editar una entidad bancaria por su ID
-  export const updateArqueoById = async (req, res) => {
-    try {
-      const encabezadoarqueoId = req.params.encabezadoarqueoId;
-      const newData = req.body;
-      
-      if (!newData || Object.keys(newData).length === 0) {
-        return res.status(400).json({ error: 'Se requieren datos actualizados para editar el arqueo' });
-      }
-  
-      const existingEntidadBancaria = await getArqueoByIdModel(encabezadoarqueoId);
-      if (!existingEntidadBancaria) {
-        return res.status(404).json({ error: 'El arqueo con el ID proporcionado no existe' });
-      }
-      const result = await getUpdateArqueoByIdModel(encabezadoarqueoId, newData);
-  
-      if (result.error) {
-        return res.status(404).json({ error: result.error });
-      }
-  
-      res.status(200).json({ message: 'Arqueo actualizado correctamente' });
-    } catch (error) {
-      
-      console.error('Error al actualizar el arqueo por ID:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+
+// Función para editar un arqueo por su ID
+export const updateArqueoById = async (req, res) => {
+  try {
+    const encabezadoarqueoId = req.params.encabezadoarqueoId;
+    const newData = req.body;
+
+    if (!newData || Object.keys(newData).length === 0) {
+      return res.status(400).json({ error: 'Se requieren datos actualizados para editar el arqueo' });
     }
-  };
+
+    const existingArqueo = await getArqueoByIdModel(encabezadoarqueoId);
+    if (existingArqueo.error) {
+      return res.status(404).json({ error: existingArqueo.error });
+    }
+
+    const result = await updateArqueoByIdModel(encabezadoarqueoId, newData);
+
+
+    if (result.error) {
+      return res.status(404).json({ error: result.error });
+    }
+
+    res.status(200).json({ message: 'Arqueo actualizado correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar el arqueo por ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
