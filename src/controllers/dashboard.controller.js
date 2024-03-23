@@ -1,4 +1,4 @@
-import { getLast15Operations, getTotalCommissions, getTodayCommissionsByBank } from '../models/Dashboard.Model.js';
+import { getLast15Operations, getTotalCommissions, getTodayCommissionsByBank, getMonthlyOperationsDataForDashboard } from '../models/Dashboard.Model.js';
 
 export async function getDashboardData(req, res) {
     try {
@@ -6,11 +6,13 @@ export async function getDashboardData(req, res) {
         const operations = await getLast15Operations();
         const totalCommissions = await getTotalCommissions();
         const totalCommissionsByBank = await getTodayCommissionsByBank();
+        const monthlyOperations = await getMonthlyOperationsDataForDashboard();
 
         res.json({
             operations,
             totalCommissions,
-            totalCommissionsByBank
+            totalCommissionsByBank,
+            monthlyOperations
         });
     } catch (error) {
         res.status(500).json({ error: error.toString() });

@@ -19,7 +19,7 @@ export async function getLast15Operations() {
     }
   }
 
-  export async function getTotalCommissionsToday() {
+  export async function getTotalCommissions() {
     const client = await pool.connect();
     try {
       const result = await client.query(`
@@ -49,9 +49,31 @@ export async function getLast15Operations() {
     }
   }
 
+  export async function getMonthlyOperationsDataForDashboard() {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT e.entidad, o.valor, o.saldocomision, o.fecha_registro::date as fecha
+        FROM operaciones o
+        INNER JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+        WHERE o.tipodocumento = 'OPR' AND o.fecha_registro >= NOW() - INTERVAL '1 month'
+        ORDER BY o.fecha_registro
+      `);
+      return result.rows.map(row => ({
+        entidad: row.entidad,
+        valor: row.valor,
+        saldocomision: row.saldocomision,
+        fecha: row.fecha
+      }));
+    } finally {
+      client.release();
+    }
+  }
+
   export default {
     getLast15Operations,
     getTotalCommissions,
-    getTodayCommissionsByBank
+    getTodayCommissionsByBank,
+    getMonthlyOperationsDataForDashboard
   };
     
