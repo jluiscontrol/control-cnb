@@ -19,13 +19,13 @@ export async function getLast15Operations() {
     }
   }
 
-  export async function getTotalCommissions() {
+  export async function getTotalCommissionsToday() {
     const client = await pool.connect();
     try {
       const result = await client.query(`
         SELECT SUM(saldocomision) as total_comision 
         FROM operaciones 
-        WHERE tipodocumento = 'OPR'
+        WHERE tipodocumento = 'OPR' AND fecha_registro::date = CURRENT_DATE
       `);
       return result.rows[0].total_comision;
     } finally {
