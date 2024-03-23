@@ -14,6 +14,7 @@ export async function getDashboardData(req, res) {
             totalCommissionsByBank,
             monthlyOperations
         });
+        
     } catch (error) {
         res.status(500).json({ error: error.toString() });
     }

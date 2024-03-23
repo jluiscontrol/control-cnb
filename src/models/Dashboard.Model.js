@@ -69,6 +69,7 @@ export async function getLast15Operations() {
       client.release();
     }
   }
+  
 
   export default {
     getLast15Operations,
