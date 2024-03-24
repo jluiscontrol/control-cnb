@@ -4,6 +4,7 @@ const { Pool } = pkg;
 
 // Configuración de la conexión a PostgreSQL
 //work  
+/*
 const pool = new Pool({
     user: 'postgres',
     host: '192.168.100.22',
@@ -11,15 +12,16 @@ const pool = new Pool({
     password: 'Control2701',
     port: 5432,
 }); 
+*/
 
 //home
-// const pool = new Pool({
-//     user: 'postgres',
-//     host: 'localhost',
-//     database: 'control-cnb',
-//     password: '123456',
-//     port: 5432,
-// });
+ const pool = new Pool({
+     user: 'postgres',
+     host: 'localhost',
+     database: 'cnb',
+     password: '',
+     port: 5432,
+ });
 
 
 
