@@ -545,3 +545,9 @@ CREATE TRIGGER trigger_agregaSaldo
 AFTER INSERT ON operaciones
 FOR EACH ROW
 EXECUTE FUNCTION agregaSaldo();
+
+
+-----actualizacion 23/03/2024
+
+ALTER TABLE entidadbancaria
+ALTER COLUMN sobregiro TYPE numeric(10,2);
