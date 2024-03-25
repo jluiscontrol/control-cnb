@@ -94,5 +94,29 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
   }
 };
 
+export const getFilterFecha = async (desde, hasta) => {
+  const arqueo = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+        e.id_encabezadoarqueo,
+        e.caja_id,
+        e.usuario_id,
+        e.estado,
+        e.comentario,
+        e.fechacreacion,
+        d.tipodinero AS tipoDinero,
+        d.valor,
+        d.cantidad
+      FROM encabezadoarqueo e 
+      LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
+      WHERE e.fechacreacion BETWEEN $1 AND $2
+      ORDER BY e.fechacreacion`;
+    const result = await arqueo.query(query, [desde, hasta]);
+    return result.rows;
+  } finally {
+    arqueo.release();
+  }
+};
 
-export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById };
+export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById, getFilterFecha  };
