@@ -4,10 +4,10 @@ import pool from '../database.js';
 async function addTipoTransaccion(nuevoTipoTransaccion) {
   const tipotransaccion = await pool.connect();
   try {
-    const { nombre, afectacaja_id, afectacuenta_id } = nuevoTipoTransaccion;
+    const { nombre, afectacaja_id, afectacuenta_id, tipodocumento } = nuevoTipoTransaccion;
 
     // Verificar si alguno de los campos requeridos está vacío
-    if (!nombre || !afectacaja_id || !afectacuenta_id) {
+    if (!nombre || !afectacaja_id || !afectacuenta_id || !tipodocumento) {
       throw new Error('Todos los campos son requeridos');
     }
 
@@ -18,7 +18,7 @@ async function addTipoTransaccion(nuevoTipoTransaccion) {
     }
 
     // Si el tipo de transacción no existe, procedemos a hacer el insert
-    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id) VALUES($1, $2, $3) RETURNING *', [nombre, afectacaja_id, afectacuenta_id]);
+    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id, tipodocumento) VALUES($1, $2, $3, $4) RETURNING *', [nombre, afectacaja_id, afectacuenta_id, tipodocumento]);
 
     return result.rows[0];
   } finally {
@@ -30,7 +30,7 @@ async function getAllTiposTransaccion() {
   const client = await pool.connect();
   try {
     const query = `
-      SELECT tt.id_tipotransaccion, tt.nombre AS tipo_transaccion, ac.nombre AS afectacion_caja, acc.nombre AS afectacion_cuenta
+      SELECT tt.id_tipotransaccion, tt.nombre AS tipo_transaccion, tt.tipodocumento, ac.nombre AS afectacion_caja, acc.nombre AS afectacion_cuenta
       FROM tipotransaccion tt
       INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
       INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
