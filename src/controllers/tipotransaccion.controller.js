@@ -7,15 +7,15 @@ import { getTipoTransaccionById as getTipoTransaccionByIdModel } from "../models
 
 
 export const createTipoTransaccion = async (req, res) => {
-  const { nombre, afectacuenta_id, afectacaja_id  } = req.body;
+  const { nombre, afectacuenta_id, afectacaja_id, tipodocumento } = req.body;
 
   // Verificar si algún campo requerido está vacío
-  if (!nombre || !afectacuenta_id || !afectacaja_id) {
+  if (!nombre || !afectacuenta_id || !afectacaja_id || !tipodocumento) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios..' });
   }
   try {
     // Llama a la función para registrar tipo de transaccion
-    const userSave = await addTipoTransaccion.addTipoTransaccion({ nombre, afectacuenta_id, afectacaja_id });
+    const userSave = await addTipoTransaccion.addTipoTransaccion({ nombre, afectacuenta_id, afectacaja_id, tipodocumento });
     res.status(201).json(userSave);
   } catch (error) {
     if (error.message === 'El tipo de transacción ya existe' ) {
