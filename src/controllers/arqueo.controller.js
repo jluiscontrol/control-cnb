@@ -1,7 +1,7 @@
 import ArqueoModel from '../models/Arqueo.Model.js';
 import { getArqueoById as getArqueoByIdModel, updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
 import { getFilterFecha } from '../models/Arqueo.Model.js'; // Importar la función getFilterFecha
-
+import { getDetallesArqueoById } from '../models/Arqueo.Model.js'; // Importar la función getDetallesArqueoById
 
 // Función para crear un arqueo
 export const createArqueo = async (req, res) => {
@@ -91,3 +91,18 @@ export const updateArqueoById = async (req, res) => {
   }
 };
 
+
+// Función para obtener los detalles de un arqueo específico
+export const getDetallesArqueo = async (req, res) => {
+  const { encabezadoarqueoId } = req.params;
+  try {
+    const detalles = await getDetallesArqueoById(encabezadoarqueoId);
+    if (!detalles || detalles.error) {
+      return res.status(404).json({ error: 'No se encontraron detalles para el arqueo especificado.' });
+    }
+    res.status(200).json(detalles);
+  } catch (error) {
+    console.error('Error al obtener los detalles del arqueo:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};

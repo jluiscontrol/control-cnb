@@ -119,4 +119,22 @@ export const getFilterFecha = async (desde, hasta) => {
   }
 };
 
-export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById, getFilterFecha  };
+// Función para obtener los detalles de un arqueo específico
+export const getDetallesArqueoById = async (encabezadoarqueoId) => {
+  const client = await pool.connect();
+  console.log(encabezadoarqueoId)
+  try {
+    const query = 'SELECT * FROM detallearqueo WHERE encabezadoarqueo_id = $1';
+    const result = await client.query(query, [encabezadoarqueoId]);
+    client.release();
+    if (result.rows.length === 0) {
+      return { error: 'No se encontraron detalles para el arqueo especificado.' };
+    }
+    return result.rows;
+  } catch (error) {
+    console.error('Error al obtener los detalles del arqueo:', error);
+    throw error; 
+  }
+};
+
+export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById, getFilterFecha, getDetallesArqueoById  };
