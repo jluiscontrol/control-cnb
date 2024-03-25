@@ -53,17 +53,18 @@ export async function getLast15Operations() {
     const client = await pool.connect();
     try {
       const result = await client.query(`
-        SELECT e.entidad, o.valor, o.saldocomision, o.fecha_registro::date as fecha
+        SELECT EXTRACT(MONTH FROM o.fecha_registro) as mes,
+               SUM(o.valor) as total_valor,
+               SUM(o.saldocomision) as total_saldocomision
         FROM operaciones o
         INNER JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-        WHERE o.tipodocumento = 'OPR' AND o.fecha_registro >= NOW() - INTERVAL '1 month'
-        ORDER BY o.fecha_registro
+        GROUP BY mes
+        ORDER BY mes
       `);
       return result.rows.map(row => ({
-        entidad: row.entidad,
-        valor: row.valor,
-        saldocomision: row.saldocomision,
-        fecha: row.fecha
+        mes: row.mes,
+        total_valor: row.total_valor,
+        total_saldocomision: row.total_saldocomision
       }));
     } finally {
       client.release();
