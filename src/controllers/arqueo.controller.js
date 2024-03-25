@@ -1,7 +1,6 @@
 import ArqueoModel from '../models/Arqueo.Model.js';
-import { getArqueoById as getArqueoByIdModel } from '../models/Arqueo.Model.js';
-
-import { updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
+import { getArqueoById as getArqueoByIdModel, updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
+import { getFilterFecha } from '../models/Arqueo.Model.js'; // Importar la función getFilterFecha
 
 
 // Función para crear un arqueo
@@ -22,14 +21,18 @@ export const createArqueo = async (req, res) => {
 };
 
 
-
-
 //Funcion para obtener todos los arqueos
 export const getArqueo = async (req, res) => {
   try {
-    const arqueo = await ArqueoModel.getAllArqueo();
+    const { desde, hasta } = req.query; // Obtener los parámetros de consulta desde y hasta
+
+    if (!desde || !hasta) {
+      return res.status(400).json({ error: 'Se requieren parámetros desde y hasta para filtrar por fecha.' });
+    }
+
+    const arqueo = await getFilterFecha(desde, hasta); // Utilizar la función getFilterFecha para filtrar los arqueos
     if (!arqueo) {
-      return res.status(404).json({ error: 'El arqueo no fue encontrado' });
+      return res.status(404).json({ error: 'No se encontraron arqueos en el rango de fechas especificado.' });
     }
     res.status(200).json(arqueo);
   } catch (error) {
