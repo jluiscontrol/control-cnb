@@ -40,5 +40,20 @@ export async function existeNumTransaccion(numtransaccion) {
     }
 }
 
+// En el modelo de entidad bancaria (por ejemplo)
+export async function obtenerSobregiroPermitido(id_entidadbancaria) {
+    // Realizar la consulta para obtener el límite del sobregiro
+    const entidadBancariaQuery = await pool.query(`
+      SELECT sobregiro FROM entidadbancaria WHERE id_entidadbancaria = $1`, [id_entidadbancaria]);
+    
+    // Comprobar si se encontró el límite del sobregiro
+    if (entidadBancariaQuery.rows.length === 0) {
+      return null; // Si no se encuentra, devolver null
+    }
+    
+    // Devolver el límite del sobregiro
+    return entidadBancariaQuery.rows[0].sobregiro;
+  }
 
-export default { isTokenExpired, existeNumTransaccion }
+
+export default { isTokenExpired, existeNumTransaccion, obtenerSobregiroPermitido }

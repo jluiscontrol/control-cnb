@@ -1,7 +1,8 @@
 import * as operaciones from '../models/Operaciones.Model.js'
-import { existeNumTransaccion } from '../helpers/funciones.js';
+import { existeNumTransaccion, obtenerSobregiroPermitido } from '../helpers/funciones.js';
 import { updateOperacionesById } from '../models/Operaciones.Model.js';
 import { deleteOperacionesById } from '../models/Operaciones.Model.js';
+
 
 
 export const createOperaciones = async (req, res) => {
@@ -19,28 +20,24 @@ export const createOperaciones = async (req, res) => {
   } = req.body;
 
   if (!id_entidadbancaria || !id_tipotransaccion || !valor || !comentario || !tipodocumento) {
-    return res.status(400).json('Algunos campo son obligatorios');
+    return res.status(400).json('Algunos campos son obligatorios');
   }
+  
   // Validar tipos de datos
   if (typeof id_entidadbancaria !== 'number' || typeof id_tipotransaccion !== 'number' || typeof valor !== 'number') {
     return res.status(400).json({ error: 'Error al agregar operación: Verifique los tipos de datos de los campos.' });
   }
-  // Validar formato de numtransaccion con expresión regular
-  // const numTransaccionRegex = /^[0-9]+$/; // Solo permite números
-  // if (!numTransaccionRegex.test(numtransaccion)) {
-  //   return res.status(400).json({ error: 'Error al agregar operación: El número de transacción debe contener solo números.' });
-  // }
 
   try {
-    // llama a la funcion valida numero transaccion
+    // Llama a la función para validar el número de transacción
     const numTransaccionExistente = await existeNumTransaccion(numtransaccion);
     if (numTransaccionExistente) {
       return res.status(400).json({
         error: `El número de comprobante '${numtransaccion}' ya existe en la transacción: ${numTransaccionExistente}`,
-
       });
     }
 
+    // Guardar la operación
     const operacionSave = await operaciones.addOperaciones({
       id_entidadbancaria,
       id_tipotransaccion,
@@ -56,11 +53,17 @@ export const createOperaciones = async (req, res) => {
     });
     res.status(201).json(operacionSave);
   } catch (error) {
-    console.error('Error al crear operacion:', error);
+
+    if (error.message.includes('La operación excede el límite del sobregiro permitido para esta entidad bancaria.')) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error('Error al crear operación:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-
 }
+
+
+
 
 
 //Funcion para obtener todas las operaciones

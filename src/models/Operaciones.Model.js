@@ -1,13 +1,14 @@
 import pool from '../database.js';
 
-
 export async function addOperaciones(operaciones) {
   const operacion = await pool.connect();
   let client;
+
   try {
     client = await operacion.query("BEGIN");
 
-    const { id_entidadbancaria,
+    const {
+      id_entidadbancaria,
       id_tipotransaccion,
       id_cliente,
       valor,
@@ -22,40 +23,55 @@ export async function addOperaciones(operaciones) {
 
     // Validar campos obligatorios
     if (!id_entidadbancaria || !id_tipotransaccion || !valor || !comentario || !tipodocumento) {
-      throw new Error;
+      throw new Error('Todos los campos obligatorios deben ser proporcionados.');
     }
 
     // Validar tipos de datos
     if (typeof id_entidadbancaria !== 'number'
-      || typeof id_tipotransaccion !== 'number'     
-     
-      || typeof valor !== 'number') {
-
-      throw new Error;
+      || typeof id_tipotransaccion !== 'number'
+      || typeof valor !== 'number'
+    ) {
+      throw new Error('Los tipos de datos de los campos son incorrectos.');
     }
 
-    // // Validar formato de numtransaccion con expresión regular
-    // const numTransaccionRegex = /^[0-9]+$/; // Solo números
-    // if (!numTransaccionRegex.test(numtransaccion)) {
-    //   throw new Error('El número de transacción debe contener solo números');
-    // }
+    // Consultar el valor de sobregiro de la entidad bancaria
+    const entidadBancariaQuery = await operacion.query(`
+      SELECT sobregiro FROM entidadbancaria WHERE id_entidadbancaria = $1`, [id_entidadbancaria]);
+    const sobregiro = entidadBancariaQuery.rows[0]?.sobregiro || 0;
+
+    // Consultar el saldo disponible en la tabla de saldos
+    const saldoQuery = await operacion.query(`
+      SELECT saldocuenta FROM saldos WHERE entidadbancaria_id = $1`, [id_entidadbancaria]);
+
+    if (saldoQuery.rows.length === 0) {
+      throw new Error('No se encontró saldo para la entidad bancaria especificada.');
+    }
+
+    const saldoDisponible = saldoQuery.rows[0]?.saldocuenta || 0;
+
+    // Validar que el saldo de la cuenta no exceda el límite del sobregiro
+    const saldoTotal = saldoDisponible - valor;
+    if (saldoTotal < -sobregiro) {
+      throw new Error('La operación excede el límite del sobregiro permitido para esta entidad bancaria.');
+    }
 
     // Insertar operación
     const result = await operacion.query(`
-          INSERT INTO 
-          operaciones(id_entidadbancaria, 
-                      id_tipotransaccion, 
-                              id_cliente, 
-                                   valor, 
-                              referencia, 
-                              comentario, 
-                           numtransaccion, 
-                               id_usuario,
-                               saldocomision,
-                               estado,
-                               tipodocumento) 
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
-          RETURNING *`, [id_entidadbancaria,
+      INSERT INTO 
+      operaciones(id_entidadbancaria, 
+                  id_tipotransaccion, 
+                  id_cliente, 
+                  valor, 
+                  referencia, 
+                  comentario, 
+                  numtransaccion, 
+                  id_usuario,
+                  saldocomision,
+                  estado,
+                  tipodocumento) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+      RETURNING *`, [
+      id_entidadbancaria,
       id_tipotransaccion,
       id_cliente,
       valor,
@@ -78,6 +94,8 @@ export async function addOperaciones(operaciones) {
     operacion.release();
   }
 }
+
+
 
 //Funcion para obtener todas las operaciones
 export async function getAllOperaciones() {
@@ -259,12 +277,12 @@ export const ObtenerComisionByBankandTransa = async (newData) => {
     const query = `SELECT          
           e.valorcomision AS saldocomision,    
           WHERE entidadbancaria_id = $1 && tipotransaccion_id = $2`;
-          const result = await client.query(query, [
-            newData.id_tipotransaccion,
-            newData.id_entidadbancaria,
-          
-          ]);    
-    
+    const result = await client.query(query, [
+      newData.id_tipotransaccion,
+      newData.id_entidadbancaria,
+
+    ]);
+
     if (result.rowCount === 0) {
       return { error: 'no existe comision en esta operacion' }; // Devuelve un objeto con el mensaje de error
     }
