@@ -124,7 +124,7 @@ export const getDetallesArqueoById = async (encabezadoarqueoId) => {
   const client = await pool.connect();
   console.log(encabezadoarqueoId)
   try {
-    const query = 'SELECT * FROM detallearqueo WHERE encabezadoarqueo_id = $1';
+    const query = 'SELECT * FROM detallearqueo WHERE encabezadoarqueo_id = $1 ORDER BY id_detalle_arqueo';
     const result = await client.query(query, [encabezadoarqueoId]);
     client.release();
     if (result.rows.length === 0) {
