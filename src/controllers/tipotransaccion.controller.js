@@ -3,7 +3,9 @@ import  getAllTiposTransaccion from "../models/tipotransaccion.model.js"
 import  getAllTiposTransaccionActivos from "../models/tipotransaccion.model.js"
 import  { updateTipoTransaccionId } from "../models/tipotransaccion.model.js"
 import { getTipoTransaccionById as getTipoTransaccionByIdModel } from "../models/tipotransaccion.model.js"
-import getAllTiposTransaccionByTipoDocumento from "../models/tipotransaccion.model.js"
+import TipotransaccionModel from "../models/tipotransaccion.model.js";
+
+
 
 export const createTipoTransaccion = async (req, res) => {
   const { nombre, afectacuenta_id, afectacaja_id, tipodocumento } = req.body;
@@ -122,21 +124,10 @@ export const deleteTipoTransaccionById = (req, res) => {
 }
 
 
-// export const TipoTransaccionByTipoDocumento = async (req, res) => {
-//   try {
-//     const tipodocumento = req.params.tipodocumento;
-//     const tiposTransaccion = await getAllTiposTransaccionByTipoDocumento(tipodocumento);
-//     res.status(200).json(tiposTransaccion);
-//   } catch (error) {
-//     console.error('Error al obtener los tipos de transaccion por tipo de documento:', error);
-//     res.status(500).json({ error: 'Error interno del servidor' });
-//   }
-// }
-
 export async function TipoTransaccionByTipoDocumento(req, res) {
   try {
-    const tipodocumento = req.params.tipodocumento; 
-    const tiposTransaccion = await getAllTiposTransaccionByTipoDocumento(tipodocumento);
+    const tipodocumento = req.params.tipodocumento;
+    const tiposTransaccion = await TipotransaccionModel.getAllTiposTransaccionByTipoDocumento(tipodocumento);
     res.status(200).json(tiposTransaccion);
   } catch (error) {
     console.error('Error al obtener los tipos de transaccion por tipo de documento:', error);
