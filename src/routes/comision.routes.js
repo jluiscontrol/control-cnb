@@ -2,7 +2,7 @@ import { Router } from "express";
 
 const router = Router()
 import * as comisionCtrl from '../controllers/comision.controllers.js'//importa todos mis controladores de la ruta 
-import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jwt.js";
+import { verifyToken, verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 
 router.post('/',comisionCtrl.createComision)

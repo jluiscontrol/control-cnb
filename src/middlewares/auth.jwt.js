@@ -163,5 +163,5 @@ export const verifyEmpleado = async (req, res, next) => {
     }
 };
 
-export default { verifyToken, verifyAdmin, verifyEmpleado }
+export default { verifyToken,  verifyEmpleado }
 

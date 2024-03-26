@@ -3,23 +3,23 @@ import pkg from 'pg';
 const { Pool } = pkg;
 
 // Configuración de la conexión a PostgreSQL
-//work  
-// const pool = new Pool({
-//     user: 'postgres',
-//     host: '192.168.100.22',
-//     database: 'control-cnb',
-//     password: 'Control2701',
-//     port: 5432,
-// }); 
+// work  
+const pool = new Pool({
+    user: 'postgres',
+    host: '192.168.100.22',
+    database: 'control-cnb',
+    password: 'Control2701',
+    port: 5432,
+}); 
 
 // Joel
-   const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'cnb',
-    password: '',
-    port: 5432,
-});
+//    const pool = new Pool({
+//     user: 'postgres',
+//     host: 'localhost',
+//     database: 'cnb',
+//     password: '',
+//     port: 5432,
+// });
 
 
 

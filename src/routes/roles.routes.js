@@ -3,7 +3,7 @@ import { Router } from "express";
 const router = Router()
 
 import * as rolesCtrl from '../controllers/roles.controller.js'//importa todos mis controladores de la ruta producto
-import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jwt.js";
+import { verifyToken,  verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 
 router.get('/', rolesCtrl.getRoles)

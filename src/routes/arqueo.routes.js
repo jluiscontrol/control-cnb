@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as arqueoEncabezadoCtrl from '../controllers/arqueo.controller.js'
-import { verifyToken, verifyAdmin, verifyEmpleado } from "../middlewares/auth.jwt.js";
+import { verifyToken,  verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 const router = Router();
 
