@@ -114,7 +114,7 @@ export const getFilterFecha = async (desde, hasta) => {
       LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
       LEFT JOIN caja c ON c.id_caja = e.caja_id
       LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-      WHERE e.fechacreacion BETWEEN $1 AND $2
+      WHERE e.fechacreacion BETWEEN $1 AND $2 
       ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
     const result = await arqueo.query(query, [desde, hasta]);
     return result.rows;
