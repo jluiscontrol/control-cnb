@@ -135,6 +135,7 @@ async function getAllAfectaCuenta() {
   }
 }
 
+//funcion para obtener todos los tipos de transacciones por tipo de documento
 async function getAllTiposTransaccionByTipoDocumento(tipodocumento) {
   const client = await pool.connect();
   try {
