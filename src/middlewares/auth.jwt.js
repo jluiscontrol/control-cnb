@@ -31,7 +31,7 @@ export const verifyToken = async (req, res, next) => {
 };
 
 // Verificar si es admin
-export const verifyAdmin = async (req, res, next) => {
+/*export const verifyAdmin = async (req, res, next) => {
     try {
         const userId = req.user?.id_usuario; // Obtiene el ID de usuario desde el objeto de solicitud
 
@@ -58,6 +58,80 @@ export const verifyAdmin = async (req, res, next) => {
         return res.status(500).json({ message: "Error interno del servidor" });
     }
 };
+*/
+export const verifyPermissions = async (req, res, next) => {
+    try {
+        const userId = req.user?.id_usuario; // Obtener el ID de usuario desde el objeto de solicitud
+        const { entidad, accion } = req.params; // Obtener la entidad y la acción de la solicitud
+
+        if (!userId) {
+            return res.status(401).json({ message: "Usuario no autenticado" });
+        }
+
+        // Consultar los roles del usuario
+        const query = `
+            SELECT r.id_rol
+            FROM usuario_rol ur
+            JOIN rol r ON ur.id_rol = r.id_rol
+            WHERE ur.id_usuario = $1;
+        `;
+        const { rows: roles } = await pool.query(query, [userId]);
+
+        // Verificar si alguno de los roles del usuario tiene permiso para la acción en la entidad
+        const hasPermission = roles.some(async (role) => {
+            const permissionQuery = `
+                SELECT EXISTS (
+                    SELECT 1 FROM permisos
+                    WHERE (id_rol = $1 OR id_usuario = $2)
+                    AND entidad = $3
+                    AND accion = $4
+                    AND permitido = true
+                ) AS allowed;
+            `;
+            const { rows } = await pool.query(permissionQuery, [role.id_rol, userId, entidad, accion]);
+            return rows[0].allowed;
+        });
+
+        if (hasPermission) {
+            return next();
+        } else {
+            return res.status(403).json({ message: "No tiene permiso para realizar esta acción" });
+        }
+    } catch (error) {
+        console.error("Error al verificar los permisos:", error);
+        return res.status(500).json({ message: "Error interno del servidor" });
+    }
+};
+
+/*
+modelo
+// models/permisos.js
+
+const insertOrUpdatePermiso = async (id_rol, entidad, accion, permitido) => {
+    try {
+        // Consulta SQL para insertar o actualizar un permiso
+        const query = `
+            INSERT INTO permisos (id_rol, entidad, accion, permitido)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (id_rol, entidad, accion)
+            DO UPDATE SET permitido = $4
+            RETURNING *
+        `;
+        
+        // Ejecuta la consulta con los valores proporcionados
+        const { rows } = await pool.query(query, [id_rol, entidad, accion, permitido]);
+        
+        return rows[0]; // Devuelve el nuevo permiso insertado o actualizado
+    } catch (error) {
+        throw new Error(`Error al insertar o actualizar permiso: ${error.message}`);
+    }
+};
+
+module.exports = { insertOrUpdatePermiso };
+
+
+*/
+
 
 
 //Verificar si es empleado

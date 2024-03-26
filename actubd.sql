@@ -551,3 +551,16 @@ EXECUTE FUNCTION agregaSaldo();
 
 ALTER TABLE entidadbancaria
 ALTER COLUMN sobregiro TYPE numeric(10,2);
+
+---------
+CREATE TABLE IF NOT EXISTS public.permisos
+(
+    id_permiso SERIAL PRIMARY KEY,
+    id_rol INTEGER,
+    id_usuario INTEGER,
+    entidad VARCHAR(255),
+    accion VARCHAR(50),
+    permitido BOOLEAN,
+    FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
+);
