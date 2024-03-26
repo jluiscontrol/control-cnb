@@ -5,6 +5,7 @@ import cors from 'cors'
 
 import { createRoles } from './libs/initialSetUp.js';
 
+import consultaCedula from './routes/consultaCedula.routes.js'
 import arqueo from './routes/arqueo.routes.js'
 import roles from './routes/roles.routes.js'
 import comisiones from './routes/comision.routes.js'
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 
     })
 })
+app.use('/consultaCedula',consultaCedula)
 app.use('/arqueo',arqueo)
 app.use('/roles',roles)
 app.use('/comisiones',comisiones)
