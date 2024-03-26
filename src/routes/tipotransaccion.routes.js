@@ -16,7 +16,7 @@ router.get('/afectacuenta', tipoTransaccionCtrl.getTipoAfectaCuenta)
 router.get('/:tipoTransacccionId', tipoTransaccionCtrl.getTipoTransaccionById)
 router.put('/:tipoTransacccionId', tipoTransaccionCtrl.updateTipoTransaccionById)
 router.delete('/:tipoTransacccionId', tipoTransaccionCtrl.deleteTipoTransaccionById)
-
+router.get('/tipodocumento/:tipodocumento', tipoTransaccionCtrl.getAllTiposTransaccionByTipoDocumento);
 
 
 export default router;
