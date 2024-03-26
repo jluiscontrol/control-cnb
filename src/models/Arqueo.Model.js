@@ -98,7 +98,7 @@ export const getFilterFecha = async (desde, hasta) => {
   const arqueo = await pool.connect();
   try {
     const query = `
-      SELECT 
+      SELECT DISTINCT ON (e.id_encabezadoarqueo)
         e.id_encabezadoarqueo,
         e.caja_id,
         e.usuario_id,
@@ -107,17 +107,22 @@ export const getFilterFecha = async (desde, hasta) => {
         e.fechacreacion,
         d.tipodinero AS tipoDinero,
         d.valor,
-        d.cantidad
+        d.cantidad,
+        c.nombre AS nombre_caja,
+        u.nombre_usuario
       FROM encabezadoarqueo e 
       LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
-      WHERE e.fechacreacion BETWEEN $1 AND $2
-      ORDER BY e.fechacreacion`;
+      LEFT JOIN caja c ON c.id_caja = e.caja_id
+      LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
+      WHERE e.fechacreacion BETWEEN $1 AND (DATE_TRUNC('day', $2::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')
+      ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
     const result = await arqueo.query(query, [desde, hasta]);
     return result.rows;
   } finally {
     arqueo.release();
   }
 };
+
 
 // Función para obtener los detalles de un arqueo específico
 export const getDetallesArqueoById = async (encabezadoarqueoId) => {
