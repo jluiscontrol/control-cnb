@@ -109,6 +109,7 @@ export async function getAllOperaciones() {
             e.entidad AS entidad,
             e.acronimo AS acronimo,
             e.sobregiro AS sobregiro,
+            e.estado AS estado_entidad,
             tt.nombre AS tipotransaccion,
             c.cedula AS cedula_cliente,
             c.nombres AS nombres_cliente,
@@ -127,7 +128,6 @@ export async function getAllOperaciones() {
             au.nombre AS afectacion_cuenta,
             u.nombre_usuario AS nombre_usuario_operacion,
             s.saldocuenta AS saldocuenta
-        
         FROM 
             operaciones o
         JOIN 

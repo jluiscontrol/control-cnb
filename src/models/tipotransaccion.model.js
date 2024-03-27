@@ -94,9 +94,9 @@ export const updateTipoTransaccionId = async (tipotransaccionId, newData) => {
   try {
     const transaccion = await pool.connect();
     // Construir la consulta SQL de actualización
-    const query = 'UPDATE tipotransaccion  SET nombre = $1, afectacaja_id = $2, afectacuenta_id = $3 WHERE id_tipotransaccion = $4';
+    const query = 'UPDATE tipotransaccion  SET nombre = $1, afectacaja_id = $2, afectacuenta_id = $3, tipodocumento = $4 WHERE id_tipotransaccion = $5';
     // Ejecutar la consulta SQL con los nuevos datos y el ID de la entidad bancaria
-    await transaccion.query(query, [newData.nombre, newData.afectacaja_id, newData.afectacuenta_id, tipotransaccionId]);
+    await transaccion.query(query, [newData.nombre, newData.afectacaja_id, newData.afectacuenta_id, newData.tipodocumento, tipotransaccionId]);
     
     // Liberar la conexión al pool de conexiones
     transaccion.release();
@@ -106,6 +106,7 @@ export const updateTipoTransaccionId = async (tipotransaccionId, newData) => {
     throw new Error('Error al actualizar el tipo de transaccion: ' + error.message);
   }
 };
+
 
 //funcion para obtener todos los datos de Afecta caja
 async function getAllAfectaCaja() {

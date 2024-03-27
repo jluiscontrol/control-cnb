@@ -1,37 +1,64 @@
 
 import pool from '../database.js';
 
-// Función para agregar un nueva entidad
+// Función para agregar una nueva entidad bancaria
 async function addEntidadBancaria(entidadBancaria) {
-  const banco = await pool.connect();
+  const cliente = await pool.connect();
   try {
-    const { entidad, acronimo, estado = true, sobregiro } = entidadBancaria;
-    if (!entidad || !acronimo ||  !sobregiro) {
+    const { entidad, acronimo, estado = true, sobregiro, saldocuenta = 0, saldocaja = 0 } = entidadBancaria;
+    if (!entidad || !acronimo || !sobregiro) {
       throw new Error('Todos los campos son requeridos');
     }
-    //verificar si el banco ya existe
-    const existingBanco = await banco.query('SELECT * FROM entidadbancaria WHERE entidad = $1', [entidad]);
+
+    // Iniciar una transacción
+    await cliente.query('BEGIN');
+
+    // Verificar si la entidad bancaria ya existe
+    const existingBanco = await cliente.query('SELECT * FROM entidadbancaria WHERE entidad = $1', [entidad]);
     if (existingBanco.rows.length > 0) {
-        throw new Error('La entidad bancaria ya existe')
+      throw new Error('La entidad bancaria ya existe');
     }
-    //Si el banco no existe, procedemos a hacer el insert
-    const result = await banco.query('INSERT INTO entidadbancaria(entidad, acronimo, estado,  sobregiro) VALUES( $1, $2, $3, $4) RETURNING *', [entidad, acronimo, estado, sobregiro]);
-    return result.rows[0];
-  } finally { 
-    banco.release();
+
+    // Insertar la nueva entidad bancaria
+    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro) VALUES ($1, $2, $3, $4) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro]);
+    const id_entidadbancaria = result.rows[0].id_entidadbancaria;
+
+    // Insertar el saldo de cuenta y el saldo de caja en una sola operación
+    await cliente.query('INSERT INTO saldos(entidadbancaria_id, saldocuenta, saldocaja) VALUES ($1, $2, $3)', [id_entidadbancaria, saldocuenta, saldocaja]);
+
+    // Confirmar la transacción
+    await cliente.query('COMMIT');
+
+    return { id_entidadbancaria, entidad, acronimo, estado, sobregiro, saldocuenta, saldocaja };
+  } catch (error) {
+    // Si hay algún error, hacer rollback de la transacción
+    await cliente.query('ROLLBACK');
+    throw error;
+  } finally {
+    // Siempre liberar el cliente
+    cliente.release();
   }
 }
+
+
 
 // Función para obtener todas las entidades bancarias
 async function getAllEntidadesBancarias() {
   const entidadBancaria = await pool.connect();
   try {
-    const entidad = await entidadBancaria.query('SELECT * FROM entidadbancaria ORDER BY id_entidadbancaria');
+    const query = `
+      SELECT e.*, s.*
+      FROM entidadbancaria e
+      JOIN saldos s ON e.id_entidadbancaria = s.entidadbancaria_id
+      ORDER BY e.id_entidadbancaria;
+    `;
+    const entidad = await entidadBancaria.query(query);
     return entidad.rows;
   } finally {
     entidadBancaria.release();
   }
 }
+
 // Función para obtener todas las entidades bancarias activas
 async function getAllEntidadesBancariasActivas() {
   const entidadBancaria = await pool.connect();
