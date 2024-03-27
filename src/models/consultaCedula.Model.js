@@ -7,14 +7,14 @@ export async function insertarCliente(cliente) {
     try {
         // Consultar si el cliente ya existe en la base de datos local
         const consultaClienteExistente = await pool.query(`
-            SELECT id_persona FROM persona WHERE cedula = $1`, [cliente.cedula]);
+            SELECT * FROM persona WHERE cedula = $1`, [cliente.cedula]);
   
         // Si el cliente ya existe en la base de datos local, devolver sus datos
         if (consultaClienteExistente.rows.length > 0) {
             return {
               id_persona: consultaClienteExistente.rows[0].id_persona,
-              nombre: cliente.nombre,
-              cedula: cliente.cedula
+              nombre: consultaClienteExistente.rows[0].nombre,
+              cedula: consultaClienteExistente.rows[0].cedula
             };
         }
   
