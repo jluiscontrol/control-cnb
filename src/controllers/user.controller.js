@@ -6,6 +6,36 @@ import { updateUser } from '../models/User.Model.js';
 import { deleteUser } from '../models/User.Model.js';
 import { updateCajaById } from '../models/User.Model.js';
 
+export const createPersona = async (req, res) => {
+  const { nombre, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  
+  // Verificar si algún campo requerido está vacío
+  if (!nombre || !fecha_nacimiento || !direccion || !telefono || !cedula) {
+    const camposFaltantes = [];
+    if (!nombre) camposFaltantes.push('Nombre');
+    if (!fecha_nacimiento) camposFaltantes.push('Fecha de nacimiento');
+    if (!direccion) camposFaltantes.push('Dirección');
+    if (!telefono) camposFaltantes.push('Teléfono');
+    if (!cedula) camposFaltantes.push('Cédula');
+
+    return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
+  }
+
+  try {
+    const personaSave = await User.addPersona({ nombre, fecha_nacimiento, direccion, telefono, cedula });
+
+    // Verificar si la función addPersona devolvió un error relacionado con la cédula ya registrada
+    if (personaSave.error) {
+      return res.status(400).json({ error: personaSave.error });
+    }
+
+    res.status(201).json(personaSave);
+  } catch (error) {
+    console.error('Error al crear persona:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 
 export const createUser = async (req, res) => {
   const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;

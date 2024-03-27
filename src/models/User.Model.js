@@ -5,6 +5,44 @@ import jwt from 'jsonwebtoken';
 import config from '../config.js';
 
 
+// Función para agregar una nueva persona
+async function addPersona(Persona) {
+  const persona = await pool.connect();
+  try {
+    const { nombre, fecha_nacimiento, direccion, telefono, cedula } = Persona;
+
+    // Verificar si la cédula ya está registrada
+    const existingCedulaQuery = `
+      SELECT *
+      FROM persona
+      WHERE cedula = $1
+    `;
+    const existingCedulaResult = await persona.query(existingCedulaQuery, [cedula]);
+
+    if (existingCedulaResult.rows.length > 0) {
+      return { error: 'Cédula ya registrada, la cedula ya pertenece a una persona registrada.' };
+    }
+
+    // Iniciar una transacción
+    await persona.query('BEGIN');
+
+    const personaInsertResult = await persona.query(`
+      INSERT INTO persona
+        (nombre, fecha_nacimiento, direccion, telefono, cedula)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id_persona`,
+      [nombre, fecha_nacimiento, direccion, telefono, cedula]);
+
+    // Commit la transacción
+    await persona.query('COMMIT');
+
+    // Devolver el id_persona de la persona insertada
+    return { id_persona: personaInsertResult.rows[0].id_persona };
+  } finally {
+    persona.release();
+  }
+}
+
 // Función para agregar un nuevo usuario
 async function addUser(User, Persona, id_rol) {
   const user = await pool.connect();
@@ -217,9 +255,6 @@ export const updateUser = async (userId, updatedData) => {
 };
 
 
-
-
-
 //agregar una nueva caja
 export async function addCaja(info) {
   const cajaDatos = await pool.connect();
@@ -250,7 +285,6 @@ export async function addCaja(info) {
   }
 }
 
-
 //Obtener todas las cajas / activas e inactivas
 export async function getAllCajas() {
   const cajas = await pool.connect();
@@ -262,6 +296,7 @@ export async function getAllCajas() {
     cajas.release();
   }
 }
+
 //obtener cajas solo estado activas
 export async function getAllCajasActivas() {
   const cajas = await pool.connect();
@@ -328,5 +363,6 @@ export default {
       addCaja,
       getAllCajas,
       getAllCajasActivas,
-      updateCajaById
+      updateCajaById,
+      addPersona
 };

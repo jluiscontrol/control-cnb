@@ -11,6 +11,8 @@ router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)
 router.put('/estado/:userDeleteId', userCtrl.deleteUserById)
 
+router.post('/persona', userCtrl.createPersona)
+
 //creacion de caja
 router.post('/caja', userCtrl.createCaja)
 router.get('/caja/getAll', userCtrl.getCajas)
