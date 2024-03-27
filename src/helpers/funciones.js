@@ -61,8 +61,7 @@ export async function consultarClienteAPI(nident) {
         const response = await axios.post(
             'https://sacc.sistemascontrol.ec/api_control_identificaciones/public/data/consulta-identificacion',
             {
-                "func": nident.length === 10 ? "GETCEDULA" : "GETRUC",
-                "ruc": nident
+                "func": nident.length === 10 ? "GETCEDULA" : "GETRUC", "ruc": nident
             },
             {
                 headers: {
@@ -75,7 +74,7 @@ export async function consultarClienteAPI(nident) {
 
         return response.data;
     } catch (error) {
-        console.error('Error al consultar la API para obtener datos del cliente:', error);
+        console.error('Error al consultar  datos del cliente:', error);
         throw error;
     }
 }
