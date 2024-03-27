@@ -564,3 +564,17 @@ CREATE TABLE IF NOT EXISTS public.permisos
     FOREIGN KEY (id_rol) REFERENCES rol(id_rol),
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario)
 );
+
+---27-03-2024
+-- Actualizar la relación en la tabla operaciones cambiando id_cliente por id_persona de la tabla persona
+ALTER TABLE public.operaciones
+DROP CONSTRAINT operaciones_id_cliente_fkey, -- Eliminar la clave externa existente de id_cliente
+ADD COLUMN id_persona INT, -- Agregar la nueva columna id_persona
+ADD CONSTRAINT operaciones_id_persona_fkey FOREIGN KEY (id_persona) REFERENCES public.persona(id_persona); -- Establecer la nueva clave externa de id_persona
+
+
+-- Eliminar la columna id_cliente ahora que se ha actualizado la relación
+ALTER TABLE public.operaciones
+DROP COLUMN id_cliente;
+
+DROP TABLE IF EXISTS public.cliente;
