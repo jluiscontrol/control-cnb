@@ -10,7 +10,7 @@ export async function addOperaciones(operaciones) {
     const {
       id_entidadbancaria,
       id_tipotransaccion,
-      id_cliente,
+      id_persona,
       valor,
       referencia,
       comentario,
@@ -60,7 +60,7 @@ export async function addOperaciones(operaciones) {
       INSERT INTO 
       operaciones(id_entidadbancaria, 
                   id_tipotransaccion, 
-                  id_cliente, 
+                  id_persona, 
                   valor, 
                   referencia, 
                   comentario, 
@@ -73,7 +73,7 @@ export async function addOperaciones(operaciones) {
       RETURNING *`, [
       id_entidadbancaria,
       id_tipotransaccion,
-      id_cliente,
+      id_persona,
       valor,
       referencia,
       comentario,
@@ -105,7 +105,7 @@ export async function getAllOperaciones() {
       const resultado = await operaciones.query(`
             SELECT 
             id_operacion,
-            c.id_cliente AS id_cliente,
+            c.id_persona AS id_persona,
             e.entidad AS entidad,
             e.acronimo AS acronimo,
             e.sobregiro AS sobregiro,
@@ -133,7 +133,7 @@ export async function getAllOperaciones() {
         JOIN 
             entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
         JOIN 
-            cliente c ON o.id_cliente = c.id_cliente
+            cliente c ON o.id_persona = c.id_persona
         JOIN 
             tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
         LEFT JOIN
@@ -185,7 +185,7 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
       JOIN 
           entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN 
-          cliente c ON o.id_cliente = c.id_cliente
+          cliente c ON o.id_persona = c.id_persona
       JOIN 
           tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
       LEFT JOIN
@@ -218,7 +218,7 @@ export const updateOperacionesById = async (operacionesId, newData) => {
           UPDATE operaciones 
           SET id_entidadbancaria = $1, 
               id_tipotransaccion = $2, 
-              id_cliente = $3,
+              id_persona = $3,
               valor = $4,
               referencia = $5,
               comentario = $6,
@@ -229,7 +229,7 @@ export const updateOperacionesById = async (operacionesId, newData) => {
       ;
     const result = await client.query(query, [newData.id_entidadbancaria,
     newData.id_tipotransaccion,
-    newData.id_cliente,
+    newData.id_persona,
     newData.valor,
     newData.referencia,
     newData.comentario,
