@@ -109,7 +109,7 @@ export async function getAllOperaciones() {
             e.entidad AS entidad,
             e.acronimo AS acronimo,
             e.sobregiro AS sobregiro,
-            e.estado AS estado_entidad,
+            e.estado AS estado,
             tt.nombre AS tipotransaccion,
             
             o.valor AS valor_operacion,
