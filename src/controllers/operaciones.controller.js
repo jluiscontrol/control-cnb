@@ -8,7 +8,7 @@ import { deleteOperacionesById } from '../models/Operaciones.Model.js';
 export const createOperaciones = async (req, res) => {
   const { id_entidadbancaria,
     id_tipotransaccion,
-    id_cliente,
+    id_persona,
     valor,
     referencia,
     comentario,
@@ -41,7 +41,7 @@ export const createOperaciones = async (req, res) => {
     const operacionSave = await operaciones.addOperaciones({
       id_entidadbancaria,
       id_tipotransaccion,
-      id_cliente,
+      id_persona,
       valor,
       referencia,
       comentario,

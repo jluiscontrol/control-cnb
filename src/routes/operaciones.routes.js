@@ -6,7 +6,7 @@ import * as operacionesCtrl from '../controllers/operaciones.controller.js'//imp
 import { verifyToken, verifyPermissions, verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 
-router.post('/', [verifyToken, verifyPermissions], operacionesCtrl.createOperaciones)
+router.post('/', operacionesCtrl.createOperaciones)
 router.get('/', operacionesCtrl.getOperaciones)
 router.get('/filter', operacionesCtrl.getOperacionesFilter)
 router.get('/:operacionesId', operacionesCtrl.getOperacionesById)
