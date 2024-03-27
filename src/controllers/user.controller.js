@@ -7,13 +7,12 @@ import { deleteUser } from '../models/User.Model.js';
 import { updateCajaById } from '../models/User.Model.js';
 
 export const createPersona = async (req, res) => {
-  const { nombre, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  const { nombre, direccion, telefono, cedula } = req.body;
   
   // Verificar si algún campo requerido está vacío
-  if (!nombre || !fecha_nacimiento || !direccion || !telefono || !cedula) {
+  if (!nombre || !direccion || !telefono || !cedula) {
     const camposFaltantes = [];
     if (!nombre) camposFaltantes.push('Nombre');
-    if (!fecha_nacimiento) camposFaltantes.push('Fecha de nacimiento');
     if (!direccion) camposFaltantes.push('Dirección');
     if (!telefono) camposFaltantes.push('Teléfono');
     if (!cedula) camposFaltantes.push('Cédula');
@@ -22,7 +21,7 @@ export const createPersona = async (req, res) => {
   }
 
   try {
-    const personaSave = await User.addPersona({ nombre, fecha_nacimiento, direccion, telefono, cedula });
+    const personaSave = await User.addPersona({ nombre, direccion, telefono, cedula });
 
     // Verificar si la función addPersona devolvió un error relacionado con la cédula ya registrada
     if (personaSave.error) {

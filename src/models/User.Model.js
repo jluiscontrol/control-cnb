@@ -9,7 +9,7 @@ import config from '../config.js';
 async function addPersona(Persona) {
   const persona = await pool.connect();
   try {
-    const { nombre, fecha_nacimiento, direccion, telefono, cedula } = Persona;
+    const { nombre, direccion, telefono, cedula } = Persona;
 
     // Verificar si la cédula ya está registrada
     const existingCedulaQuery = `
@@ -28,10 +28,10 @@ async function addPersona(Persona) {
 
     const personaInsertResult = await persona.query(`
       INSERT INTO persona
-        (nombre, fecha_nacimiento, direccion, telefono, cedula)
-      VALUES ($1, $2, $3, $4, $5)
+        (nombre, direccion, telefono, cedula)
+      VALUES ($1, $2, $3, $4)
       RETURNING id_persona`,
-      [nombre, fecha_nacimiento, direccion, telefono, cedula]);
+      [nombre, direccion, telefono, cedula]);
 
     // Commit la transacción
     await persona.query('COMMIT');
