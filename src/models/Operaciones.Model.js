@@ -105,15 +105,13 @@ export async function getAllOperaciones() {
       const resultado = await operaciones.query(`
             SELECT 
             id_operacion,
-            c.id_persona AS id_persona,
+       
             e.entidad AS entidad,
             e.acronimo AS acronimo,
             e.sobregiro AS sobregiro,
             e.estado AS estado_entidad,
             tt.nombre AS tipotransaccion,
-            c.cedula AS cedula_cliente,
-            c.nombres AS nombres_cliente,
-            c.telefono AS telefono_cliente,
+            
             o.valor AS valor_operacion,
             o.referencia AS referencia,
             o.comentario AS comentario_operacion,
@@ -132,8 +130,7 @@ export async function getAllOperaciones() {
             operaciones o
         JOIN 
             entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-        JOIN 
-            cliente c ON o.id_persona = c.id_persona
+
         JOIN 
             tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
         LEFT JOIN
@@ -169,9 +166,7 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
       SELECT          
           e.entidad AS entidad,
           tt.nombre AS tipotransaccion,
-          c.cedula AS cedula_cliente,
-          c.nombres AS nombres_cliente,
-          c.telefono AS telefono_cliente,
+   
           o.valor AS valor_operacion,
           o.comentario AS comentario_operacion,
           o.numtransaccion AS num_transaccion,
@@ -184,8 +179,7 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
           operaciones o
       JOIN 
           entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-      JOIN 
-          cliente c ON o.id_persona = c.id_persona
+
       JOIN 
           tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
       LEFT JOIN
