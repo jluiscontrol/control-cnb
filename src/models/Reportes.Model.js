@@ -14,7 +14,7 @@ export async function getOperationsReport(userId, startDate, endDate) {
           persona.nombre AS nombre_persona,
           operaciones.referencia,
           operaciones.comentario,
-          operaciones.fecha_registro
+          TO_CHAR(operaciones.fecha_registro, 'YYYY-MM-DD') AS fecha_registro
         FROM operaciones
         JOIN entidadbancaria ON operaciones.id_entidadbancaria = entidadbancaria.id_entidadbancaria
         JOIN tipotransaccion ON operaciones.id_tipotransaccion = tipotransaccion.id_tipotransaccion
