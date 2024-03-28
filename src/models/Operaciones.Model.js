@@ -22,7 +22,7 @@ export async function addOperaciones(operaciones) {
     } = operaciones;
 
     // Validar campos obligatorios
-    if (!id_entidadbancaria || !id_tipotransaccion || !valor || !comentario || !tipodocumento) {
+    if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
       throw new Error('Todos los campos obligatorios deben ser proporcionados.');
     }
 
@@ -96,67 +96,68 @@ export async function addOperaciones(operaciones) {
 }
 
 
-
 //Funcion para obtener todas las operaciones
 export async function getAllOperaciones() {
   try {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-            SELECT 
-            id_operacion,
-       
-            e.entidad AS entidad,
-            e.acronimo AS acronimo,
-            e.sobregiro AS sobregiro,
-            e.estado AS estado,
-            tt.nombre AS tipotransaccion,
-            
-            o.valor AS valor_operacion,
-            o.referencia AS referencia,
-            o.comentario AS comentario_operacion,
-            o.numtransaccion AS num_transaccion,
-            o.fecha_registro AS fecha_registro_operacion,
-            o.fecha_actualizacion AS fecha_actualizacion_operacion,
-            o.saldocomision saldocomision_operacion,
-            o.tipodocumento AS tipodocumento_operacion,
-      o.estado AS estado_operacion,
-            co.valorcomision AS valor_comision,
-            ac.nombre AS afectacion_caja,
-            au.nombre AS afectacion_cuenta,
-            u.nombre_usuario AS nombre_usuario_operacion,
-            s.saldocuenta AS saldocuenta
-        FROM 
-            operaciones o
-        JOIN 
-            entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-
-        JOIN 
-            tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-        LEFT JOIN
-            comision co ON e.id_entidadbancaria = co.entidadbancaria_id
-        LEFT JOIN
-            afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
-        LEFT JOIN
-            afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
-        LEFT JOIN
-            usuario u ON o.id_usuario = u.id_usuario -- Nueva relación con la tabla usuario
-        LEFT JOIN
-            saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
-        WHERE o.estado = true
-        ORDER BY 
-              id_operacion;
-  
+      SELECT 
+    o.id_operacion,
+    e.entidad AS entidad,
+    e.acronimo AS acronimo,
+    e.sobregiro AS sobregiro,
+    e.estado AS estado,
+    tt.nombre AS tipotransaccion,
+    o.valor AS valor_operacion,
+    o.referencia AS referencia,
+    o.comentario AS comentario_operacion,
+    o.numtransaccion AS num_transaccion,
+    o.fecha_registro AS fecha_registro_operacion,
+    o.fecha_actualizacion AS fecha_actualizacion_operacion,
+    SUM(o.saldocomision) AS saldocomision_operacion,
+    o.tipodocumento AS tipodocumento_operacion,
+    o.estado AS estado_operacion,
+    ac.nombre AS afectacion_caja,
+    au.nombre AS afectacion_cuenta,
+    u.nombre_usuario AS nombre_usuario_operacion,
+    s.saldocuenta AS saldocuenta
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+LEFT JOIN
+    comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+LEFT JOIN
+    afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+LEFT JOIN
+    afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+LEFT JOIN
+    usuario u ON o.id_usuario = u.id_usuario
+LEFT JOIN
+    saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
+WHERE 
+    o.estado = true
+GROUP BY
+    o.id_operacion, e.entidad, e.acronimo, e.sobregiro, e.estado, tt.nombre, o.valor, o.referencia,
+    o.comentario, o.numtransaccion, o.fecha_registro, o.fecha_actualizacion, o.tipodocumento, o.estado,
+    ac.nombre, au.nombre, u.nombre_usuario, s.saldocuenta
+ORDER BY 
+    id_operacion; 
       `);
+
       return resultado.rows;
     } finally {
       operaciones.release();
     }
   } catch (error) {
-
-    throw error; // Re-lanzar el error para que el llamador también pueda manejarlo
+    throw error;
   }
 }
+
+
 //Funcion para obtener todas las operaciones filtrando por fechas
 export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
   try {
