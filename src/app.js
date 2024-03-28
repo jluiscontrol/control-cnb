@@ -15,6 +15,7 @@ import operaciones from './routes/operaciones.routes.js'
 import usersRoute from './routes/user.routes.js'
 import authRoute from './routes/auth.routes.js'
 import dashboard from './routes/dashboard.js'
+import reportes from './routes/reportes.routes.js'
 
 const app = express()
 
@@ -42,6 +43,7 @@ app.use('/entidadBancaria',entidadBancariaRoute)
 app.use('/users',usersRoute)
 app.use('/auth',authRoute)
 app.use('/dashboard',dashboard)
+app.use('/reportes',reportes)
 
 
 
