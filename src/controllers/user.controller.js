@@ -10,7 +10,7 @@ export const createPersona = async (req, res) => {
   const { nombre, direccion, telefono, cedula } = req.body;
   
   // Verificar si algún campo requerido está vacío
-  if (!nombre || !direccion || !telefono || !cedula) {
+  if (!nombre || !cedula) {
     const camposFaltantes = [];
     if (!nombre) camposFaltantes.push('Nombre');
     if (!direccion) camposFaltantes.push('Dirección');
