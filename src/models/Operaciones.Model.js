@@ -95,14 +95,13 @@ export async function addOperaciones(operaciones) {
   }
 }
 
-
 //Funcion para obtener todas las operaciones
 export async function getAllOperaciones() {
   try {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-      SELECT 
+      SELECT DISTINCT ON (e.entidad) -- Seleccionar solo una fila por cada entidad
         o.id_operacion,
         e.entidad AS entidad,
         e.acronimo AS acronimo,
@@ -141,7 +140,7 @@ export async function getAllOperaciones() {
       WHERE 
         o.estado = true
       ORDER BY 
-        id_operacion; 
+        e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
       `);
 
       return resultado.rows;
@@ -152,8 +151,6 @@ export async function getAllOperaciones() {
     throw error;
   }
 }
-
-
 
 
 //Funcion para obtener todas las operaciones filtrando por fechas
