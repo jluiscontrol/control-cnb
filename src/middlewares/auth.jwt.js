@@ -69,29 +69,30 @@ export const verifyPermissions = async (req, res, next) => {
         }
 
         // Consultar los roles del usuario
-        const query = `
+        const rolesQuery = `
             SELECT r.id_rol
             FROM usuario_rol ur
             JOIN rol r ON ur.id_rol = r.id_rol
             WHERE ur.id_usuario = $1;
         `;
-        const { rows: roles } = await pool.query(query, [userId]);
+        const rolesResult = await pool.query(rolesQuery, [userId]);
+        const roles = rolesResult.rows;
 
         // Verificar si alguno de los roles del usuario tiene permiso para la acción en la entidad
         const hasPermission = roles.some(async (role) => {
             const permissionQuery = `
-                SELECT EXISTS (
-                    SELECT 1 FROM permisos
-                    WHERE (id_rol = $1 OR id_usuario = $2)
-                    AND entidad = $3
-                    AND accion = $4
-                    AND permitido = true
-                ) AS allowed;
+                SELECT permitido
+                FROM permisos
+                WHERE (id_rol = $1 OR id_usuario = $2)
+                AND entidad = $3
+                AND accion = $4;
             `;
-            const { rows } = await pool.query(permissionQuery, [role.id_rol, userId, entidad, accion]);
-            return rows[0].allowed;
+           
+            const permissionResult = await pool.query(permissionQuery, [role.id_rol, userId, entidad, accion]);
+            const permission = permissionResult.rows[0];
+            
+            return permission && permission.permitido === true;
         });
-
         if (hasPermission) {
             return next();
         } else {
@@ -103,34 +104,9 @@ export const verifyPermissions = async (req, res, next) => {
     }
 };
 
-/*
-modelo
-// models/permisos.js
-
-const insertOrUpdatePermiso = async (id_rol, entidad, accion, permitido) => {
-    try {
-        // Consulta SQL para insertar o actualizar un permiso
-        const query = `
-            INSERT INTO permisos (id_rol, entidad, accion, permitido)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (id_rol, entidad, accion)
-            DO UPDATE SET permitido = $4
-            RETURNING *
-        `;
-        
-        // Ejecuta la consulta con los valores proporcionados
-        const { rows } = await pool.query(query, [id_rol, entidad, accion, permitido]);
-        
-        return rows[0]; // Devuelve el nuevo permiso insertado o actualizado
-    } catch (error) {
-        throw new Error(`Error al insertar o actualizar permiso: ${error.message}`);
-    }
-};
-
-module.exports = { insertOrUpdatePermiso };
 
 
-*/
+
 
 
 
