@@ -19,7 +19,7 @@ export const createOperaciones = async (req, res) => {
     tipodocumento
   } = req.body;
 
-  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !comentario || !tipodocumento) {
+  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
     return res.status(400).json('Algunos campos son obligatorios');
   }
   
@@ -61,9 +61,6 @@ export const createOperaciones = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
-
-
-
 
 
 //Funcion para obtener todas las operaciones

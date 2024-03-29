@@ -4,7 +4,7 @@ import pool from '../database.js';
 async function addTipoTransaccion(nuevoTipoTransaccion) {
   const tipotransaccion = await pool.connect();
   try {
-    const { nombre, afectacaja_id, afectacuenta_id, tipodocumento } = nuevoTipoTransaccion;
+    const { nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado= true } = nuevoTipoTransaccion;
     // Verificar si alguno de los campos requeridos está vacío
     if (!nombre || !afectacaja_id || !afectacuenta_id || !tipodocumento) {
       throw new Error('Todos los campos son requeridos');
@@ -15,12 +15,13 @@ async function addTipoTransaccion(nuevoTipoTransaccion) {
       throw new Error('El tipo de transacción ya existe');
     }
     // Si el tipo de transacción no existe, procedemos a hacer el insert
-    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id, tipodocumento) VALUES($1, $2, $3, $4) RETURNING *', [nombre, afectacaja_id, afectacuenta_id, tipodocumento]);
+    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado) VALUES($1, $2, $3, $4, $5) RETURNING *', [nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado]);
     return result.rows[0];
   } finally {
     tipotransaccion.release();
   }
 }
+
 //funcion para obtener todos los tipos de transacciones
 async function getAllTiposTransaccion() {
   const client = await pool.connect();
