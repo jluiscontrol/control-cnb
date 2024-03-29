@@ -578,3 +578,16 @@ ALTER TABLE public.operaciones
 DROP COLUMN id_cliente;
 
 DROP TABLE IF EXISTS public.cliente;
+
+---28-03-2024
+--ACTULIZACION DE LA TABLA PERMISIOS
+ALTER TABLE permisos
+ADD CONSTRAINT unique_permisos_id_rol_id_usuario_entidad_accion UNIQUE (id_rol, id_usuario, entidad, accion);
+
+
+
+INSERT INTO general.detallecatalogo (catalogo_id, descripcion, valor, ordenvisualizacion, detallecatalogo_id, estado, fechacreacion, fechamodificacion, usuariocreacion_id, usuariomodificacion_id, valoradicional) 
+VALUES 
+(6, 'PORCENTAJE 15%', '15', 2, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 4),
+(6, 'PORCENTAJE 0%', '0', 3, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 0),
+(6, 'PORCENTAJE 5%', '5', 4, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 5);
