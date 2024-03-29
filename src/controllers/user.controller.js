@@ -13,8 +13,6 @@ export const createPersona = async (req, res) => {
   if (!nombre || !cedula) {
     const camposFaltantes = [];
     if (!nombre) camposFaltantes.push('Nombre');
-    if (!direccion) camposFaltantes.push('Dirección');
-    if (!telefono) camposFaltantes.push('Teléfono');
     if (!cedula) camposFaltantes.push('Cédula');
 
     return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
