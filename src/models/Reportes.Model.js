@@ -19,7 +19,7 @@ export async function getOperationsReport(userId, startDate, endDate, entidad, t
       JOIN entidadbancaria ON operaciones.id_entidadbancaria = entidadbancaria.id_entidadbancaria
       JOIN tipotransaccion ON operaciones.id_tipotransaccion = tipotransaccion.id_tipotransaccion
       JOIN usuario ON operaciones.id_usuario = usuario.id_usuario
-      JOIN persona ON usuario.persona_id = persona.id_persona`;
+      JOIN persona ON operaciones.id_persona = persona.id_persona`;
     let params = [];
     let paramCount = 1;
     let whereAdded = false;
@@ -54,7 +54,6 @@ export async function getOperationsReport(userId, startDate, endDate, entidad, t
     client.release();
   }
 }
-
 
 
 export default {
