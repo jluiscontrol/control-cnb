@@ -5,8 +5,8 @@ import pool from '../database.js';
 async function addEntidadBancaria(entidadBancaria) {
   const cliente = await pool.connect();
   try {
-    const { entidad, acronimo, estado = true, sobregiro, saldocuenta = 0, saldocaja = 0 } = entidadBancaria;
-    if (!entidad || !acronimo || !sobregiro) {
+    const { entidad, acronimo, estado = true, comision, sobregiro, saldocuenta = 0, saldocaja = 0 } = entidadBancaria;
+    if (!entidad || !acronimo || !sobregiro || !comision) {
       throw new Error('Todos los campos son requeridos');
     }
 
@@ -20,7 +20,7 @@ async function addEntidadBancaria(entidadBancaria) {
     }
 
     // Insertar la nueva entidad bancaria
-    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro) VALUES ($1, $2, $3, $4) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro]);
+    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comision]);
     const id_entidadbancaria = result.rows[0].id_entidadbancaria;
 
     // Insertar el saldo de cuenta y el saldo de caja en una sola operación
@@ -29,7 +29,7 @@ async function addEntidadBancaria(entidadBancaria) {
     // Confirmar la transacción
     await cliente.query('COMMIT');
 
-    return { id_entidadbancaria, entidad, acronimo, estado, sobregiro, saldocuenta, saldocaja };
+    return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro, saldocuenta, saldocaja };
   } catch (error) {
     // Si hay algún error, hacer rollback de la transacción
     await cliente.query('ROLLBACK');
@@ -92,8 +92,8 @@ export const getEntidadBancariaById = async (entidadBancariaId ) => {
 export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
   try {
     const client = await pool.connect();
-    const query = 'UPDATE entidadbancaria SET entidad = $1, acronimo = $2, sobregiro = $3 WHERE id_entidadbancaria = $4';
-    const result = await client.query(query, [newData.entidad, newData.acronimo,  newData.sobregiro, entidadBancariaId]);
+    const query = 'UPDATE entidadbancaria SET entidad = $1, acronimo = $2, sobregiro = $3, comision = $4 WHERE id_entidadbancaria = $5';
+    const result = await client.query(query, [newData.entidad, newData.acronimo,  newData.sobregiro, newData.comision ,entidadBancariaId]);
 
     if (result.rowCount === 0) {
       return { error: 'La entidad bancaria con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
