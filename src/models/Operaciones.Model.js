@@ -103,6 +103,7 @@ export async function getAllOperaciones() {
       const resultado = await operaciones.query(`
       SELECT DISTINCT ON (e.entidad) -- Seleccionar solo una fila por cada entidad
         o.id_operacion,
+        e.id_entidadbancaria AS id_entidadbancaria,
         e.entidad AS entidad,
         e.acronimo AS acronimo,
         e.sobregiro AS sobregiro,
@@ -152,6 +153,21 @@ export async function getAllOperaciones() {
   }
 }
 
+export async function getOperacionesByEntidadBancariaId(entidadId) {
+  try {
+    const resultado = await pool.query(`
+      SELECT o.*,
+      e.entidad AS entidad,
+      tt.nombre AS tipotransaccion
+      FROM operaciones o
+      JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+      JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      WHERE o.id_entidadbancaria = $1`, [entidadId]);
+      return resultado.rows;
+  } catch (error) {
+    throw new Error('Error al obtener operaciones por entidad bancaria: ' + error.message);
+  }
+}
 
 //Funcion para obtener todas las operaciones filtrando por fechas
 export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
@@ -288,5 +304,6 @@ export default {
   updateOperacionesById,
   getAllOperacionesFilter,
   deleteOperacionesById,
-  ObtenerComisionByBankandTransa
+  ObtenerComisionByBankandTransa,
+  getOperacionesByEntidadBancariaId
 }

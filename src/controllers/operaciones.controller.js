@@ -2,8 +2,7 @@ import * as operaciones from '../models/Operaciones.Model.js'
 import { existeNumTransaccion, obtenerSobregiroPermitido } from '../helpers/funciones.js';
 import { updateOperacionesById } from '../models/Operaciones.Model.js';
 import { deleteOperacionesById } from '../models/Operaciones.Model.js';
-
-
+import { getOperacionesByEntidadBancariaId } from '../models/Operaciones.Model.js';
 
 export const createOperaciones = async (req, res) => {
   const { id_entidadbancaria,
@@ -94,9 +93,16 @@ export const getOperacionesFilter = async (req, res) => {
   }
 };
 
-export const getOperacionesById = async (req, res) => {
-  console.log(res)
+export const getOperacionesByEntidad = async (req, res) => {
+  const entidadId = req.params.entidadId; // Obtén el ID de la entidad de los parámetros de la solicitud
 
+  try {
+    const operaciones = await getOperacionesByEntidadBancariaId(entidadId);
+    res.status(200).json(operaciones);
+  } catch (error) {
+    console.error('Error al obtener operaciones por entidad bancaria:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }
 
 
