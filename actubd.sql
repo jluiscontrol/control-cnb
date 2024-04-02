@@ -591,3 +591,14 @@ VALUES
 (6, 'PORCENTAJE 15%', '15', 2, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 4),
 (6, 'PORCENTAJE 0%', '0', 3, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 0),
 (6, 'PORCENTAJE 5%', '5', 4, NULL, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, null, 5);
+
+
+-- Abril 2 - 2024 --
+
+CREATE TABLE rutavisible (
+	id_rutavisible SERIAL PRIMARY KEY,
+    id_rol INT REFERENCES rol(id_rol),
+    id_usuario INT REFERENCES usuario(id_usuario),
+    ruta VARCHAR(255) NOT NULL,
+    activo BOOLEAN NOT NULL DEFAULT true
+);
