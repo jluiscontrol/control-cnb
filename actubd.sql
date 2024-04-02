@@ -623,3 +623,6 @@ ALTER TABLE ruta RENAME COLUMN nombre TO ruta;
 
 -- Agregar una nueva columna llamada "nombre"
 ALTER TABLE ruta ADD COLUMN nombre VARCHAR(255);
+
+ALTER TABLE rutavisible
+ADD CONSTRAINT rutavisible_id_usuario_id_ruta_key UNIQUE (id_usuario, id_ruta);
