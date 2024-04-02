@@ -8,8 +8,13 @@ export const signin = async (username, password) => {
     const user = await pool.connect();
     try {
         // Obtener el usuario de la base de datos basado en el nombre de usuario proporcionado
-        const userResult = await user.query('SELECT * FROM usuario WHERE nombre_usuario = $1', [username]);
-        const userData = userResult.rows[0];
+        const userResult = await user.query(`
+        SELECT u.*, ur.id_rol 
+        FROM usuario u
+        LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+        WHERE u.nombre_usuario = $1`, 
+        [username]
+    );        const userData = userResult.rows[0];
 
         // Verificar si se encontró un usuario con el nombre de usuario proporcionado
         if (!userData) {
@@ -39,7 +44,7 @@ export const signin = async (username, password) => {
         }
         
         // Devolver el id_usuario, nombre_usuario y el token en un objeto
-        return { id_usuario: userData.id_usuario, nombre_usuario: userData.nombre_usuario, caja_id: userData.caja_id, token };
+        return { id_usuario: userData.id_usuario, nombre_usuario: userData.nombre_usuario, caja_id: userData.caja_id, id_rol: userData.id_rol, token};
     } finally {
         user.release();
     }

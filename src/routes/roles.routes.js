@@ -7,6 +7,7 @@ import { verifyToken,  verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 
 router.get('/', rolesCtrl.getRoles)
+router.get('/:id', rolesCtrl.getRolById)
 /*router.post('/',operacionesCtrl.createOperaciones)
 router.get('/filter', operacionesCtrl.getOperacionesFilter)
 router.get('/:operacionesId', operacionesCtrl.getOperacionesById)

@@ -101,8 +101,8 @@ async function addUser(User, Persona, id_rol) {
                   direccion, 
                   telefono, 
                   cedula) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona`, 
-            [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_persona`,
+      [nombre, apellido, fecha_nacimiento, direccion, telefono, cedula]);
     const personaId = personaInsertResult.rows[0].id_persona;
 
     // Insertar el nuevo usuario
@@ -113,8 +113,8 @@ async function addUser(User, Persona, id_rol) {
                     contrasenia, 
                     persona_id
                        ) 
-            VALUES($1, $2, $3, $4) RETURNING *`, 
-            [nombre_usuario, estado, hashedPassword, personaId]);
+            VALUES($1, $2, $3, $4) RETURNING *`,
+      [nombre_usuario, estado, hashedPassword, personaId]);
     const userId = userInsertResult.rows[0].id_usuario;
 
     // Commit la transacción
@@ -151,7 +151,7 @@ async function getAllUsers() {
     p.direccion AS direccion_persona, 
     p.telefono AS telefono_persona,
     p.cedula AS cedula_persona
-  FROM 
+    FROM 
     usuario u
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
@@ -164,6 +164,33 @@ async function getAllUsers() {
   }
 }
 
+async function getAllEmpleados() {
+  const empleados = await pool.connect();
+  try {
+    const resultado = await empleados.query(`
+    SELECT 
+    u.*, 
+    r.nombre AS rol, 
+    r.id_rol AS rol_id,
+    p.nombre AS nombre_persona, 
+    p.apellido AS apellido_persona, 
+    p.fecha_nacimiento AS fecha_nacimiento_persona, 
+    p.direccion AS direccion_persona, 
+    p.telefono AS telefono_persona,
+    p.cedula AS cedula_persona
+    FROM 
+    usuario u
+    LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
+    LEFT JOIN rol r ON ur.id_rol = r.id_rol
+    LEFT JOIN persona p ON u.persona_id = p.id_persona
+    WHERE  r.nombre = 'empleado'
+    ORDER BY u.id_usuario; 
+    `);
+    return resultado.rows;
+  } finally {
+    empleados.release()
+  }
+}
 
 // funcion para obtener un usuario por su ID
 export const getUserId = async (req, res) => {
@@ -332,21 +359,21 @@ export const updateCajaById = async (cajaId, newData) => {
 
 //FUNCION PARA ELIMINAR USUARIO
 export const deleteUser = async (userDeleteId, newData) => {
- // console.log('resultado modelo', newData)
+  // console.log('resultado modelo', newData)
   try {
     const client = await pool.connect();
     const query = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
     const result = await client.query(query, [newData.estado, userDeleteId]);
     if (result.rowCount === 0) {
       return { error: 'El usuario con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
-    }       
+    }
     client.release();
-   if(newData.estado == true){
-     return { message: 'Usuario activado correctamente' };
-   }else{
-    return { message: 'Usuario desactivado correctamente' };
+    if (newData.estado == true) {
+      return { message: 'Usuario activado correctamente' };
+    } else {
+      return { message: 'Usuario desactivado correctamente' };
 
-   }
+    }
   } catch (error) {
     throw new Error('Error al desactivar el usuario: ' + error.message);
   }
@@ -355,14 +382,15 @@ export const deleteUser = async (userDeleteId, newData) => {
 
 // Exportar las funciones del modelo
 export default {
-      addUser,
-      getAllUsers,
-      getUserId,
-      updateUser,
-      deleteUser,
-      addCaja,
-      getAllCajas,
-      getAllCajasActivas,
-      updateCajaById,
-      addPersona
+  addUser,
+  getAllUsers,
+  getUserId,
+  updateUser,
+  deleteUser,
+  addCaja,
+  getAllCajas,
+  getAllCajasActivas,
+  updateCajaById,
+  addPersona,
+  getAllEmpleados
 };

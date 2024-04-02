@@ -13,4 +13,15 @@ export async function getAllRolesModel() {
     }
   }
 
-  export default { getAllRolesModel }
+  export async function getRolById (id) {
+    const rol = await pool.connect();
+    try {
+      const query = `SELECT id_rol FROM usuario_rol WHERE id_usuario = $1`;
+      const resultado = await rol.query(query, [id]);
+      return resultado.rows[0];
+    } finally {
+      rol.release();
+    }
+  }
+
+  export default { getAllRolesModel, getRolById }

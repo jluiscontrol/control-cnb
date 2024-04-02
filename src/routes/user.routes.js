@@ -5,13 +5,15 @@ import * as userCtrl from '../controllers/user.controller.js'//importa todos mis
 import { verifyToken, verifyEmpleado } from "../middlewares/auth.jwt.js";
 
 
-router.post('/',[verifyToken], userCtrl.createUser)
+router.post('/',[verifyToken, verifyEmpleado], userCtrl.createUser)
 router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)
 router.put('/estado/:userDeleteId', userCtrl.deleteUserById)
 
 router.post('/persona', userCtrl.createPersona)
+
+router.get('/u/empleados', userCtrl.getEmpleados)
 
 //creacion de caja
 router.post('/caja', userCtrl.createCaja)

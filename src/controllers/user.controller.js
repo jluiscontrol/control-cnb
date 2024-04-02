@@ -6,6 +6,7 @@ import { updateUser } from '../models/User.Model.js';
 import { deleteUser } from '../models/User.Model.js';
 import { updateCajaById } from '../models/User.Model.js';
 
+
 export const createPersona = async (req, res) => {
   const { nombre, direccion, telefono, cedula } = req.body;
   
@@ -81,6 +82,18 @@ export const getUsers = async (req, res) => {
       res.status(500).json({ error: 'Error interno del servidors' });
     }
 }
+
+export const getEmpleados = async (req, res) => {
+  try{
+     const empleados = await User.getAllEmpleados();
+
+     res.status(200).json(empleados)
+  } catch(error){
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ error: 'Error interno del servidors' });
+  }
+}
+
 
 //funcion para obtener un usuario en especifico
 export const getUserById = async (req, res) => {
@@ -215,5 +228,4 @@ export const deleteUserById = async (req, res) => {
    res.status(500).json({ error: 'Error interno del servidor' });
  }
 }
-
 
