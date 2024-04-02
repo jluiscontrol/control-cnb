@@ -601,3 +601,25 @@ CREATE TABLE rutavisible (
     ruta VARCHAR(255) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT true
 );
+
+CREATE TABLE ruta (
+	id_ruta SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE rutavisible
+ADD COLUMN id_ruta INT;
+
+ALTER TABLE rutavisible
+DROP COLUMN ruta;
+
+ALTER TABLE rutavisible
+ADD CONSTRAINT fk_ruta_id
+FOREIGN KEY (id_ruta)
+REFERENCES ruta(id_ruta);
+
+-- Renombrar la columna "nombre" a "ruta"
+ALTER TABLE ruta RENAME COLUMN nombre TO ruta;
+
+-- Agregar una nueva columna llamada "nombre"
+ALTER TABLE ruta ADD COLUMN nombre VARCHAR(255);
