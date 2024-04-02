@@ -597,7 +597,6 @@ VALUES
 
 CREATE TABLE rutavisible (
 	id_rutavisible SERIAL PRIMARY KEY,
-    id_rol INT REFERENCES rol(id_rol),
     id_usuario INT REFERENCES usuario(id_usuario),
     ruta VARCHAR(255) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT true
