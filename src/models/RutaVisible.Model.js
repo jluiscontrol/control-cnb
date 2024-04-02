@@ -1,21 +1,37 @@
 import pool from '../database.js';
 
-export const createRutaVisible = async (rutaVisible) => {
-  const { id_rol, id_usuario, ruta, activo } = rutaVisible;
-  const result = await pool.query(
-    'INSERT INTO rutavisible (id_rol, id_usuario, ruta, activo) VALUES ($1, $2, $3, $4) RETURNING *',
-    [id_rol, id_usuario, ruta, activo]
+export const createOrUpdateRutaVisible = async (rutaVisible) => {
+  const { id_usuario, id_ruta, activo } = rutaVisible;
+
+  // Primero, intenta actualizar la fila existente
+  const updateResult = await pool.query(`
+    UPDATE rutavisible 
+    SET activo = $1 
+    WHERE id_usuario = $2 AND id_ruta = $3
+    RETURNING *`,
+    [activo, id_usuario, id_ruta]
   );
-  return result.rows[0];
+
+  // Si se actualizó una fila, devuélvela
+  if (updateResult.rowCount > 0) {
+    return updateResult.rows[0];
+  }
+
+  // Si no se actualizó ninguna fila, inserta una nueva
+  const insertResult = await pool.query(`
+    INSERT INTO rutavisible (id_usuario, id_ruta, activo) 
+    VALUES ($1, $2, $3) 
+    RETURNING *`,
+    [id_usuario, id_ruta, activo]
+  );
+
+  return insertResult.rows[0];
 };
 
-export const deleteRutaVisible = async (id) => {
-  const result = await pool.query(
-    'DELETE FROM rutavisible WHERE id_rutavisible = $1 RETURNING *',
-    [id]
-  );
-  return result.rows[0];
-};
+export const getAllRutas = async () => {
+  const result = await pool.query('SELECT * FROM ruta');
+  return result.rows;
+}
 
 export const getRutasVisibles = async ( id_usuario) => {
   const result = await pool.query(`
@@ -28,4 +44,4 @@ export const getRutasVisibles = async ( id_usuario) => {
   return result.rows;
 };
 
-export default { createRutaVisible, deleteRutaVisible, getRutasVisibles}
+export default { getAllRutas, getRutasVisibles, createOrUpdateRutaVisible}

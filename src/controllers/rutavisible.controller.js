@@ -1,17 +1,17 @@
 import * as RutaVisibleModel from '../models/RutaVisible.Model.js';
 
-export const createRutaVisible = async (req, res) => {
-  const rutaVisible = await RutaVisibleModel.createRutaVisible(req.body);
-  res.status(201).json(rutaVisible);
+export const createOrUpdate = async (req, res) => {
+  try {
+    const rutaVisible = await RutaVisibleModel.createOrUpdateRutaVisible(req.body);
+    res.status(200).json(rutaVisible);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
-export const deleteRutaVisible = async (req, res) => {
-  const rutaVisible = await RutaVisibleModel.deleteRutaVisible(req.params.id);
-  if (rutaVisible) {
-    res.status(200).json(rutaVisible);
-  } else {
-    res.status(404).json({ error: 'Ruta visible no encontrada' });
-  }
+export const getRutas = async (req, res) => {
+  const rutas = await RutaVisibleModel.getAllRutas();
+  res.status(200).json(rutas);
 };
 
 export const getRutasVisibles = async (req, res) => {
