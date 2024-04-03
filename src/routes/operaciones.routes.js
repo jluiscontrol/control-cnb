@@ -7,6 +7,8 @@ import * as operacionesCtrl from '../controllers/operaciones.controller.js';impo
 
 router.post('/',[verifyToken, verifyPermissions], operacionesCtrl.createOperaciones)
 router.get('/', operacionesCtrl.getOperaciones)
+router.get('/unique', operacionesCtrl.getAllOperacionesUnique)
+router.get('/', operacionesCtrl.getOperaciones)
 router.get('/filter', operacionesCtrl.getOperacionesFilter)
 router.put('/:operacionesId', operacionesCtrl.updateOperacionesId)
 router.put('/eliminar/:operacionesDeleteId', operacionesCtrl.deleteOperacionesId)

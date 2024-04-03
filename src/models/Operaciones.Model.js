@@ -96,7 +96,7 @@ export async function addOperaciones(operaciones) {
 }
 
 //Funcion para obtener todas las operaciones
-export async function getAllOperaciones() {
+export async function getAllOperacionesUnique() {
   try {
     const operaciones = await pool.connect();
     try {
@@ -152,6 +152,71 @@ export async function getAllOperaciones() {
     throw error;
   }
 }
+
+//Funcion para obtener todas las operaciones
+export async function getAllOperaciones() {
+  try {
+    const operaciones = await pool.connect();
+    try {
+      const resultado = await operaciones.query(`
+      SELECT 
+        o.id_operacion,
+        e.id_entidadbancaria AS id_entidadbancaria,
+        e.entidad AS entidad,
+        e.acronimo AS acronimo,
+        e.sobregiro AS sobregiro,
+        e.estado AS estadoOOOOOOOO,
+        tt.nombre AS tipotransaccion,
+        o.valor AS valor_operacion,
+        o.referencia AS referencia,
+        o.comentario AS comentario_operacion,
+        o.numtransaccion AS num_transaccion,
+        o.fecha_registro AS fecha_registro_operacion,
+        o.fecha_actualizacion AS fecha_actualizacion_operacion,
+        o.saldocomision AS saldocomision_operacion,
+        o.tipodocumento AS tipodocumento_operacion,
+        o.estado AS estado_operacion,
+        ac.nombre AS afectacion_caja,
+        au.nombre AS afectacion_cuenta,
+        u.nombre_usuario AS nombre_usuario_operacion,
+        (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
+      FROM 
+        operaciones o
+      JOIN 
+        entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+      JOIN 
+        tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      LEFT JOIN
+        comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+      LEFT JOIN
+        afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+      LEFT JOIN
+        afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+      LEFT JOIN
+        usuario u ON o.id_usuario = u.id_usuario
+      LEFT JOIN
+        (SELECT 
+          entidadbancaria_id,
+          saldocuenta
+        FROM 
+          saldos
+        
+        LIMIT 1) s ON s.entidadbancaria_id = e.id_entidadbancaria
+      WHERE 
+        o.estado = true
+      ORDER BY 
+        e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+      `);
+
+      return resultado.rows;
+    } finally {
+      operaciones.release();
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 
 export async function getOperacionesByEntidadBancariaId(entidadId) {
   try {
@@ -310,5 +375,6 @@ export default {
   getAllOperacionesFilter,
   deleteOperacionesById,
   ObtenerComisionByBankandTransa,
-  getOperacionesByEntidadBancariaId
+  getOperacionesByEntidadBancariaId,
+  getAllOperacionesUnique
 }

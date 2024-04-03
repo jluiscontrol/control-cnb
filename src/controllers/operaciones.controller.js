@@ -76,6 +76,20 @@ export const getOperaciones = async (req, res) => {
   }
 };
 
+//Funcion para obtener todas las operaciones unicas
+export const getAllOperacionesUnique = async (req, res) => {
+  try {
+    // Llamar a la función que obtiene todas las operaciones desde el modelo
+    const result = await operaciones.getAllOperacionesUnique();
+
+    // Devolver las operaciones en la respuesta
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener operaciones:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+};
+
 //Funcion para obtener todas las operaciones filtado por fechas
 export const getOperacionesFilter = async (req, res) => {
   try {
