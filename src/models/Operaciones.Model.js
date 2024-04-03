@@ -158,16 +158,21 @@ export async function getOperacionesByEntidadBancariaId(entidadId) {
     const resultado = await pool.query(`
       SELECT o.*,
       e.entidad AS entidad,
+      s.saldocuenta AS saldocuenta,
       tt.nombre AS tipotransaccion
       FROM operaciones o
       JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      LEFT JOIN
+        saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
       WHERE o.id_entidadbancaria = $1`, [entidadId]);
       return resultado.rows;
+      
   } catch (error) {
     throw new Error('Error al obtener operaciones por entidad bancaria: ' + error.message);
   }
 }
+
 
 //Funcion para obtener todas las operaciones filtrando por fechas
 export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
