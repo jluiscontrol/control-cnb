@@ -121,7 +121,8 @@ export async function getAllOperacionesUnique() {
         ac.nombre AS afectacion_caja,
         au.nombre AS afectacion_cuenta,
         u.nombre_usuario AS nombre_usuario_operacion,
-        s.saldocuenta AS saldocuenta
+        s.saldocuenta AS saldocuenta,
+        s.saldocaja AS saldocaja
       FROM 
         operaciones o
       JOIN 
