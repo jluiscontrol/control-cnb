@@ -224,11 +224,13 @@ export async function getOperacionesByEntidadBancariaId(entidadId) {
       SELECT o.*,
       e.entidad AS entidad,
       s.saldocuenta AS saldocuenta,
+      u.nombre_usuario,
       tt.nombre AS tipotransaccion,
       (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
       FROM operaciones o
       JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      JOIN usuario u ON u.id_usuario = o.id_usuario
       LEFT JOIN
         (SELECT 
           entidadbancaria_id,
