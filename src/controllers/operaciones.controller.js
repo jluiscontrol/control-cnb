@@ -121,16 +121,16 @@ export const getOperacionesFilter = async (req, res) => {
 
 export const getOperacionesByEntidad = async (req, res) => {
   const entidadId = req.params.entidadId; // Obtén el ID de la entidad de los parámetros de la solicitud
+  const id_caja = req.query.id_caja; // Obtén el ID de la caja de los parámetros de consulta de la URL
 
   try {
-    const operaciones = await getOperacionesByEntidadBancariaId(entidadId);
+    const operaciones = await getOperacionesByEntidadBancariaId(entidadId, id_caja);
     res.status(200).json(operaciones);
   } catch (error) {
     console.error('Error al obtener operaciones por entidad bancaria:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
-
+};
 
 export const updateOperacionesId = async (req, res) => {
   try {
