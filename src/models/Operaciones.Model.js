@@ -228,7 +228,8 @@ export async function getOperacionesByEntidadBancariaId(entidadId) {
     const resultado = await pool.query(`
       SELECT o.*,
       e.entidad AS entidad,
-      s.saldocuenta AS saldocuenta,
+      sa.saldocuenta AS saldocuenta,
+      sa.saldocaja AS saldocaja,
       u.nombre_usuario,
       tt.nombre AS tipotransaccion,
       (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
@@ -236,6 +237,8 @@ export async function getOperacionesByEntidadBancariaId(entidadId) {
       JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
       JOIN usuario u ON u.id_usuario = o.id_usuario
+      LEFT JOIN
+      saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
       LEFT JOIN
         (SELECT 
           entidadbancaria_id,
