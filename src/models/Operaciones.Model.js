@@ -180,6 +180,8 @@ export async function getAllOperaciones() {
         ac.nombre AS afectacion_caja,
         au.nombre AS afectacion_cuenta,
         u.nombre_usuario AS nombre_usuario_operacion,
+        sa.saldocuenta AS saldocuenta,
+        sa.saldocaja AS saldocaja,
         (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
       FROM 
         operaciones o
@@ -195,6 +197,8 @@ export async function getAllOperaciones() {
         afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
       LEFT JOIN
         usuario u ON o.id_usuario = u.id_usuario
+      LEFT JOIN
+      saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
       LEFT JOIN
         (SELECT 
           entidadbancaria_id,
