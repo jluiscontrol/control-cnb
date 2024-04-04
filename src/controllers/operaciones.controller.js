@@ -79,8 +79,16 @@ export const getOperaciones = async (req, res) => {
 //Funcion para obtener todas las operaciones unicas
 export const getAllOperacionesUnique = async (req, res) => {
   try {
-    // Llamar a la función que obtiene todas las operaciones desde el modelo
-    const result = await operaciones.getAllOperacionesUnique();
+    // Obtener el id de la caja de los parámetros de consulta de la URL (req.query.id_caja)
+    const { id_caja } = req.query;
+
+    // Verificar si se proporcionó el id de la caja
+    if (!id_caja) {
+      return res.status(400).json({ error: 'Falta el id de la caja.' });
+    }
+
+    // Llamar a la función que obtiene las operaciones únicas por caja desde el modelo
+    const result = await operaciones.getAllOperacionesUnique(id_caja);
 
     // Devolver las operaciones en la respuesta
     res.status(200).json(result);
@@ -89,6 +97,7 @@ export const getAllOperacionesUnique = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };
+
 
 //Funcion para obtener todas las operaciones filtado por fechas
 export const getOperacionesFilter = async (req, res) => {

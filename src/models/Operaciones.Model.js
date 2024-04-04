@@ -96,7 +96,7 @@ export async function addOperaciones(operaciones) {
 }
 
 //Funcion para obtener todas las operaciones
-export async function getAllOperacionesUnique() {
+export async function getAllOperacionesUnique(id_caja) {
   try {
     const operaciones = await pool.connect();
     try {
@@ -146,9 +146,10 @@ export async function getAllOperacionesUnique() {
         caja c ON c.id_caja = u.caja_id
       WHERE 
         o.estado = true
+        AND u.caja_id = $1 -- Filtrar por id_caja seleccionado
       ORDER BY 
         e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
-      `);
+      `, [id_caja]);
 
       return resultado.rows;
     } finally {
@@ -158,6 +159,7 @@ export async function getAllOperacionesUnique() {
     throw error;
   }
 }
+
 
 //Funcion para obtener todas las operaciones
 export async function getAllOperaciones() {
