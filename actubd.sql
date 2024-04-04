@@ -626,3 +626,77 @@ ALTER TABLE ruta ADD COLUMN nombre VARCHAR(255);
 
 ALTER TABLE rutavisible
 ADD CONSTRAINT rutavisible_id_usuario_id_ruta_key UNIQUE (id_usuario, id_ruta);
+
+-- Abril 4 - 2024 -- CAMBIOS AL TRIGGER DE SALDOS:
+
+-- FUNCTION: public.agregasaldo()
+-- DROP FUNCTION IF EXISTS public.agregasaldo();
+CREATE OR REPLACE FUNCTION public.agregasaldo()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+DECLARE
+    v_id_tipotransaccion INTEGER;
+    v_valor NUMERIC(10,2);
+    v_afectacaja_id INTEGER;
+    v_afectacuenta_id INTEGER;
+    v_entidadbancaria_id INTEGER;
+BEGIN
+    -- Obtener el id_tipotransaccion, valor y entidadbancaria_id de la inserción en la tabla operaciones
+    v_id_tipotransaccion := NEW.id_tipotransaccion;
+    v_valor := NEW.valor;
+    v_entidadbancaria_id := NEW.id_entidadbancaria;
+
+    -- Obtener los valores de afectacaja_id y afectacuenta_id de la tabla tipotransaccion
+    SELECT afectacaja_id, afectacuenta_id INTO v_afectacaja_id, v_afectacuenta_id
+    FROM tipotransaccion
+    WHERE id_tipotransaccion = v_id_tipotransaccion;
+
+    -- Validar si se pudo obtener el id_tipotransaccion, valor y entidadbancaria_id
+    IF v_id_tipotransaccion IS NULL OR v_valor IS NULL OR v_entidadbancaria_id IS NULL THEN
+        RAISE NOTICE 'No se pudo obtener el id_tipotransaccion, el valor o la entidadbancaria_id de la inserción en la tabla operaciones.';
+        RETURN NULL;
+    END IF;
+
+    -- Verificar si ya existe un registro en la tabla saldos para la entidad bancaria
+    PERFORM 1 FROM saldos WHERE entidadbancaria_id = v_entidadbancaria_id LIMIT 1;
+
+    -- Realizar la actualización o inserción en la tabla saldos dependiendo de si ya existe un registro para la entidad bancaria
+    IF FOUND THEN
+	-- Actualizar los valores de saldocuenta y saldocaja para la entidad bancaria existente
+	UPDATE saldos
+	SET saldocuenta = saldocuenta + CASE 
+	                                    WHEN v_afectacuenta_id = 1 THEN v_valor 
+	                                    WHEN v_afectacuenta_id = 3 THEN 0 -- No se suma ni se resta nada
+	                                    ELSE -v_valor 
+	                                END,
+	    saldocaja = saldocaja + CASE 
+	                                WHEN v_afectacaja_id = 1 THEN v_valor 
+	                                WHEN v_afectacaja_id = 3 THEN 0 -- No se suma ni se resta nada
+	                                ELSE -v_valor 
+	                            END
+	WHERE entidadbancaria_id = v_entidadbancaria_id;
+    ELSE
+		-- Insertar un nuevo registro en la tabla saldos para la entidad bancaria
+		INSERT INTO saldos (saldocuenta, saldocaja, entidadbancaria_id)
+		VALUES (
+		    CASE WHEN v_afectacuenta_id = 1 THEN v_valor 
+		         WHEN v_afectacuenta_id = 3 THEN saldocuenta
+		         ELSE -v_valor END,
+		    CASE WHEN v_afectacaja_id = 1 THEN v_valor 
+		         WHEN v_afectacaja_id = 3 THEN saldocaja
+		         ELSE -v_valor END,
+		    v_entidadbancaria_id
+		);
+    END IF;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.agregasaldo()
+    OWNER TO postgres;
+
+-- AQUI TERMINA EL TRIGGER DE SALDOS --
