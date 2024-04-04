@@ -121,8 +121,11 @@ export async function getAllOperacionesUnique() {
         ac.nombre AS afectacion_caja,
         au.nombre AS afectacion_cuenta,
         u.nombre_usuario AS nombre_usuario_operacion,
+        u.caja_id As caja_id,
+        c.nombre AS nombreCaja,
         s.saldocuenta AS saldocuenta,
         s.saldocaja AS saldocaja
+       
       FROM 
         operaciones o
       JOIN 
@@ -139,6 +142,8 @@ export async function getAllOperacionesUnique() {
         usuario u ON o.id_usuario = u.id_usuario
       LEFT JOIN
         saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
+        LEFT JOIN
+        caja c ON c.id_caja = u.caja_id
       WHERE 
         o.estado = true
       ORDER BY 
