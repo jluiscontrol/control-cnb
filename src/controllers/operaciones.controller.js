@@ -65,10 +65,13 @@ export const createOperaciones = async (req, res) => {
 //Funcion para obtener todas las operaciones
 export const getOperaciones = async (req, res) => {
   try {
-    // Llamar a la función que obtiene todas las operaciones desde el modelo
-    const result = await operaciones.getAllOperaciones();
+    // Obtén el ID de la caja desde los parámetros de consulta de la URL (req.query.id_caja)
+    const { id_caja } = req.query;
 
-    // Devolver las operaciones en la respuesta
+    // Llama a la función getAllOperaciones desde el modelo y pásale el ID de la caja como parámetro
+    const result = await operaciones.getAllOperaciones(id_caja);
+
+    // Devuelve las operaciones en la respuesta
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener operaciones:', error);

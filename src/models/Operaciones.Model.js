@@ -142,7 +142,7 @@ export async function getAllOperacionesUnique(id_caja) {
         usuario u ON o.id_usuario = u.id_usuario
       LEFT JOIN
         saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
-        LEFT JOIN
+      LEFT JOIN
         caja c ON c.id_caja = u.caja_id
       WHERE 
         o.estado = true
@@ -162,7 +162,7 @@ export async function getAllOperacionesUnique(id_caja) {
 
 
 //Funcion para obtener todas las operaciones
-export async function getAllOperaciones() {
+export async function getAllOperaciones(id_caja) {
   try {
     const operaciones = await pool.connect();
     try {
@@ -189,6 +189,8 @@ export async function getAllOperaciones() {
         u.nombre_usuario AS nombre_usuario_operacion,
         sa.saldocuenta AS saldocuenta,
         sa.saldocaja AS saldocaja,
+        u.caja_id As caja_id,
+        c.nombre AS nombreCaja,
         (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
       FROM 
         operaciones o
@@ -205,7 +207,9 @@ export async function getAllOperaciones() {
       LEFT JOIN
         usuario u ON o.id_usuario = u.id_usuario
       LEFT JOIN
-      saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
+        caja c ON c.id_caja = u.caja_id
+      LEFT JOIN
+        saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
       LEFT JOIN
         (SELECT 
           entidadbancaria_id,
@@ -216,9 +220,10 @@ export async function getAllOperaciones() {
         LIMIT 1) s ON s.entidadbancaria_id = e.id_entidadbancaria
       WHERE 
         o.estado = true
+        AND u.caja_id = $1 -- Filtrar por id_caja seleccionado
       ORDER BY 
         e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
-      `);
+      `, [id_caja]);
 
       return resultado.rows;
     } finally {
@@ -228,6 +233,7 @@ export async function getAllOperaciones() {
     throw error;
   }
 }
+
 
 
 export async function getOperacionesByEntidadBancariaId(entidadId) {
