@@ -165,7 +165,7 @@ export async function getAllOperaciones() {
         e.entidad AS entidad,
         e.acronimo AS acronimo,
         e.sobregiro AS sobregiro,
-        e.estado AS estadoOOOOOOOO,
+        e.estado AS estado,
         tt.nombre AS tipotransaccion,
         o.valor AS valor_operacion,
         o.referencia AS referencia,
@@ -224,12 +224,21 @@ export async function getOperacionesByEntidadBancariaId(entidadId) {
       SELECT o.*,
       e.entidad AS entidad,
       s.saldocuenta AS saldocuenta,
-      tt.nombre AS tipotransaccion
+      u.nombre_usuario,
+      tt.nombre AS tipotransaccion,
+      (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
       FROM operaciones o
       JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      JOIN usuario u ON u.id_usuario = o.id_usuario
       LEFT JOIN
-        saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
+        (SELECT 
+          entidadbancaria_id,
+          saldocuenta
+        FROM 
+          saldos
+        
+        LIMIT 1) s ON s.entidadbancaria_id = e.id_entidadbancaria
       WHERE o.id_entidadbancaria = $1`, [entidadId]);
       return resultado.rows;
       
