@@ -215,7 +215,7 @@ export async function getAllOperaciones(id_caja) {
               o.estado = true
               AND o.id_caja = $1 
               AND o.tipodocumento = 'OPR' 
-          
+              AND date(o.fecha_registro) = CURRENT_DATE
       ORDER BY 
           e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
 
@@ -264,6 +264,7 @@ LEFT JOIN caja c ON c.id_caja = o.id_caja
 LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
 WHERE o.id_entidadbancaria = $1
   AND o.id_caja = $2
+  AND date(o.fecha_registro) = CURRENT_DATE
 GROUP BY o.id_operacion,
       o.id_entidadbancaria,
       o.id_tipotransaccion,
