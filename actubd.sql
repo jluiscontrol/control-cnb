@@ -700,3 +700,14 @@ ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
 
 -- AQUI TERMINA EL TRIGGER DE SALDOS --
+
+-- Abril 5 - 2024 --
+-- Añadir la columna id_caja a la tabla operaciones
+ALTER TABLE operaciones
+ADD COLUMN id_caja integer;
+
+-- Establecer la relación utilizando una clave foránea
+ALTER TABLE operaciones
+ADD CONSTRAINT fk_id_caja
+FOREIGN KEY (id_caja)
+REFERENCES caja(id_caja);
