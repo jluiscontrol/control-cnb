@@ -211,9 +211,11 @@ export async function getAllOperaciones(id_caja) {
               saldos
           GROUP BY 
               entidadbancaria_id) s ON s.entidadbancaria_id = e.id_entidadbancaria
-      WHERE 
-          o.estado = true
-          AND o.id_caja = $1 -- Filtrar por id_caja seleccionado
+          WHERE 
+              o.estado = true
+              AND o.id_caja = $1 
+              AND o.tipodocumento = 'OPR' 
+          
       ORDER BY 
           e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
 
@@ -261,7 +263,8 @@ JOIN usuario u ON u.id_usuario = o.id_usuario
 LEFT JOIN caja c ON c.id_caja = o.id_caja
 LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
 WHERE o.id_entidadbancaria = $1
-AND o.id_caja = $2
+  AND o.id_caja = $2
+  AND o.tipodocumento = 'OPR' 
 GROUP BY o.id_operacion,
       o.id_entidadbancaria,
       o.id_tipotransaccion,

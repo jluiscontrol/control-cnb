@@ -47,9 +47,8 @@ async function getAllEntidadesBancarias() {
   const entidadBancaria = await pool.connect();
   try {
     const query = `
-      SELECT e.*, s.*
+      SELECT e.*
       FROM entidadbancaria e
-      JOIN saldos s ON e.id_entidadbancaria = s.entidadbancaria_id
       ORDER BY e.id_entidadbancaria;
     `;
     const entidad = await entidadBancaria.query(query);

@@ -20,7 +20,7 @@ export const createOperaciones = async (req, res) => {
     id_caja
   } = req.body;
 
-  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento || !id_caja) {
+  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento ) {
     return res.status(400).json('Algunos campos son obligatorios');
   }
   
