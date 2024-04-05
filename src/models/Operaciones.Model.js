@@ -3,7 +3,6 @@ import pool from '../database.js';
 export async function addOperaciones(operaciones) {
   const operacion = await pool.connect();
   let client;
-
   try {
     client = await operacion.query("BEGIN");
 
@@ -18,14 +17,13 @@ export async function addOperaciones(operaciones) {
       id_usuario,
       saldocomision,
       estado = true,
-      tipodocumento
+      tipodocumento,
+      id_caja
     } = operaciones;
-
     // Validar campos obligatorios
     if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
       throw new Error('Todos los campos obligatorios deben ser proporcionados.');
     }
-
     // Validar tipos de datos
     if (typeof id_entidadbancaria !== 'number'
       || typeof id_tipotransaccion !== 'number'
@@ -33,28 +31,22 @@ export async function addOperaciones(operaciones) {
     ) {
       throw new Error('Los tipos de datos de los campos son incorrectos.');
     }
-
     // Consultar el valor de sobregiro de la entidad bancaria
     const entidadBancariaQuery = await operacion.query(`
       SELECT sobregiro FROM entidadbancaria WHERE id_entidadbancaria = $1`, [id_entidadbancaria]);
     const sobregiro = entidadBancariaQuery.rows[0]?.sobregiro || 0;
-
     // Consultar el saldo disponible en la tabla de saldos
     const saldoQuery = await operacion.query(`
       SELECT saldocuenta FROM saldos WHERE entidadbancaria_id = $1`, [id_entidadbancaria]);
-
     if (saldoQuery.rows.length === 0) {
       throw new Error('No se encontró saldo para la entidad bancaria especificada.');
     }
-
     const saldoDisponible = saldoQuery.rows[0]?.saldocuenta || 0;
-
     // Validar que el saldo de la cuenta no exceda el límite del sobregiro
     const saldoTotal = saldoDisponible - valor;
     if (saldoTotal < -sobregiro) {
       throw new Error('La operación excede el límite del sobregiro permitido para esta entidad bancaria.');
     }
-
     // Insertar operación
     const result = await operacion.query(`
       INSERT INTO 
@@ -68,8 +60,9 @@ export async function addOperaciones(operaciones) {
                   id_usuario,
                   saldocomision,
                   estado,
-                  tipodocumento) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+                  tipodocumento,
+                  id_caja) 
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
       RETURNING *`, [
       id_entidadbancaria,
       id_tipotransaccion,
@@ -81,7 +74,8 @@ export async function addOperaciones(operaciones) {
       id_usuario,
       saldocomision,
       estado,
-      tipodocumento
+      tipodocumento,
+      id_caja
     ]);
 
     await operacion.query("COMMIT");
@@ -101,7 +95,7 @@ export async function getAllOperacionesUnique(id_caja) {
     const operaciones = await pool.connect();
     try {
       const resultado = await operaciones.query(`
-      SELECT DISTINCT ON (e.entidad) -- Seleccionar solo una fila por cada entidad
+      SELECT DISTINCT ON (o.id_caja, e.entidad)
         o.id_operacion,
         e.id_entidadbancaria AS id_entidadbancaria,
         e.entidad AS entidad,
@@ -115,17 +109,16 @@ export async function getAllOperacionesUnique(id_caja) {
         o.numtransaccion AS num_transaccion,
         o.fecha_registro AS fecha_registro_operacion,
         o.fecha_actualizacion AS fecha_actualizacion_operacion,
-        SUM(o.saldocomision) OVER (PARTITION BY e.entidad, e.acronimo) AS saldocomision_operacion, 
+        SUM(o.saldocomision) OVER (PARTITION BY o.id_caja, e.entidad) AS saldocomision_operacion,
         o.tipodocumento AS tipodocumento_operacion,
         o.estado AS estado_operacion,
         ac.nombre AS afectacion_caja,
         au.nombre AS afectacion_cuenta,
         u.nombre_usuario AS nombre_usuario_operacion,
-        u.caja_id As caja_id,
+        o.id_caja AS caja_id,
         c.nombre AS nombreCaja,
         s.saldocuenta AS saldocuenta,
         s.saldocaja AS saldocaja
-       
       FROM 
         operaciones o
       JOIN 
@@ -143,12 +136,15 @@ export async function getAllOperacionesUnique(id_caja) {
       LEFT JOIN
         saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
       LEFT JOIN
-        caja c ON c.id_caja = u.caja_id
+        caja c ON c.id_caja = o.id_caja 
       WHERE 
         o.estado = true
-        AND u.caja_id = $1 -- Filtrar por id_caja seleccionado
+        AND o.id_caja = $1
+        AND s.caja_id = $1 -- Filtrar los saldos por el mismo caja_id
       ORDER BY 
-        e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+        o.id_caja, e.entidad, o.fecha_registro DESC;
+      
+
       `, [id_caja]);
 
       return resultado.rows;

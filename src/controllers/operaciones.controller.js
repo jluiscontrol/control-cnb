@@ -5,7 +5,8 @@ import { deleteOperacionesById } from '../models/Operaciones.Model.js';
 import { getOperacionesByEntidadBancariaId } from '../models/Operaciones.Model.js';
 
 export const createOperaciones = async (req, res) => {
-  const { id_entidadbancaria,
+  const { 
+    id_entidadbancaria,
     id_tipotransaccion,
     id_persona,
     valor,
@@ -15,10 +16,11 @@ export const createOperaciones = async (req, res) => {
     id_usuario,
     saldocomision,
     estado,
-    tipodocumento
+    tipodocumento,
+    id_caja
   } = req.body;
 
-  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
+  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento || !id_caja) {
     return res.status(400).json('Algunos campos son obligatorios');
   }
   
@@ -48,7 +50,8 @@ export const createOperaciones = async (req, res) => {
       id_usuario,
       saldocomision,
       estado,
-      tipodocumento
+      tipodocumento,
+      id_caja
     });
     res.status(201).json(operacionSave);
   } catch (error) {
