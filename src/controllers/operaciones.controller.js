@@ -188,3 +188,25 @@ export const deleteOperacionesId = async (req, res) => {
 export const getComisionByBankandTransa = async (req, res) => {
 
 }
+
+export const getTotalComisionesDiaAnterior = async (req, res) => {
+  try {
+    const id_caja = req.params.id_caja;
+    const result = await operaciones.totalcomisionesdiaanterior(id_caja);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener el total de comisiones del día anterior:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+export const getTotalSaldoDiaAnterior = async (req, res) => {
+  try {
+    const id_caja = req.params.id_caja;
+    const result = await operaciones.totalsaldodiaanterior(id_caja);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener el total de saldo del día anterior:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
