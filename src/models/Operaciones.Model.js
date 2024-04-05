@@ -264,7 +264,6 @@ LEFT JOIN caja c ON c.id_caja = o.id_caja
 LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
 WHERE o.id_entidadbancaria = $1
   AND o.id_caja = $2
-  AND o.tipodocumento = 'OPR' 
 GROUP BY o.id_operacion,
       o.id_entidadbancaria,
       o.id_tipotransaccion,
