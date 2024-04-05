@@ -1,10 +1,10 @@
 import { getOperationsReport } from '../models/Reportes.Model.js';
 
 export const reporteOperaciones = async (req, res) => {
-    const { id_usuario, desde, hasta, entidad, tipo_transaccion } = req.query;
+    const { id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion } = req.query;
 
     try {
-        const reporte = await getOperationsReport(id_usuario, desde, hasta, entidad, tipo_transaccion);
+        const reporte = await getOperationsReport(id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion);
         res.status(200).json(reporte);
     } catch (error) {
         console.error('Error al obtener el reporte de operaciones:', error);
