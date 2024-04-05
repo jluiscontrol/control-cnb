@@ -96,54 +96,54 @@ export async function getAllOperacionesUnique(id_caja) {
     try {
       const resultado = await operaciones.query(`
       SELECT DISTINCT ON (o.id_caja, e.entidad)
-        o.id_operacion,
-        e.id_entidadbancaria AS id_entidadbancaria,
-        e.entidad AS entidad,
-        e.acronimo AS acronimo,
-        e.sobregiro AS sobregiro,
-        e.estado AS estado,
-        tt.nombre AS tipotransaccion,
-        o.valor AS valor_operacion,
-        o.referencia AS referencia,
-        o.comentario AS comentario_operacion,
-        o.numtransaccion AS num_transaccion,
-        o.fecha_registro AS fecha_registro_operacion,
-        o.fecha_actualizacion AS fecha_actualizacion_operacion,
-        SUM(o.saldocomision) OVER (PARTITION BY o.id_caja, e.entidad) AS saldocomision_operacion,
-        o.tipodocumento AS tipodocumento_operacion,
-        o.estado AS estado_operacion,
-        ac.nombre AS afectacion_caja,
-        au.nombre AS afectacion_cuenta,
-        u.nombre_usuario AS nombre_usuario_operacion,
-        o.id_caja AS caja_id,
-        c.nombre AS nombreCaja,
-        s.saldocuenta AS saldocuenta,
-        s.saldocaja AS saldocaja
-      FROM 
-        operaciones o
-      JOIN 
-        entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-      JOIN 
-        tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-      LEFT JOIN
-        comision co ON e.id_entidadbancaria = co.entidadbancaria_id
-      LEFT JOIN
-        afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
-      LEFT JOIN
-        afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
-      LEFT JOIN
-        usuario u ON o.id_usuario = u.id_usuario
-      LEFT JOIN
-        saldos s ON s.entidadbancaria_id = e.id_entidadbancaria 
-      LEFT JOIN
-        caja c ON c.id_caja = o.id_caja 
-      WHERE 
-        o.estado = true
-        AND o.id_caja = $1
-        AND s.caja_id = $1 -- Filtrar los saldos por el mismo caja_id
-      ORDER BY 
-        o.id_caja, e.entidad, o.fecha_registro DESC;
-      
+      o.id_operacion,
+      e.id_entidadbancaria AS id_entidadbancaria,
+      e.entidad AS entidad,
+      e.acronimo AS acronimo,
+      e.sobregiro AS sobregiro,
+      e.estado AS estado,
+      tt.nombre AS tipotransaccion,
+      o.valor AS valor_operacion,
+      o.referencia AS referencia,
+      o.comentario AS comentario_operacion,
+      o.numtransaccion AS num_transaccion,
+      o.fecha_registro AS fecha_registro_operacion,
+      o.fecha_actualizacion AS fecha_actualizacion_operacion,
+      SUM(o.saldocomision) OVER (PARTITION BY o.id_caja, e.entidad) AS saldocomision_operacion,
+      o.tipodocumento AS tipodocumento_operacion,
+      o.estado AS estado_operacion,
+      ac.nombre AS afectacion_caja,
+      au.nombre AS afectacion_cuenta,
+      u.nombre_usuario AS nombre_usuario_operacion,
+      o.id_caja AS id_caja,
+      c.nombre AS nombreCaja,
+      s.saldocuenta AS saldocuenta,
+      s.saldocaja AS saldocaja
+  FROM 
+      operaciones o
+  JOIN 
+      entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+  JOIN 
+      tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+  LEFT JOIN
+      comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+  LEFT JOIN
+      afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+  LEFT JOIN
+      afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+  LEFT JOIN
+      usuario u ON o.id_usuario = u.id_usuario
+  LEFT JOIN
+      saldos s ON s.entidadbancaria_id = e.id_entidadbancaria 
+  LEFT JOIN
+      caja c ON c.id_caja = o.id_caja 
+  WHERE 
+      o.estado = true
+      AND o.id_caja = $1
+      AND s.caja_id = $1 -- Filtrar los saldos por el mismo caja_id
+  ORDER BY 
+      o.id_caja, e.entidad, o.fecha_registro DESC;
+  
 
       `, [id_caja]);
 
@@ -164,61 +164,59 @@ export async function getAllOperaciones(id_caja) {
     try {
       const resultado = await operaciones.query(`
       SELECT 
-        o.id_operacion,
-        e.id_entidadbancaria AS id_entidadbancaria,
-        e.entidad AS entidad,
-        e.acronimo AS acronimo,
-        e.sobregiro AS sobregiro,
-        e.estado AS estado,
-        tt.nombre AS tipotransaccion,
-        o.valor AS valor_operacion,
-        o.referencia AS referencia,
-        o.comentario AS comentario_operacion,
-        o.numtransaccion AS num_transaccion,
-        o.fecha_registro AS fecha_registro_operacion,
-        o.fecha_actualizacion AS fecha_actualizacion_operacion,
-        o.saldocomision AS saldocomision_operacion,
-        o.tipodocumento AS tipodocumento_operacion,
-        o.estado AS estado_operacion,
-        ac.nombre AS afectacion_caja,
-        au.nombre AS afectacion_cuenta,
-        u.nombre_usuario AS nombre_usuario_operacion,
-        sa.saldocuenta AS saldocuenta,
-        sa.saldocaja AS saldocaja,
-        u.caja_id As caja_id,
-        c.nombre AS nombreCaja,
-        (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
+          o.id_operacion,
+          e.id_entidadbancaria AS id_entidadbancaria,
+          e.entidad AS entidad,
+          e.acronimo AS acronimo,
+          e.sobregiro AS sobregiro,
+          e.estado AS estado,
+          tt.nombre AS tipotransaccion,
+          o.valor AS valor_operacion,
+          o.referencia AS referencia,
+          o.comentario AS comentario_operacion,
+          o.numtransaccion AS num_transaccion,
+          o.fecha_registro AS fecha_registro_operacion,
+          o.fecha_actualizacion AS fecha_actualizacion_operacion,
+          o.saldocomision AS saldocomision_operacion,
+          o.tipodocumento AS tipodocumento_operacion,
+          o.estado AS estado_operacion,
+          ac.nombre AS afectacion_caja,
+          au.nombre AS afectacion_cuenta,
+          u.nombre_usuario AS nombre_usuario_operacion,
+          s.saldocuenta AS saldocuenta,
+          s.saldocaja AS saldocaja,
+          o.id_caja AS caja_id,
+          c.nombre AS nombrecaja,
+          (o.valor + COALESCE(o.saldocomision, 0) + COALESCE(s.saldocuenta, 0)) AS valor_total_operacion
       FROM 
-        operaciones o
+          operaciones o
       JOIN 
-        entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+          entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
       JOIN 
-        tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+          tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
       LEFT JOIN
-        comision co ON e.id_entidadbancaria = co.entidadbancaria_id
+          afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
       LEFT JOIN
-        afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+          afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
       LEFT JOIN
-        afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+          usuario u ON o.id_usuario = u.id_usuario
       LEFT JOIN
-        usuario u ON o.id_usuario = u.id_usuario
+          caja c ON c.id_caja = o.id_caja
       LEFT JOIN
-        caja c ON c.id_caja = u.caja_id
-      LEFT JOIN
-        saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
-      LEFT JOIN
-        (SELECT 
-          entidadbancaria_id,
-          saldocuenta
-        FROM 
-          saldos
-        
-        LIMIT 1) s ON s.entidadbancaria_id = e.id_entidadbancaria
+          (SELECT 
+              entidadbancaria_id,
+              SUM(saldocuenta) AS saldocuenta,
+              SUM(saldocaja) AS saldocaja
+          FROM 
+              saldos
+          GROUP BY 
+              entidadbancaria_id) s ON s.entidadbancaria_id = e.id_entidadbancaria
       WHERE 
-        o.estado = true
-        AND u.caja_id = $1 -- Filtrar por id_caja seleccionado
+          o.estado = true
+          AND o.id_caja = $1 -- Filtrar por id_caja seleccionado
       ORDER BY 
-        e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+          e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+
       `, [id_caja]);
 
       return resultado.rows;
