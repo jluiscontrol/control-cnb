@@ -134,7 +134,7 @@ export async function getAllOperacionesUnique(id_caja) {
       LEFT JOIN
         usuario u ON o.id_usuario = u.id_usuario
       LEFT JOIN
-        saldos s ON s.entidadbancaria_id = e.id_entidadbancaria
+        saldos s ON s.entidadbancaria_id = e.id_entidadbancaria 
       LEFT JOIN
         caja c ON c.id_caja = o.id_caja 
       WHERE 
@@ -235,32 +235,61 @@ export async function getAllOperaciones(id_caja) {
 export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
   try {
     const resultado = await pool.query(`
-      SELECT o.*,
-      e.entidad AS entidad,
-      sa.saldocuenta AS saldocuenta,
-      sa.saldocaja AS saldocaja,
-      u.nombre_usuario,
-      sa.saldocaja AS saldocaja,
-      u.caja_id As caja_id,
-      tt.nombre AS tipotransaccion,
-      (o.valor + COALESCE(s.saldocuenta, 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
-      FROM operaciones o
-      JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-      JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-      JOIN usuario u ON u.id_usuario = o.id_usuario
-      LEFT JOIN caja c ON c.id_caja = u.caja_id
-      LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
-      LEFT JOIN (SELECT entidadbancaria_id, saldocuenta FROM saldos LIMIT 1) s ON s.entidadbancaria_id = e.id_entidadbancaria
-      WHERE o.id_entidadbancaria = $1
-      AND u.caja_id = $2`, [entidadId, id_caja]);
-      
+    SELECT o.id_operacion,
+    o.id_entidadbancaria,
+    o.id_tipotransaccion,
+    o.valor,
+    o.referencia,
+    o.comentario,
+    o.numtransaccion,
+    o.fecha_registro,
+    o.fecha_actualizacion,
+    o.id_usuario,
+    o.saldocomision,
+    o.estado,
+    o.tipodocumento,
+    o.id_persona,
+    o.id_caja,
+    e.entidad AS entidad,
+    MAX(sa.saldocuenta) AS saldocuenta,
+    MAX(sa.saldocaja) AS saldocaja,
+    u.nombre_usuario,
+    MAX(tt.nombre) AS tipotransaccion,
+    (o.valor + COALESCE(MAX(sa.saldocuenta), 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
+FROM operaciones o
+JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+JOIN usuario u ON u.id_usuario = o.id_usuario
+LEFT JOIN caja c ON c.id_caja = o.id_caja
+LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
+WHERE o.id_entidadbancaria = $1
+AND o.id_caja = $2
+GROUP BY o.id_operacion,
+      o.id_entidadbancaria,
+      o.id_tipotransaccion,
+      o.valor,
+      o.referencia,
+      o.comentario,
+      o.numtransaccion,
+      o.fecha_registro,
+      o.fecha_actualizacion,
+      o.id_usuario,
+      o.saldocomision,
+      o.estado,
+      o.tipodocumento,
+      o.id_persona,
+      o.id_caja,
+      e.entidad,
+      u.nombre_usuario;
+
+`, [entidadId, id_caja]);
+
     return resultado.rows;
-      
+
   } catch (error) {
     throw new Error('Error al obtener operaciones por entidad bancaria: ' + error.message);
   }
 }
-
 
 
 //Funcion para obtener todas las operaciones filtrando por fechas
