@@ -19,6 +19,7 @@ import dashboard from './routes/dashboard.js'
 import reportes from './routes/reportes.routes.js'
 import rutavisibleRoute from './routes/rutaVisible.routes.js'
 
+
 const app = express()
 
 app.use(morgan('dev'));
