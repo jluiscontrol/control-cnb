@@ -94,10 +94,10 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
   }
 };
 
-export const getFilterFecha = async (desde, hasta) => {
+export const getFilterFecha = async (desde, hasta, nombreUsuario) => {
   const arqueo = await pool.connect();
   try {
-    const query = `
+    let query = `
       SELECT DISTINCT ON (e.id_encabezadoarqueo)
         e.id_encabezadoarqueo,
         e.caja_id,
@@ -114,14 +114,25 @@ export const getFilterFecha = async (desde, hasta) => {
       LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
       LEFT JOIN caja c ON c.id_caja = e.caja_id
       LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-      WHERE e.fechacreacion BETWEEN $1 AND (DATE_TRUNC('day', $2::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')
-      ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
-    const result = await arqueo.query(query, [desde, hasta]);
+      WHERE e.fechacreacion BETWEEN $1 AND (DATE_TRUNC('day', $2::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')`;
+
+    const params = [desde, hasta];
+
+    // Verificar si se proporcionó el nombre de usuario y agregarlo como filtro
+    if (nombreUsuario) {
+      query += ` AND u.nombre_usuario = $${params.length + 1}`;
+      params.push(nombreUsuario);
+    }
+
+    query += ` ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
+
+    const result = await arqueo.query(query, params);
     return result.rows;
   } finally {
     arqueo.release();
   }
 };
+
 
 export const getFilterFechaReporte = async (fecha, nombreUsuario) => {
   const arqueo = await pool.connect();
