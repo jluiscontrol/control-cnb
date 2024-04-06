@@ -5,7 +5,7 @@ import { deleteOperacionesById } from '../models/Operaciones.Model.js';
 import { getOperacionesByEntidadBancariaId } from '../models/Operaciones.Model.js';
 
 export const createOperaciones = async (req, res) => {
-  const { 
+  const {
     id_entidadbancaria,
     id_tipotransaccion,
     id_persona,
@@ -20,10 +20,10 @@ export const createOperaciones = async (req, res) => {
     id_caja
   } = req.body;
 
-  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento ) {
+  if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
     return res.status(400).json('Algunos campos son obligatorios');
   }
-  
+
   // Validar tipos de datos
   if (typeof id_entidadbancaria !== 'number' || typeof id_tipotransaccion !== 'number' || typeof valor !== 'number') {
     return res.status(400).json({ error: 'Error al agregar operación: Verifique los tipos de datos de los campos.' });
@@ -137,29 +137,29 @@ export const getOperacionesByEntidad = async (req, res) => {
 
 export const updateOperacionesId = async (req, res) => {
   try {
-      const operacionesId = req.params.operacionesId; // Obtén el ID de la operación de los parámetros de la solicitud
-      const newData = req.body; // Obtén los nuevos datos de la operación del cuerpo de la solicitud
-      
-      // Verifica si los nuevos datos son válidos
-      if (!newData || Object.keys(newData).length === 0) {
-        return res.status(400).json({ error: 'Se requieren datos actualizados para editar la operación' });
-      }
-  
-      // Llama a la función para actualizar la operación con los datos proporcionados
-      const result = await updateOperacionesById(operacionesId, newData);
-      
-      // Verifica si hubo un error al actualizar la operación
-      if (result.error) {
-        return res.status(404).json({ error: result.error });
-      }
-  
-      // Devuelve un mensaje de éxito si la operación se actualizó correctamente
-      res.status(200).json({ message: 'Operación actualizada correctamente' });
-    } catch (error) {
-      // Maneja cualquier error interno del servidor
-      console.error('Error al actualizar la operación:', error);
-      res.status(500).json({ error: 'Error interno del servidor' });
+    const operacionesId = req.params.operacionesId; // Obtén el ID de la operación de los parámetros de la solicitud
+    const newData = req.body; // Obtén los nuevos datos de la operación del cuerpo de la solicitud
+
+    // Verifica si los nuevos datos son válidos
+    if (!newData || Object.keys(newData).length === 0) {
+      return res.status(400).json({ error: 'Se requieren datos actualizados para editar la operación' });
     }
+
+    // Llama a la función para actualizar la operación con los datos proporcionados
+    const result = await updateOperacionesById(operacionesId, newData);
+
+    // Verifica si hubo un error al actualizar la operación
+    if (result.error) {
+      return res.status(404).json({ error: result.error });
+    }
+
+    // Devuelve un mensaje de éxito si la operación se actualizó correctamente
+    res.status(200).json({ message: 'Operación actualizada correctamente' });
+  } catch (error) {
+    // Maneja cualquier error interno del servidor
+    console.error('Error al actualizar la operación:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }
 
 export const deleteOperacionesId = async (req, res) => {
@@ -193,6 +193,18 @@ export const getTotalComisionesDiaAnterior = async (req, res) => {
   try {
     const id_caja = req.params.id_caja;
     const result = await operaciones.totalcomisionesdiaanterior(id_caja);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener el total de comisiones del día anterior:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+export const getTotalComisionesDiaAnteriorPorEtidad = async (req, res) => {
+  try {
+    const id_entidadbancaria = req.params.id_entidadbancaria;
+    const id_caja = req.params.id_caja;
+    const result = await operaciones.totalcomisionesdiaanteriorporentidad(id_entidadbancaria, id_caja );
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener el total de comisiones del día anterior:', error);
