@@ -429,9 +429,8 @@ export const totalcomisionesdiaanterior = async (id_caja) => {
   const client = await pool.connect(); // Obtiene una conexión del pool
   try {
     const query = `SELECT 
-    SUM(o.saldocomision) 
-    AS total_comision, SUM(o.valor) 
-    AS total_valor 
+    COALESCE(SUM(saldocomision), 0) AS total_comision, 
+    COALESCE(SUM(valor), 0) AS total_valor 
     FROM operaciones o 
     WHERE o.id_caja = $1 
     AND DATE(o.fecha_registro) < CURRENT_DATE 
@@ -453,11 +452,12 @@ export const totalcomisionesdiaanteriorporentidad = async (id_entidadbancaria, i
   const client = await pool.connect(); 
   try {
     const query = `SELECT 
-    SUM(o.saldocomision) AS total_comision, 
-    SUM(o.valor) AS total_valor 
+    COALESCE(SUM(saldocomision), 0) AS total_comision, 
+    COALESCE(SUM(valor), 0) AS total_valor 
     FROM operaciones o 
     WHERE o.id_entidadbancaria= $1 
-    AND o.id_caja = $2 AND DATE(o.fecha_registro) < CURRENT_DATE 
+    AND o.id_caja = $2 
+    AND DATE(o.fecha_registro) < CURRENT_DATE
     AND o.tipodocumento = 'OPR' 
     AND o.estado = true`;
     const values = [id_entidadbancaria, id_caja];
