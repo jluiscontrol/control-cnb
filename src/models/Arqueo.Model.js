@@ -11,14 +11,13 @@ async function addEncabezadoarqueo(encabezadoarqueo, detalles) {
 
     // Verificar si ya existe un arqueo para el mismo usuario en la misma fecha
     const fechaActual = new Date().toISOString();
-    const arqueoExistente = await arqueo.query("SELECT * FROM encabezadoarqueo WHERE usuario_id = $1 AND DATE_TRUNC('day', fechacreacion) = DATE_TRUNC('day', $2::TIMESTAMP)", [usuario_id, fechaActual]);
+    const arqueoExistente = await arqueo.query("SELECT * FROM encabezadoarqueo WHERE usuario_id = $1 AND caja_id = $2 AND DATE_TRUNC('day', fechacreacion) = DATE_TRUNC('day', $3::TIMESTAMP)", [usuario_id, caja_id, fechaActual]);
     if (arqueoExistente.rows.length > 0) {
-      throw new Error('Ya existe un arqueo para este usuario en la fecha actual');
+      throw new Error('Ya existe un arqueo para este usuario en esta caja en la fecha actual');
     }
 
     // Insertar el encabezado del arqueo
-    const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario) VALUES($1, $2, $3) RETURNING id_encabezadoarqueo', [caja_id, usuario_id, comentario]);
-    const encabezadoarqueoId = arqueoInsertResult.rows[0].id_encabezadoarqueo;
+    const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario, estado) VALUES($1, $2, $3, $4) RETURNING id_encabezadoarqueo', [caja_id, usuario_id, comentario, true]);    const encabezadoarqueoId = arqueoInsertResult.rows[0].id_encabezadoarqueo;
 
     // Insertar cada detalle del arqueo
     for (const detalle of detalles) {
