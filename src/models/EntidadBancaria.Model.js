@@ -128,7 +128,7 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
 };
 
 // Funcion para obtener los saldos por caja
-export const saldosByCajaId = async (cajaId, fecha) => {
+export const saldosByCajaId = async (cajaId, userId, fecha) => {
   const client = await pool.connect();
   try {
     const query = `
@@ -152,12 +152,13 @@ export const saldosByCajaId = async (cajaId, fecha) => {
   LEFT JOIN 
     tipotransaccion tt ON tt.id_tipotransaccion = o.id_tipotransaccion
   WHERE 
-    o.id_caja = $1 AND 
-    DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $2::TIMESTAMP)
+    o.id_caja = $1 AND
+    o.id_usuario = $2 AND
+    DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
   GROUP BY 
     e.id_entidadbancaria, e.entidad;
   `;
-    const result = await client.query(query, [cajaId, fecha]);
+    const result = await client.query(query, [cajaId, userId, fecha]);
     console.log(result.rows)
     return result.rows;
   } catch (err) {

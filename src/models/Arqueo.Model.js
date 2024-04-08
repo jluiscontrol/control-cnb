@@ -9,6 +9,13 @@ async function addEncabezadoarqueo(encabezadoarqueo, detalles) {
       throw new Error('Todos los campos son requeridos');
     }
 
+    // Verificar si ya existe un arqueo para el mismo usuario en la misma fecha
+    const fechaActual = new Date().toISOString();
+    const arqueoExistente = await arqueo.query("SELECT * FROM encabezadoarqueo WHERE usuario_id = $1 AND DATE_TRUNC('day', fechacreacion) = DATE_TRUNC('day', $2::TIMESTAMP)", [usuario_id, fechaActual]);
+    if (arqueoExistente.rows.length > 0) {
+      throw new Error('Ya existe un arqueo para este usuario en la fecha actual');
+    }
+
     // Insertar el encabezado del arqueo
     const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario) VALUES($1, $2, $3) RETURNING id_encabezadoarqueo', [caja_id, usuario_id, comentario]);
     const encabezadoarqueoId = arqueoInsertResult.rows[0].id_encabezadoarqueo;

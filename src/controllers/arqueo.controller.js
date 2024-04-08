@@ -17,7 +17,8 @@ export const createArqueo = async (req, res) => {
     res.status(201).json(arqueoSave);
   } catch (error) {
     console.error('Error al crear el arqueo:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    // Enviar el mensaje de error en la respuesta
+    res.status(400).json({ error: error.message });
   }
 };
 

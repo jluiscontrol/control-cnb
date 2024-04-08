@@ -138,8 +138,9 @@ export const estadoEntidadBancariaById = async (req, res) => {
 export const getSaldosByCajaId = async (req, res) => {
   try {
     const cajaId = req.params.cajaId;
+    const userId = req.params.userId;
     const fecha = req.params.fecha;
-    const saldos = await EntidadBancaria.saldosByCajaId(cajaId, fecha);
+    const saldos = await EntidadBancaria.saldosByCajaId(cajaId, userId, fecha);
     if (!saldos) {
       return res.status(404).json({ error: 'No se encontraron saldos para la entidad bancaria' });
     }
