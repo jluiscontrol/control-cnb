@@ -11,5 +11,6 @@ router.get('/reporte/', arqueoEncabezadoCtrl.getArqueoReporte); // Obtener los a
 router.get('/:encabezadoarqueoId', arqueoEncabezadoCtrl.getArqueoById); // Obtener un arqueo por su ID
 router.put('/:encabezadoarqueoId', arqueoEncabezadoCtrl.updateArqueoById); // Actualizar los detalles del arqueo
 router.get('/:encabezadoarqueoId/detalles', arqueoEncabezadoCtrl.getDetallesArqueo); // Obtener los detalles de un arqueo
+router.get('/total/:encabezadoarqueoId', arqueoEncabezadoCtrl.getValoresArqueoByEncabezadoId); // Obtener todos los detalles de los arqueos
 
 export default router;

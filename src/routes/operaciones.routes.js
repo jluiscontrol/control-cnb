@@ -13,6 +13,6 @@ router.put('/eliminar/:operacionesDeleteId', operacionesCtrl.deleteOperacionesId
 router.get('/byEntidadId/:entidadId', operacionesCtrl.getOperacionesByEntidad);
 router.get ('/totalcomisionesdiaanterior/:id_caja', operacionesCtrl.getTotalComisionesDiaAnterior);
 router.get('/totalcomisionesdiaanteriorporentidad/:id_entidadbancaria/:id_caja', operacionesCtrl.getTotalComisionesDiaAnteriorPorEtidad);
-router.get('/totalsaldodiaanterior/:id_caja', operacionesCtrl.getTotalSaldoDiaAnterior);
+router.get('/totalcajadeldia/:id_caja', operacionesCtrl.getTotalCajaDelDia);
 
 export default router;

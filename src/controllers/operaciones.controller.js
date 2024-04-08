@@ -212,10 +212,10 @@ export const getTotalComisionesDiaAnteriorPorEtidad = async (req, res) => {
   }
 }
 
-export const getTotalSaldoDiaAnterior = async (req, res) => {
+export const getTotalCajaDelDia = async (req, res) => {
   try {
     const id_caja = req.params.id_caja;
-    const result = await operaciones.totalsaldodiaanterior(id_caja);
+    const result = await operaciones.totalcajadeldia(id_caja);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener el total de saldo del día anterior:', error);

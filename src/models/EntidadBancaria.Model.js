@@ -106,8 +106,8 @@ export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
 
 // Función para actualizar la entidad bancaria por su ID
 export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
+  const client = await pool.connect();
   try {
-    const client = await pool.connect();
     const query = 'UPDATE entidadbancaria SET estado = $1  WHERE id_entidadbancaria = $2';
     const result = await client.query(query, [newData.estado, entidadBancariaId]);
     if (result.rowCount === 0) {
@@ -122,9 +122,50 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
    }
   } catch (error) {
     throw new Error('Error al inactivar la entidad bancaria: ' + error.message);
+  } finally {
+    client.release();
   }
 };
 
+// Funcion para obtener los saldos por caja
+export const saldosByCajaId = async (cajaId, fecha) => {
+  const client = await pool.connect();
+  try {
+    const query = `
+  SELECT 
+    e.entidad AS nombre_entidad, 
+    COALESCE(SUM(CASE 
+      WHEN tt.afectacuenta_id = 1 THEN o.valor
+      WHEN tt.afectacuenta_id = 2 THEN -o.valor
+      ELSE 0
+    END), 0) AS saldocuenta,
+    COALESCE(SUM(CASE 
+      WHEN tt.afectacaja_id = 1 THEN o.valor
+      WHEN tt.afectacaja_id = 2 THEN -o.valor
+      ELSE 0
+    END), 0) AS saldocaja,
+    COALESCE(SUM(o.saldocomision), 0) AS sumacomisiones
+  FROM 
+    operaciones o
+  LEFT JOIN 
+    entidadbancaria e ON e.id_entidadbancaria = o.id_entidadbancaria
+  LEFT JOIN 
+    tipotransaccion tt ON tt.id_tipotransaccion = o.id_tipotransaccion
+  WHERE 
+    o.id_caja = $1 AND 
+    DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $2::TIMESTAMP)
+  GROUP BY 
+    e.id_entidadbancaria, e.entidad;
+  `;
+    const result = await client.query(query, [cajaId, fecha]);
+    console.log(result.rows)
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    client.release();
+  }
+};
 
 
 // Exportar las funciones del modelo
@@ -132,4 +173,5 @@ export default { addEntidadBancaria,
            getAllEntidadesBancarias,
     getAllEntidadesBancariasActivas, 
              getEntidadBancariaById, 
-          deleteEntidadBancariaById };
+          deleteEntidadBancariaById,
+          saldosByCajaId };

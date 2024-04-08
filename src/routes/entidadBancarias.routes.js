@@ -11,6 +11,7 @@ router.get('/activas', entidadBancariaCtrl.getEntidadBancariasActivas)
 router.get('/:entidadBancariaId', entidadBancariaCtrl.getEntidadBancariaById)
 router.put('/:entidadBancariaId', entidadBancariaCtrl.updateEntidadBancariaById)
 router.put('/estado/:entidadBancariaEstado', entidadBancariaCtrl.estadoEntidadBancariaById)
+router.get('/saldosByCaja/:cajaId/:fecha', entidadBancariaCtrl.getSaldosByCajaId)
 
 
 

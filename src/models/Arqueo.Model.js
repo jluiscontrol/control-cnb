@@ -49,27 +49,29 @@ async function getAllArqueo() {
 }
 
 // Función para obtener un arqueo por su ID
-export const getArqueoById = async (encabezadoarqueoId ) => {
-    try {
-      const client = await pool.connect();
-      const query = 'SELECT * FROM encabezadoarqueo WHERE id_encabezadoarqueo = $1';
-      const result = await client.query(query, [encabezadoarqueoId]);
-      client.release();
-      if (result.rows.length === 0) {
-        return { error: 'Arqueo no encontrado' }; // Devuelve un objeto con el mensaje de error
-      }
-      return result.rows[0]; // Devuelve la entidad bancaria encontrada
-    } catch (error) {
-      console.error('Error al obtener el arqueo por ID:', error);
-      throw error; // Relanza el error para que sea manejado por el controlador
+export const getArqueoById = async (encabezadoarqueoId) => {
+  const client = await pool.connect();
+  try {
+
+    const query = 'SELECT * FROM encabezadoarqueo WHERE id_encabezadoarqueo = $1';
+    const result = await client.query(query, [encabezadoarqueoId]);
+
+    if (result.rows.length === 0) {
+      return { error: 'Arqueo no encontrado' }; // Devuelve un objeto con el mensaje de error
     }
+    return result.rows[0]; // Devuelve la entidad bancaria encontrada
+  } catch (error) {
+    console.error('Error al obtener el arqueo por ID:', error);
+    throw error; // Relanza el error para que sea manejado por el controlador
+  } finally {
+    client.release();
   }
+}
 
 // Función para actualizar el arqueo por su ID
 export const updateArqueoById = async (encabezadoarqueoId, newData) => {
+  const client = await pool.connect();
   try {
-    const client = await pool.connect();
-
     // Actualizar los datos del encabezado del arqueo
     const query = 'UPDATE encabezadoarqueo SET caja_id = $1, usuario_id = $2, comentario = $3 WHERE id_encabezadoarqueo = $4';
     const result = await client.query(query, [newData.caja_id, newData.usuario_id, newData.comentario, encabezadoarqueoId]);
@@ -87,10 +89,11 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
       }
     }
 
-    client.release();
     return { message: 'Arqueo actualizado correctamente' };
   } catch (error) {
     throw new Error('Error al actualizar el arqueo: ' + error.message);
+  } finally {
+    client.release();
   }
 };
 
@@ -189,15 +192,47 @@ export const getDetallesArqueoById = async (encabezadoarqueoId) => {
   try {
     const query = 'SELECT * FROM detallearqueo WHERE encabezadoarqueo_id = $1 ORDER BY id_detalle_arqueo';
     const result = await client.query(query, [encabezadoarqueoId]);
-    client.release();
     if (result.rows.length === 0) {
       return { error: 'No se encontraron detalles para el arqueo especificado.' };
     }
     return result.rows;
   } catch (error) {
     console.error('Error al obtener los detalles del arqueo:', error);
-    throw error; 
+    throw error;
+  } finally {
+    client.release();
   }
 };
 
-export default { addEncabezadoarqueo, getAllArqueo, getArqueoById, updateArqueoById, getFilterFecha, getDetallesArqueoById  };
+export const valoresArqueoByEncabezadoId = async (encabezadoarqueoId) => {
+  const client = await pool.connect();
+  try {
+    const query = `
+    SELECT 
+        ROUND(SUM(valor * cantidad)::numeric, 2) AS total
+    FROM 
+        detallearqueo
+    WHERE 
+        encabezadoarqueo_id = $1;`;
+    const result = await client.query(query, [encabezadoarqueoId]);
+    if (result.rows.length === 0) {
+      return { error: 'No se encontraron detalles para el arqueo especificado.' };
+    }
+    return result.rows;
+  } catch (error) {
+    console.error('Error al obtener los detalles del arqueo:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export default {
+  addEncabezadoarqueo,
+  getAllArqueo,
+  getArqueoById,
+  updateArqueoById,
+  getFilterFecha,
+  getDetallesArqueoById,
+  valoresArqueoByEncabezadoId
+};
