@@ -5,7 +5,7 @@ import * as userCtrl from '../controllers/user.controller.js'//importa todos mis
 import { verifyToken } from "../middlewares/auth.jwt.js";
 
 
-router.post('/',[verifyToken], userCtrl.createUser)
+router.post('/', userCtrl.createUser)
 router.get('/', userCtrl.getUsers)
 router.get('/:userId', userCtrl.getUserById)
 router.put('/:userId', userCtrl.updateUserById)

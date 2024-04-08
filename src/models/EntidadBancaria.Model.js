@@ -17,9 +17,8 @@ async function addEntidadBancaria(entidadBancaria) {
       throw new Error('La entidad bancaria ya existe');
     }
     // Insertar la nueva entidad bancaria
-    comision = parseFloat(comision).toFixed(2); // Asegurarse de que comision tiene formato de dinero
-    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comision]);
-    const id_entidadbancaria = result.rows[0].id_entidadbancaria;
+    let comisionFormateada = parseFloat(comision).toFixed(2); // Asegurarse de que comision tiene formato de dinero
+    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comisionFormateada]);    const id_entidadbancaria = result.rows[0].id_entidadbancaria;
     // Insertar el saldo de cuenta y el saldo de caja en una sola operación
     await cliente.query('INSERT INTO saldos(entidadbancaria_id, saldocuenta, saldocaja) VALUES ($1, $2, $3)', [id_entidadbancaria, saldocuenta, saldocaja]);
     // Confirmar la transacción
