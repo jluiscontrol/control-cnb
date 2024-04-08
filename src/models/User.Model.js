@@ -47,7 +47,7 @@ async function addPersona(Persona) {
 async function addUser(User, Persona, id_rol) {
   const user = await pool.connect();
   try {
-    const { nombre_usuario, estado, contrasenia } = User;
+    const { nombre_usuario, estado, contrasenia, caja_id } = User;
     const { nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = Persona;
 
     // Verificar si el nombre de usuario ya está en uso
@@ -111,10 +111,11 @@ async function addUser(User, Persona, id_rol) {
                 (nombre_usuario, 
                          estado, 
                     contrasenia, 
-                    persona_id
+                    persona_id,
+                    caja_id
                        ) 
-            VALUES($1, $2, $3, $4) RETURNING *`,
-      [nombre_usuario, estado, hashedPassword, personaId]);
+            VALUES($1, $2, $3, $4, $5) RETURNING *`,
+      [nombre_usuario, estado, hashedPassword, personaId, caja_id]);
     const userId = userInsertResult.rows[0].id_usuario;
 
     // Commit la transacción
@@ -142,20 +143,22 @@ async function getAllUsers() {
   try {
     const resultado = await users.query(`
     SELECT 
-    u.*, 
-    r.nombre AS rol, 
-    r.id_rol AS rol_id,
-    p.nombre AS nombre_persona, 
-    p.apellido AS apellido_persona, 
-    p.fecha_nacimiento AS fecha_nacimiento_persona, 
-    p.direccion AS direccion_persona, 
-    p.telefono AS telefono_persona,
-    p.cedula AS cedula_persona
+      u.*, 
+      r.nombre AS rol, 
+      r.id_rol AS rol_id,
+      p.nombre AS nombre_persona, 
+      p.apellido AS apellido_persona, 
+      p.fecha_nacimiento AS fecha_nacimiento_persona, 
+      p.direccion AS direccion_persona, 
+      p.telefono AS telefono_persona,
+      p.cedula AS cedula_persona,
+      c.nombre AS nombre_caja
     FROM 
     usuario u
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
     LEFT JOIN persona p ON u.persona_id = p.id_persona
+    LEFT JOIN caja c ON u.caja_id = c.id_caja
     ORDER BY u.id_usuario; 
     `);
     return resultado.rows;

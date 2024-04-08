@@ -36,15 +36,16 @@ export const createPersona = async (req, res) => {
 
 
 export const createUser = async (req, res) => {
-  const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula } = req.body;
+  const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
  // Verificar si algún campo requerido está vacío
-if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
+if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido || !caja_id ) {
   const camposFaltantes = [];
   if (!nombre_usuario) camposFaltantes.push('Nombre de usuario');
   if (!contrasenia) camposFaltantes.push('Contraseña');
   if (!cedula) camposFaltantes.push('Cédula');
   if (!nombre) camposFaltantes.push('Nombres');
   if (!apellido) camposFaltantes.push('Apellidos');
+  if (!caja_id) camposFaltantes.push('Caja');
   
   
   return res.status(400).json({ error: `Los siguientes campos son obligatorios: ${camposFaltantes.join(', ')}.` });
@@ -52,7 +53,7 @@ if (!nombre_usuario || !contrasenia || !cedula || !nombre || !apellido ) {
 
   try {
     // Llama a la función addUser con los parámetros proporcionados
-    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, id_rol);
+    const userSave = await User.addUser({ nombre_usuario, contrasenia, estado, caja_id },{ nombre, apellido, fecha_nacimiento, direccion, telefono, cedula }, id_rol);
     // Verificar si la función addUser devolvió un error relacionado con la cédula ya registrada
     if (userSave.error) {
       return res.status(400).json({ error: userSave.error }); // Devolver código de estado 401
