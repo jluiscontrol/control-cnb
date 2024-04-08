@@ -233,8 +233,9 @@ export async function getAllOperaciones(id_caja) {
 
 
 export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
+  const client = await pool.connect();
   try {
-    const resultado = await pool.query(`
+    const resultado = await client.query(`
     SELECT o.id_operacion,
     o.id_entidadbancaria,
     o.id_tipotransaccion,
@@ -284,11 +285,13 @@ GROUP BY o.id_operacion,
       u.nombre_usuario;
 
 `, [entidadId, id_caja]);
-
+    
     return resultado.rows;
-
+    
   } catch (error) {
     throw new Error('Error al obtener operaciones por entidad bancaria: ' + error.message);
+  } finally{
+    client.release();
   }
 }
 
@@ -425,7 +428,15 @@ export const ObtenerComisionByBankandTransa = async (newData) => {
 export const totalcomisionesdiaanterior = async (id_caja) => {
   const client = await pool.connect(); // Obtiene una conexión del pool
   try {
-    const query = `SELECT SUM(o.saldocomision) AS total_comision, SUM(o.valor) AS total_valor FROM operaciones o WHERE o.id_caja = $1 AND DATE(o.fecha_registro) < CURRENT_DATE AND o.tipodocumento = 'OPR' AND o.estado = true`;
+    const query = `SELECT 
+    SUM(o.saldocomision) 
+    AS total_comision, SUM(o.valor) 
+    AS total_valor 
+    FROM operaciones o 
+    WHERE o.id_caja = $1 
+    AND DATE(o.fecha_registro) < CURRENT_DATE 
+    AND o.tipodocumento = 'OPR' 
+    AND o.estado = true`;
     const result = await client.query(query, [id_caja]);
     client.release(); // Libera la conexión al pool
     if (result.rowCount === 0) {
@@ -439,9 +450,16 @@ export const totalcomisionesdiaanterior = async (id_caja) => {
 }
 
 export const totalcomisionesdiaanteriorporentidad = async (id_entidadbancaria, id_caja) => {
-  const client = await pool.connect(); // Obtiene una conexión del pool
+  const client = await pool.connect(); 
   try {
-    const query = `SELECT SUM(o.saldocomision) AS total_comision, SUM(o.valor) AS total_valor FROM operaciones o WHERE o.id_entidadbancaria= $1 AND o.id_caja = $2 AND DATE(o.fecha_registro) < CURRENT_DATE AND o.tipodocumento = 'OPR' AND o.estado = true`;
+    const query = `SELECT 
+    SUM(o.saldocomision) AS total_comision, 
+    SUM(o.valor) AS total_valor 
+    FROM operaciones o 
+    WHERE o.id_entidadbancaria= $1 
+    AND o.id_caja = $2 AND DATE(o.fecha_registro) < CURRENT_DATE 
+    AND o.tipodocumento = 'OPR' 
+    AND o.estado = true`;
     const values = [id_entidadbancaria, id_caja];
     const result = await client.query(query, values);
     client.release(); 
