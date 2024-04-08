@@ -9,26 +9,21 @@ async function addEntidadBancaria(entidadBancaria) {
     if (!entidad || !acronimo || !sobregiro || !comision) {
       throw new Error('Todos los campos son requeridos');
     }
-
     // Iniciar una transacción
     await cliente.query('BEGIN');
-
     // Verificar si la entidad bancaria ya existe
     const existingBanco = await cliente.query('SELECT * FROM entidadbancaria WHERE entidad = $1', [entidad]);
     if (existingBanco.rows.length > 0) {
       throw new Error('La entidad bancaria ya existe');
     }
-
     // Insertar la nueva entidad bancaria
+    comision = parseFloat(comision).toFixed(2); // Asegurarse de que comision tiene formato de dinero
     const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comision]);
     const id_entidadbancaria = result.rows[0].id_entidadbancaria;
-
     // Insertar el saldo de cuenta y el saldo de caja en una sola operación
     await cliente.query('INSERT INTO saldos(entidadbancaria_id, saldocuenta, saldocaja) VALUES ($1, $2, $3)', [id_entidadbancaria, saldocuenta, saldocaja]);
-
     // Confirmar la transacción
     await cliente.query('COMMIT');
-
     return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro, saldocuenta, saldocaja };
   } catch (error) {
     // Si hay algún error, hacer rollback de la transacción
@@ -92,6 +87,10 @@ export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
   try {
     const client = await pool.connect();
     const query = 'UPDATE entidadbancaria SET entidad = $1, acronimo = $2, sobregiro = $3, comision = $4 WHERE id_entidadbancaria = $5';
+    
+    // Asegurarse de que comision tiene formato de dinero
+    newData.comision = parseFloat(newData.comision).toFixed(2);
+    
     const result = await client.query(query, [newData.entidad, newData.acronimo,  newData.sobregiro, newData.comision ,entidadBancariaId]);
 
     if (result.rowCount === 0) {

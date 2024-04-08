@@ -24,13 +24,13 @@ export const createArqueo = async (req, res) => {
 //Funcion para obtener todos los arqueos
 export const getArqueo = async (req, res) => {
   try {
-    const { desde, hasta, nombreUsuario } = req.query; // Obtener los parámetros de consulta desde, hasta y nombreUsuario
+    const { desde, hasta, nombreUsuario, id_caja } = req.query; // Obtener los parámetros de consulta desde, hasta y nombreUsuario
 
     if (!desde || !hasta) {
       return res.status(400).json({ error: 'Se requieren parámetros desde y hasta para filtrar por fecha.' });
     }
 
-    const arqueo = await getFilterFecha(desde, hasta, nombreUsuario); // Utilizar la función getFilterFecha para filtrar los arqueos
+    const arqueo = await getFilterFecha(desde, hasta, nombreUsuario, id_caja); // Utilizar la función getFilterFecha para filtrar los arqueos
     if (!arqueo || arqueo.length === 0) {
       return res.status(404).json({ error: 'No se encontraron arqueos en el rango de fechas y nombre de usuario especificados.' });
     }
