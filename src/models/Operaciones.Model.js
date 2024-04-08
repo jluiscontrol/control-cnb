@@ -423,46 +423,34 @@ export const ObtenerComisionByBankandTransa = async (newData) => {
 }
 
 export const totalcomisionesdiaanterior = async (id_caja) => {
+  const client = await pool.connect(); // Obtiene una conexión del pool
   try {
-    const client = await pool.connect();
-    const query = `SELECT          
-    SUM(o.saldocomision) AS total_comision,
-    SUM(o.valor) AS total_valor
-    FROM operaciones o
-    WHERE o.id_caja = $1
-    AND DATE(o.fecha_registro) < CURRENT_DATE
-    AND o.tipodocumento = 'OPR' 
-    AND o.estado = true`;
+    const query = `SELECT SUM(o.saldocomision) AS total_comision, SUM(o.valor) AS total_valor FROM operaciones o WHERE o.id_caja = $1 AND DATE(o.fecha_registro) < CURRENT_DATE AND o.tipodocumento = 'OPR' AND o.estado = true`;
     const result = await client.query(query, [id_caja]);
+    client.release(); // Libera la conexión al pool
     if (result.rowCount === 0) {
-      return { error: 'no existe comision en esta operacion' }; // Devuelve un objeto con el mensaje de error
+      return { error: 'no existe comision en esta operacion' };
     }
     return result.rows[0];
   } catch (error) {
+    client.release(); // Asegúrate de liberar la conexión incluso si hay un error
     throw new Error('Error al seleccionar la operación: ' + error.message);
   }
 }
 
 export const totalcomisionesdiaanteriorporentidad = async (id_entidadbancaria, id_caja) => {
+  const client = await pool.connect(); // Obtiene una conexión del pool
   try {
-    const client = await pool.connect();
-    const query = `SELECT 
-    SUM(o.saldocomision) AS total_comision,
-    SUM(o.valor) AS total_valor
-    FROM operaciones o
-    WHERE o.id_entidadbancaria= $1
-    AND o.id_caja = $2
-    AND DATE(o.fecha_registro) < CURRENT_DATE
-    AND o.tipodocumento = 'OPR' 
-    AND o.estado = true`;
-
+    const query = `SELECT SUM(o.saldocomision) AS total_comision, SUM(o.valor) AS total_valor FROM operaciones o WHERE o.id_entidadbancaria= $1 AND o.id_caja = $2 AND DATE(o.fecha_registro) < CURRENT_DATE AND o.tipodocumento = 'OPR' AND o.estado = true`;
     const values = [id_entidadbancaria, id_caja];
-    const result = await pool.query(query, values);
+    const result = await client.query(query, values);
+    client.release(); 
     if (result.rowCount === 0) {
-      return { error: 'no existe comision en esta operacion' }; 
+      return { error: 'no existe comision en esta operacion' };
     }
     return result.rows[0];
   } catch (error) {
+    client.release(); 
     throw new Error('Error al seleccionar la operación: ' + error.message);
   }
 }
@@ -480,7 +468,7 @@ export const totalsaldodiaanterior = async (id_caja) => {
     const result = await client.query(query, [id_caja]);
 
     if (result.rowCount === 0) {
-      return { error: 'no existe comision en esta operacion' }; // Devuelve un objeto con el mensaje de error
+      return { error: 'no existe comision en esta operacion' }; 
     }
     return result.rows[0];
   }
