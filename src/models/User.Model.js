@@ -386,6 +386,7 @@ export const deleteUser = async (userDeleteId, newData) => {
 
 };
 
+
 // Exportar las funciones del modelo
 export default {
   addUser,
