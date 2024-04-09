@@ -13,6 +13,7 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
         operaciones.saldocomision,
         usuario.nombre_usuario,
         persona.nombre AS nombre_persona,
+        persona.cedula AS cedula_persona,
         operaciones.referencia,
         operaciones.comentario,
         TO_CHAR(operaciones.fecha_registro, 'YYYY-MM-DD') AS fecha_registro
