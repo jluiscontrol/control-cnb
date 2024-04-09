@@ -309,7 +309,6 @@ GROUP BY o.id_operacion,
       e.entidad,
       u.nombre_usuario
 ORDER BY o.fecha_registro; 
-
 `, [entidadId, id_caja]);
     
     return resultado.rows;
