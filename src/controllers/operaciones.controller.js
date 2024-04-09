@@ -30,8 +30,11 @@ export const createOperaciones = async (req, res) => {
   }
 
   try {
-    // Llama a la función para validar el número de transacción
-    const numTransaccionExistente = await existeNumTransaccion(numtransaccion, id_entidadbancaria);
+    let numTransaccionExistente = null;
+    // Si numtransaccion no es una cadena vacía, verifica si existe
+    if (numtransaccion !== "") {
+      numTransaccionExistente = await existeNumTransaccion(numtransaccion, id_entidadbancaria);
+    }
     if (numTransaccionExistente) {
       return res.status(400).json({
         error: `El número de comprobante '${numtransaccion}' ya existe en la transacción: ${numTransaccionExistente}`,
