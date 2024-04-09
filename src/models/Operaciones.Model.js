@@ -231,6 +231,20 @@ export async function getAllOperaciones(id_caja) {
 }
 
 
+export async function getTodasLasOperaciones() {
+    const operaciones = await pool.connect();
+    try {
+      const query = `
+        SELECT o.*
+        FROM operaciones o
+        ORDER BY o.id_operacion;
+      `;
+      const operacion = await operaciones.query(query);
+      return operacion.rows;
+    } finally {
+      operaciones.release();
+    }   
+}
 
 export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
   const client = await pool.connect();
@@ -519,5 +533,6 @@ export default {
   getAllOperacionesUnique,
   totalcomisionesdiaanterior,
   totalcomisionesdiaanteriorporentidad,
-  totalcajadeldia
+  totalcajadeldia,
+  getTodasLasOperaciones
 }
