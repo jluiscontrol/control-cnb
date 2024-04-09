@@ -112,7 +112,6 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
     if (result.rowCount === 0) {
       return { error: 'La entidad bancaria con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
-    client.release();
    if(newData.estado == true){
      return { message: 'Entidad bancaria activada correctamente' };
    }else{

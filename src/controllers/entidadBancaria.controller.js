@@ -115,25 +115,23 @@ export const estadoEntidadBancariaById = async (req, res) => {
     if (!existingEntidadBancaria) {
       return res.status(404).json({ error: 'La entidad bancaria con el ID proporcionado no existe' });
     }
+
     const result = await estadoEntidadBancariaByIdModel(entidadBancariaEstado, newData);
 
     if (result.error) {
       return res.status(404).json({ error: result.error });
     }
-  
-   if(newData.estado == true){
-     res.status(200).json({ message: 'Entidad bancaria activada correctamente' });
-   }else{
-    res.status(200).json({ message: 'Entidad bancaria inactivada correctamente' });
 
-   }
+    // Respondemos con el mensaje de éxito dependiendo del estado
+    const message = newData.estado ? 'Entidad bancaria activada correctamente' : 'Entidad bancaria inactivada correctamente';
+    res.status(200).json({ message });
    
   } catch (error) {
-    
     console.error('Error al inactivar la entidad bancaria por ID:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 
 export const getSaldosByCajaId = async (req, res) => {
   try {
