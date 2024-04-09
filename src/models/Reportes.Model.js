@@ -5,6 +5,7 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
   try {
     let query = `
       SELECT 
+        operaciones.id_operacion,
         operaciones.numtransaccion,
         entidadbancaria.entidad,
         tipotransaccion.nombre AS tipo_transaccion,
