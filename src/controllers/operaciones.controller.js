@@ -1,7 +1,7 @@
 import * as operaciones from '../models/Operaciones.Model.js'
 import { existeNumTransaccion, obtenerSobregiroPermitido } from '../helpers/funciones.js';
 import { updateOperacionesById } from '../models/Operaciones.Model.js';
-import { deleteOperacionesById } from '../models/Operaciones.Model.js';
+import { deleteOperacionesById  } from '../models/Operaciones.Model.js';
 import { getOperacionesByEntidadBancariaId } from '../models/Operaciones.Model.js';
 
 export const createOperaciones = async (req, res) => {
@@ -78,6 +78,20 @@ export const getOperaciones = async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     console.error('Error al obtener operaciones:', error);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+};
+
+//Funcion para obtener todas las operaciones registradas sin importar su caja
+export const getTodasOperaciones = async (req, res) => {
+  try {
+    // Llama a la función getTodasOperaciones desde el modelo
+    const result = await operaciones.getTodasLasOperaciones();
+
+    // Devuelve las operaciones en la respuesta
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Error al obtener todas las operaciones:', error);
     res.status(500).json({ error: 'Error interno del servidor.' });
   }
 };

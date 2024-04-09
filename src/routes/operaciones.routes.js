@@ -6,6 +6,7 @@ import { verifyToken, verifyPermissions, verifyEmpleado } from "../middlewares/a
 
 router.post('/', [verifyToken, verifyPermissions], operacionesCtrl.createOperaciones);
 router.get('/', operacionesCtrl.getOperaciones); // Esta ruta se utilizará para obtener todas las operaciones o filtradas por ID de caja
+router.get('/all', operacionesCtrl.getTodasOperaciones) // cambiar ruta
 router.get('/unique', operacionesCtrl.getAllOperacionesUnique);
 router.get('/filter', operacionesCtrl.getOperacionesFilter);
 router.put('/:operacionesId', operacionesCtrl.updateOperacionesId);
