@@ -217,7 +217,7 @@ export async function getAllOperaciones(id_caja) {
               AND o.tipodocumento = 'OPR' 
               AND date(o.fecha_registro) = CURRENT_DATE
       ORDER BY 
-          e.entidad, o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+          o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
 
       `, [id_caja]);
 
@@ -296,7 +296,8 @@ GROUP BY o.id_operacion,
       o.id_persona,
       o.id_caja,
       e.entidad,
-      u.nombre_usuario;
+      u.nombre_usuario
+ORDER BY o.fecha_registro; 
 
 `, [entidadId, id_caja]);
     
@@ -308,7 +309,6 @@ GROUP BY o.id_operacion,
     client.release();
   }
 }
-
 
 //Funcion para obtener todas las operaciones filtrando por fechas
 export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
