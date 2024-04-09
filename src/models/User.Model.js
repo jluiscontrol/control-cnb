@@ -363,15 +363,14 @@ export const updateCajaById = async (cajaId, newData) => {
 //FUNCION PARA ELIMINAR USUARIO
 export const deleteUser = async (userDeleteId, newData) => {
   // console.log('resultado modelo', newData)
-  const client = await pool.connect();
   try {
-   
+    const client = await pool.connect();
     const query = 'UPDATE usuario SET estado = $1  WHERE id_usuario = $2';
     const result = await client.query(query, [newData.estado, userDeleteId]);
     if (result.rowCount === 0) {
       return { error: 'El usuario con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
-    
+    client.release();
     if (newData.estado == true) {
       return { message: 'Usuario activado correctamente' };
     } else {
@@ -380,12 +379,9 @@ export const deleteUser = async (userDeleteId, newData) => {
     }
   } catch (error) {
     throw new Error('Error al desactivar el usuario: ' + error.message);
-  } finally {
-    client.release();
   }
 
 };
-
 
 // Exportar las funciones del modelo
 export default {
