@@ -235,8 +235,19 @@ export async function getTodasLasOperaciones() {
     const operaciones = await pool.connect();
     try {
       const query = `
-        SELECT o.*
-        FROM operaciones o
+        SELECT o.*,
+          e.entidad AS entidad,
+          tt.nombre AS tipotransaccion,
+          p.cedula AS cedula_persona,
+          p.nombre AS nombre_persona
+        FROM
+          operaciones o
+        LEFT JOIN
+          entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+        LEFT JOIN
+          tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+        LEFT JOIN
+          persona p ON o.id_persona = p.id_persona
         ORDER BY o.id_operacion;
       `;
       const operacion = await operaciones.query(query);
