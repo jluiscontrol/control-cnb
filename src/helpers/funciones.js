@@ -25,15 +25,15 @@ export const isTokenExpired = (token) => {
 };
 
 //funcion para validar cuando el numero de transacion de una transferencia esta duplicada
-export async function existeNumTransaccion(numtransaccion) {
+export async function existeNumTransaccion(numtransaccion, id_entidadbancaria) {
     const operacion = await pool.connect();
     try {
-        const existeTransaccion = await operacion.query('SELECT id_operacion FROM operaciones WHERE numtransaccion = $1', [numtransaccion]);
+        const existeTransaccion = await operacion.query('SELECT id_operacion FROM operaciones WHERE numtransaccion = $1 AND id_entidadbancaria = $2', [numtransaccion, id_entidadbancaria]);
         if (existeTransaccion.rows.length > 0) {
-            // Si existe una transacción con el número de transacción dado, devuelve su id_operacion
+            // Si existe una transacción con el número de transacción dado y la entidad bancaria dada, devuelve su id_operacion
             return existeTransaccion.rows[0].id_operacion;
         } else {
-            // Si no existe una transacción con el número de transacción dado, devuelve null
+            // Si no existe una transacción con el número de transacción dado y la entidad bancaria dada, devuelve null
             return null;
         }
     } finally {
