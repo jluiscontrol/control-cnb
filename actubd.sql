@@ -807,3 +807,10 @@ ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
 
 -- fin de actualizacion de trigger --
+
+-- Abril 6 - 2024 --  ACTUALIZACION DE LA TABLA OPERACIONES
+ALTER TABLE operaciones
+DROP CONSTRAINT operaciones_numtransaccion_key;
+
+ALTER TABLE operaciones
+ADD CONSTRAINT operaciones_numtransaccion_id_entidadbancaria_key UNIQUE (numtransaccion, id_entidadbancaria);
