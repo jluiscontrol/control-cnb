@@ -37,7 +37,7 @@ export const createOperaciones = async (req, res) => {
     }
     if (numTransaccionExistente) {
       return res.status(400).json({
-        error: `El número de comprobante '${numtransaccion}' ya existe en la transacción: ${numTransaccionExistente}`,
+        error: `El número de comprobante '${numtransaccion}' ya existe en la operación: ${numTransaccionExistente}`,
       });
     }
 
