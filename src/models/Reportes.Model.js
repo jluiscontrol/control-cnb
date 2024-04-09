@@ -21,7 +21,7 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
       JOIN entidadbancaria ON operaciones.id_entidadbancaria = entidadbancaria.id_entidadbancaria
       JOIN tipotransaccion ON operaciones.id_tipotransaccion = tipotransaccion.id_tipotransaccion
       JOIN usuario ON operaciones.id_usuario = usuario.id_usuario
-      JOIN persona ON operaciones.id_persona = persona.id_persona
+      LEFT JOIN persona ON operaciones.id_persona = persona.id_persona
       `;
     let params = [];
     let paramCount = 1;
@@ -31,6 +31,9 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
       query += ` operaciones.tipodocumento = $${paramCount++}`;
       params.push(tipodocumento);
       whereAdded = true;
+      console.log(`tipodocumento: ${tipodocumento}`);
+      console.log(`Final SQL query: ${query}`);
+      console.log(`Query parameters: ${params}`);
     }
     if (userId) {
       query += whereAdded ? ' AND' : ' WHERE';
