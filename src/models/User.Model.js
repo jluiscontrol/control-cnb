@@ -196,9 +196,8 @@ async function getAllEmpleados() {
 }
 
 // funcion para obtener un usuario por su ID
-export const getUserId = async (req, res) => {
+export const getUserId = async (userId) => {
   try {
-    const userId = req.params.userId;
     const usuario = await pool.connect();
     const query = `
       SELECT 
@@ -221,12 +220,12 @@ export const getUserId = async (req, res) => {
     const result = await usuario.query(query, [userId]);
     usuario.release();
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
+      throw new Error('Usuario no encontrado');
     }
-    res.status(200).json(result.rows[0]);
+    return result.rows[0]; // Devuelve solo los datos del usuario, no el objeto de conexión completo
   } catch (error) {
     console.error('Error al obtener el usuario por ID:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    throw error;
   }
 }
 

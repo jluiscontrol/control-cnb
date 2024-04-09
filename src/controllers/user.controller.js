@@ -98,16 +98,16 @@ export const getEmpleados = async (req, res) => {
 
 //funcion para obtener un usuario en especifico
 export const getUserById = async (req, res) => {
-    try {
-      const usuario = await getUserId(req, res);
-      res.status(200).json(usuario)
-    } catch (error){
-      console.error('Error al obtener el usuario por ID:', error);
-      res.status(500).json({ error: 'Error interno del seervidor' });
-    }
+  try {
+    const userId = req.params.userId; // Obtén el userId de req.params
+    const usuario = await getUserId(userId); // Pasa el userId a getUserId
+    res.status(200).json(usuario);
+  } catch (error){
+    console.error('Error al obtener el usuario por ID:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 }
 //funcion para actulizar el usuario
-
 export const updateUserById = async (req, res) => {
   const userId = req.params.userId;
   const { nombre_usuario, contrasenia, estado, id_rol, nombre, apellido, fecha_nacimiento, direccion, telefono, cedula, caja_id } = req.body;
@@ -208,26 +208,26 @@ export const updateCaja = async (req, res) => {
 
 export const deleteUserById = async (req, res) => {
   try {
-   const userDeleteId = req.params.userDeleteId;
-   const newData = req.body;
-  // console.log('desde el controlador',newData)
-  // console.log('desde el controlador',userDeleteId)      
-   if (!newData || Object.keys(newData).length === 0) {
-     return res.status(400).json({ error: 'Se requieren datos actualizados para editar el usuario' });
-   }     
-   const result = await deleteUser(userDeleteId, newData);
-   if (result.error) {
-     return res.status(404).json({ error: result.error });
-   }          
-  if(newData.estado == true){
-    res.status(200).json({ message: 'Usuario activado correctamente' });
-  }else{
-   res.status(200).json({ message: 'Usuario desactivado correctamente' });
-  }     
- } catch (error) {
-  // console.error('Error al inactivar el usuario por ID:', error);
-   res.status(500).json({ error: 'Error interno del servidor' });
- }
-}
+    const userDeleteId = req.params.userDeleteId;
+    const newData = req.body;
 
+    if (!newData || Object.keys(newData).length === 0) {
+      return res.status(400).json({ error: 'Se requieren datos actualizados para editar el usuario' });
+    }
+
+    const result = await deleteUser(userDeleteId, newData);
+
+    if (result.error) {
+      return res.status(404).json({ error: result.error });
+    }
+
+    if(newData.estado == true){
+      return res.status(200).json({ message: 'Usuario activado correctamente' });
+    } else {
+      return res.status(200).json({ message: 'Usuario desactivado correctamente' });
+    }
+  } catch (error) {
+    return res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
 
