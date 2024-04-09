@@ -814,3 +814,10 @@ DROP CONSTRAINT operaciones_numtransaccion_key;
 
 ALTER TABLE operaciones
 ADD CONSTRAINT operaciones_numtransaccion_id_entidadbancaria_key UNIQUE (numtransaccion, id_entidadbancaria);
+
+ALTER TABLE operaciones
+DROP CONSTRAINT operaciones_numtransaccion_id_entidadbancaria_key;
+
+CREATE UNIQUE INDEX operaciones_numtransaccion_id_entidadbancaria_key
+ON operaciones (numtransaccion, id_entidadbancaria)
+WHERE numtransaccion <> '';
