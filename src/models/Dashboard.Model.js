@@ -78,6 +78,7 @@ export async function getLast15Operations() {
         SELECT COUNT(*) as total_operaciones
         FROM operaciones
         WHERE tipodocumento = 'OPR'
+        AND fecha_registro::date = CURRENT_DATE
       `);
       return result.rows[0].total_operaciones;
     } finally {
@@ -92,6 +93,7 @@ export async function getLast15Operations() {
         SELECT SUM(saldocomision) as total_comisiones
         FROM operaciones
         WHERE tipodocumento = 'OPR'
+        AND fecha_registro::date = CURRENT_DATE
       `);
       return result.rows[0].total_comisiones;
     } finally {
@@ -104,7 +106,7 @@ export async function getLast15Operations() {
     try {
       const result = await client.query(`
         SELECT SUM(saldocaja) as total_saldo
-        FROM saldos
+        FROM caja
       `);
       return result.rows[0].total_saldo;
     } finally {
