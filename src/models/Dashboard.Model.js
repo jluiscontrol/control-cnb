@@ -70,12 +70,56 @@ export async function getLast15Operations() {
       client.release();
     }
   }
+
+  export async function getTotalOperaciones() {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT COUNT(*) as total_operaciones
+        FROM operaciones
+        WHERE tipodocumento = 'OPR'
+      `);
+      return result.rows[0].total_operaciones;
+    } finally {
+      client.release();
+    }
+  }
+
+  export async function getTotalComisiones() {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT SUM(saldocomision) as total_comisiones
+        FROM operaciones
+        WHERE tipodocumento = 'OPR'
+      `);
+      return result.rows[0].total_comisiones;
+    } finally {
+      client.release();
+    }
+  }
+
+  export async function getTotalSaldoCaja() {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT SUM(saldocaja) as total_saldo
+        FROM saldos
+      `);
+      return result.rows[0].total_saldo;
+    } finally {
+      client.release();
+    }
+  }
   
 
   export default {
     getLast15Operations,
     getTotalCommissions,
     getTodayCommissionsByBank,
-    getMonthlyOperationsDataForDashboard
+    getMonthlyOperationsDataForDashboard,
+    getTotalOperaciones,
+    getTotalComisiones,
+    getTotalSaldoCaja
   };
     
