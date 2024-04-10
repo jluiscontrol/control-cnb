@@ -44,9 +44,7 @@ export async function addOperaciones(operaciones) {
     const saldoDisponible = saldoQuery.rows[0]?.saldocuenta || 0;
     // Validar que el saldo de la cuenta no exceda el límite del sobregiro
     const saldoTotal = saldoDisponible - valor;
-    if (saldoTotal < -sobregiro) {
-      throw new Error('La operación excede el límite del sobregiro permitido para esta entidad bancaria.');
-    }
+
     // Insertar operación
     const result = await operacion.query(`
       INSERT INTO 

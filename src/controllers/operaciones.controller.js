@@ -58,10 +58,6 @@ export const createOperaciones = async (req, res) => {
     });
     res.status(201).json(operacionSave);
   } catch (error) {
-
-    if (error.message.includes('La operación excede el límite del sobregiro permitido para esta entidad bancaria.')) {
-      return res.status(400).json({ error: error.message });
-    }
     console.error('Error al crear operación:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
