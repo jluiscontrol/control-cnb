@@ -821,3 +821,103 @@ DROP CONSTRAINT operaciones_numtransaccion_id_entidadbancaria_key;
 CREATE UNIQUE INDEX operaciones_numtransaccion_id_entidadbancaria_key
 ON operaciones (numtransaccion, id_entidadbancaria)
 WHERE numtransaccion <> '';
+
+-- Abril 8 - 2024 --  ACTUALIZACION DEl TRIGGER --
+-- FUNCTION: public.agregasaldo()
+
+-- DROP FUNCTION IF EXISTS public.agregasaldo();
+
+CREATE OR REPLACE FUNCTION public.agregasaldo()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+DECLARE
+    v_id_tipotransaccion INTEGER;
+    v_valor NUMERIC(10,2);
+    v_afectacaja_id INTEGER;
+    v_afectacuenta_id INTEGER;
+    v_entidadbancaria_id INTEGER;
+    v_caja_id INTEGER;
+    v_sobregiro NUMERIC(10,2); -- Variable para almacenar el valor de sobregiro
+    v_saldocuenta_actual NUMERIC(10,2); -- Variable para almacenar el saldo actual de la cuenta
+    v_nuevo_saldo NUMERIC(10,2); -- Variable para almacenar el nuevo saldo después de aplicar la operación
+BEGIN
+    -- Obtener el id_tipotransaccion, valor, entidadbancaria_id y caja_id de la inserción en la tabla operaciones
+    v_id_tipotransaccion := NEW.id_tipotransaccion;
+    v_valor := NEW.valor;
+    v_entidadbancaria_id := NEW.id_entidadbancaria;
+    v_caja_id := NEW.id_caja; -- Utilizar id_caja en lugar de caja_id
+
+    -- Obtener los valores de afectacaja_id y afectacuenta_id de la tabla tipotransaccion
+    SELECT afectacaja_id, afectacuenta_id INTO v_afectacaja_id, v_afectacuenta_id
+    FROM tipotransaccion
+    WHERE id_tipotransaccion = v_id_tipotransaccion;
+
+    -- Validar si se pudo obtener el id_tipotransaccion, valor, entidadbancaria_id y caja_id
+    IF v_id_tipotransaccion IS NULL OR v_valor IS NULL OR v_entidadbancaria_id IS NULL OR v_caja_id IS NULL THEN
+        RAISE NOTICE 'No se pudo obtener el id_tipotransaccion, el valor, la entidadbancaria_id o el id_caja de la inserción en la tabla operaciones.';
+        RETURN NULL;
+    END IF;
+
+    -- Obtener el valor de sobregiro para la entidad bancaria
+    SELECT sobregiro INTO v_sobregiro
+    FROM entidadbancaria
+    WHERE id_entidadbancaria = v_entidadbancaria_id;
+
+    -- Obtener el saldo actual de la cuenta
+    SELECT saldocuenta INTO v_saldocuenta_actual
+    FROM saldos
+    WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+
+    -- Calcular el nuevo saldo después de aplicar la operación
+    v_nuevo_saldo := v_saldocuenta_actual + 
+                     CASE 
+                         WHEN v_afectacuenta_id = 1 THEN v_valor 
+                         WHEN v_afectacuenta_id = 2 THEN -v_valor 
+                         ELSE 0 
+                     END;
+
+    -- Verificar si el nuevo saldo excede el sobregiro permitido
+    IF v_nuevo_saldo < -v_sobregiro THEN
+        RAISE EXCEPTION 'Operación rechazada: El saldo de la cuenta excede el sobregiro permitido.';
+        RETURN NULL;
+    END IF;
+
+    -- Verificar si ya existe un registro en la tabla saldos para la entidad bancaria y la caja
+    PERFORM 1 FROM saldos WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id LIMIT 1;
+
+    -- Realizar la actualización o inserción en la tabla saldos dependiendo de si ya existe un registro para la entidad bancaria y la caja
+    IF FOUND THEN
+        -- Actualizar los valores de saldocuenta y saldocaja para la entidad bancaria y la caja existente
+        UPDATE saldos
+        SET saldocuenta = v_nuevo_saldo,
+            saldocaja = saldocaja + CASE 
+                                        WHEN v_afectacaja_id = 1 THEN v_valor 
+                                        WHEN v_afectacaja_id = 2 THEN -v_valor 
+                                        ELSE 0 
+                                    END
+        WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+    ELSE
+        -- Insertar un nuevo registro en la tabla saldos para la entidad bancaria y la caja
+        INSERT INTO saldos (saldocuenta, saldocaja, entidadbancaria_id, caja_id)
+        VALUES (
+            v_nuevo_saldo,
+            CASE WHEN v_afectacaja_id = 1 THEN v_valor 
+                 WHEN v_afectacaja_id = 2 THEN -v_valor 
+                 ELSE 0 
+            END,
+            v_entidadbancaria_id,
+            v_caja_id
+        );
+    END IF;
+
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.agregasaldo()
+    OWNER TO postgres;
+
+-- fin de actualizacion de trigger --
