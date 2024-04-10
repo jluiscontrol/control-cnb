@@ -31,9 +31,9 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
       query += ` operaciones.tipodocumento = $${paramCount++}`;
       params.push(tipodocumento);
       whereAdded = true;
-      console.log(`tipodocumento: ${tipodocumento}`);
-      console.log(`Final SQL query: ${query}`);
-      console.log(`Query parameters: ${params}`);
+      // console.log(`tipodocumento: ${tipodocumento}`);
+      // console.log(`Final SQL query: ${query}`);
+      // console.log(`Query parameters: ${params}`);
     }
     if (userId) {
       query += whereAdded ? ' AND' : ' WHERE';
