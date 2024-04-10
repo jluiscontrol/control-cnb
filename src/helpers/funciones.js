@@ -55,6 +55,7 @@ export async function obtenerSobregiroPermitido(id_entidadbancaria) {
     // Devolver el límite del sobregiro
     return entidadBancariaQuery.rows[0].sobregiro;
   }
+
 export async function consultarClienteAPI(nident) {
     try {
         // Realizar la consulta a la API externa utilizando el token
@@ -77,6 +78,31 @@ export async function consultarClienteAPI(nident) {
         console.error('Error al consultar  datos del cliente:', error);
         throw error;
     }
+}
+
+export async function consultarLicenciaCliente(nident) {
+    try {
+        // Realizar la consulta a la API externa utilizando el token
+        const response = await axios.post(
+            'https://sacc.sistemascontrol.ec/api_control_identificaciones/public/licencia-web/search',
+            {
+                "client_id": nident
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjMzMjMwMDM5MTc3LCJhdWQiOiJkMTM5MjhlYzAwMDg4Nzg0ZWMyOTA5MWNmMWM4OWJiN2JlMzAwOGE2IiwiZGF0YSI6eyJ1c3VhcmlvSWQiOiIxIiwibm9tYnJlIjoiQ09OVFJPTCJ9fQ.JcCt-17CJa8KZLWK1BzetcgReAksrlHFXoDug0fNaVk',
+                    'Accept-X-Control-Y': 'controlsistemasjl.com'
+                }
+            }
+        );
+            console.log(response.data)
+        return response.data;
+    } catch (error) {
+        console.error('Error al consultar  datos del cliente:', error);
+        throw error;
+    }
+
 }
 
 

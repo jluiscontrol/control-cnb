@@ -823,10 +823,9 @@ ON operaciones (numtransaccion, id_entidadbancaria)
 WHERE numtransaccion <> '';
 
 -- Abril 8 - 2024 --  ACTUALIZACION DEl TRIGGER --
+
 -- FUNCTION: public.agregasaldo()
-
 -- DROP FUNCTION IF EXISTS public.agregasaldo();
-
 CREATE OR REPLACE FUNCTION public.agregasaldo()
     RETURNS trigger
     LANGUAGE 'plpgsql'
@@ -867,9 +866,15 @@ BEGIN
     WHERE id_entidadbancaria = v_entidadbancaria_id;
 
     -- Obtener el saldo actual de la cuenta
-    SELECT saldocuenta INTO v_saldocuenta_actual
-    FROM saldos
-    WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+	SELECT saldocuenta INTO v_saldocuenta_actual
+	FROM saldos
+	WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+	
+	-- Verificar si la consulta no devuelve ninguna fila
+	IF NOT FOUND THEN
+	    v_saldocuenta_actual := 0.00;
+	END IF;
+
 
     -- Calcular el nuevo saldo después de aplicar la operación
     v_nuevo_saldo := v_saldocuenta_actual + 
@@ -919,5 +924,6 @@ $BODY$;
 
 ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
+
 
 -- fin de actualizacion de trigger --

@@ -5,11 +5,13 @@ import {
     getMonthlyOperationsDataForDashboard,
     getTotalOperaciones,
     getTotalComisiones,
-    getTotalSaldoCaja
+    getTotalSaldoCaja,
+    getLicenciaCliente
 } from '../models/Dashboard.Model.js';
 
 export async function getDashboardData(req, res) {
     try {
+        const nident = req.query.nident;
 
         const operations = await getLast15Operations();
         const totalCommissions = await getTotalCommissions();
@@ -18,6 +20,8 @@ export async function getDashboardData(req, res) {
         const totalOperaciones = await getTotalOperaciones();
         const totalComisiones = await getTotalComisiones();
         const totalSaldoCaja = await getTotalSaldoCaja();
+        const licencia = await getLicenciaCliente(nident);
+        
 
         res.json({
             operations,
@@ -26,7 +30,8 @@ export async function getDashboardData(req, res) {
             monthlyOperations,
             totalOperaciones,
             totalComisiones,
-            totalSaldoCaja
+            totalSaldoCaja,
+            licencia
         });
 
     } catch (error) {
