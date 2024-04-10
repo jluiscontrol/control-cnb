@@ -78,14 +78,15 @@ export async function addOperaciones(operaciones) {
 
     await operacion.query("COMMIT");
 
-    return result.rows[0];
+    return { result: result.rows[0], error: null }; // Devolver el resultado y sin error
   } catch (error) {
     if (client) await operacion.query("ROLLBACK");
-    throw new Error('Error al agregar operación: ' + error.message);
+    return { result: null, error: error.message }; // Devolver null como resultado y el error
   } finally {
     operacion.release();
   }
 }
+
 
 //Funcion para obtener todas las operaciones
 export async function getAllOperacionesUnique(id_caja) {

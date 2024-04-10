@@ -42,7 +42,7 @@ export const createOperaciones = async (req, res) => {
     }
 
     // Guardar la operación
-    const operacionSave = await operaciones.addOperaciones({
+    const { result, error } = await operaciones.addOperaciones({
       id_entidadbancaria,
       id_tipotransaccion,
       id_persona,
@@ -56,12 +56,18 @@ export const createOperaciones = async (req, res) => {
       tipodocumento,
       id_caja
     });
-    res.status(201).json(operacionSave);
+
+    if (error) {
+      return res.status(400).json({ error }); // Enviar el mensaje de error al cliente
+    }
+
+    res.status(201).json(result); // Enviar el resultado normalmente
   } catch (error) {
     console.error('Error al crear operación:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }
+
 
 
 //Funcion para obtener todas las operaciones
