@@ -38,9 +38,7 @@ export async function addOperaciones(operaciones) {
     // Consultar el saldo disponible en la tabla de saldos
     const saldoQuery = await operacion.query(`
       SELECT saldocuenta FROM saldos WHERE entidadbancaria_id = $1`, [id_entidadbancaria]);
-    if (saldoQuery.rows.length === 0) {
-      throw new Error('No se encontró saldo para la entidad bancaria especificada.');
-    }
+
     const saldoDisponible = saldoQuery.rows[0]?.saldocuenta || 0;
     // Validar que el saldo de la cuenta no exceda el límite del sobregiro
     const saldoTotal = saldoDisponible - valor;

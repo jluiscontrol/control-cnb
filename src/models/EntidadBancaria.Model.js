@@ -5,7 +5,7 @@ import pool from '../database.js';
 async function addEntidadBancaria(entidadBancaria) {
   const cliente = await pool.connect();
   try {
-    const { entidad, acronimo, estado = true, comision, sobregiro, saldocuenta = 0, saldocaja = 0 } = entidadBancaria;
+    const { entidad, acronimo, estado = true, comision, sobregiro } = entidadBancaria;
     if (!entidad || !acronimo || !sobregiro || !comision) {
       throw new Error('Todos los campos son requeridos');
     }
@@ -18,12 +18,11 @@ async function addEntidadBancaria(entidadBancaria) {
     }
     // Insertar la nueva entidad bancaria
     let comisionFormateada = parseFloat(comision).toFixed(2); // Asegurarse de que comision tiene formato de dinero
-    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comisionFormateada]);    const id_entidadbancaria = result.rows[0].id_entidadbancaria;
-    // Insertar el saldo de cuenta y el saldo de caja en una sola operación
-    await cliente.query('INSERT INTO saldos(entidadbancaria_id, saldocuenta, saldocaja) VALUES ($1, $2, $3)', [id_entidadbancaria, saldocuenta, saldocaja]);
+    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comisionFormateada]);    
+    const id_entidadbancaria = result.rows[0].id_entidadbancaria;
     // Confirmar la transacción
     await cliente.query('COMMIT');
-    return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro, saldocuenta, saldocaja };
+    return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro  };
   } catch (error) {
     // Si hay algún error, hacer rollback de la transacción
     await cliente.query('ROLLBACK');
