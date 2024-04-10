@@ -11,7 +11,6 @@ import {
 
 export async function getDashboardData(req, res) {
     try {
-        const nident = req.query.nident;
 
         const operations = await getLast15Operations();
         const totalCommissions = await getTotalCommissions();
@@ -20,9 +19,7 @@ export async function getDashboardData(req, res) {
         const totalOperaciones = await getTotalOperaciones();
         const totalComisiones = await getTotalComisiones();
         const totalSaldoCaja = await getTotalSaldoCaja();
-        const licencia = await getLicenciaCliente(nident);
         
-
         res.json({
             operations,
             totalCommissions,
@@ -30,10 +27,22 @@ export async function getDashboardData(req, res) {
             monthlyOperations,
             totalOperaciones,
             totalComisiones,
-            totalSaldoCaja,
-            licencia
+            totalSaldoCaja
         });
 
+    } catch (error) {
+        res.status(500).json({ error: error.toString() });
+    }
+}
+
+
+
+export async function getLicencia(req, res) {
+    try {
+        const nident = req.query.nident;
+        const licencia = await getLicenciaCliente(nident);
+
+        res.json({ licencia });
     } catch (error) {
         res.status(500).json({ error: error.toString() });
     }

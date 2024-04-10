@@ -121,19 +121,14 @@ export async function getLicenciaCliente(nident) {
 
     // Convertir la fecha de pago y los meses a un objeto Date
     const fechaPago = new Date(data.fecha_pago.split(' ')[0] + 'T00:00:00Z');
-    console.log('fechaPago:', fechaPago);
     const meses = Number(data.meses);
-    console.log('meses:', meses);
 
     // Calcular la fecha de vencimiento de la licencia
     const fechaVencimiento = new Date(fechaPago.setMonth(fechaPago.getMonth() + meses));
-    console.log('fechaVencimiento:', fechaVencimiento);
 
     // Calcular los días restantes
     const fechaActual = new Date();
-    console.log('fechaActual:', fechaActual);
     const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
-    console.log('diasRestantes:', diasRestantes);
 
     // Devolver solo los días restantes
     return diasRestantes;
