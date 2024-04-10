@@ -49,13 +49,13 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
     }
     if (entidad) {
       query += whereAdded ? ' AND' : ' WHERE';
-      query += ` entidadbancaria.entidad = $${paramCount++}`;
+      query += ` operaciones.id_entidadbancaria = $${paramCount++}`;
       params.push(entidad);
       whereAdded = true;
     }
     if (tipoTransaccion) {
       query += whereAdded ? ' AND' : ' WHERE';
-      query += ` tipotransaccion.nombre = $${paramCount++}`;
+      query += ` operaciones.id_tipotransaccion = $${paramCount++}`;
       params.push(tipoTransaccion);
       whereAdded = true;
     }
