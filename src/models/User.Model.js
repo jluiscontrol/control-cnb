@@ -126,7 +126,7 @@ async function addUser(User, Persona, id_rol) {
 
     // Generar token JWT con el ID del usuario
     const token = jwt.sign({ id_usuario: userId }, config.SECRET, {
-      expiresIn: 86400 // 24 horas
+      expiresIn: 43200 // 12 horas
     });
 
     // Devolver el usuario, el id_rol y el token

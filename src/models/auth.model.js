@@ -34,7 +34,7 @@ export const signin = async (username, password) => {
         
         // Generar token JWT con la información del usuario, incluyendo el ID de usuario
         const token = jwt.sign({ userId: userData.id_usuario, nombre_usuario: userData.nombre_usuario, rol_usuario: userData.id_rol ,caja_id: userData.caja_id }, config.SECRET, {
-            expiresIn: 86400 // 24 horas
+            expiresIn: 43200 // 12 horas
         });
 
         // Verificar si el token ha caducado
