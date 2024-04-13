@@ -4,9 +4,9 @@ import pool from '../database.js';
 async function addTipoTransaccion(nuevoTipoTransaccion) {
   const tipotransaccion = await pool.connect();
   try {
-    const { nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado= true } = nuevoTipoTransaccion;
+    const { nombre, afectacaja_id, afectacuenta_id, afectacomision_id, tipodocumento, estado= true } = nuevoTipoTransaccion;
     // Verificar si alguno de los campos requeridos está vacío
-    if (!nombre || !afectacaja_id || !afectacuenta_id || !tipodocumento) {
+    if (!nombre || !afectacaja_id || !afectacuenta_id || !afectacomision_id || !tipodocumento) {
       throw new Error('Todos los campos son requeridos');
     }
     // Verificar si el tipo de transacción ya existe
@@ -15,7 +15,7 @@ async function addTipoTransaccion(nuevoTipoTransaccion) {
       throw new Error('El tipo de transacción ya existe');
     }
     // Si el tipo de transacción no existe, procedemos a hacer el insert
-    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado) VALUES($1, $2, $3, $4, $5) RETURNING *', [nombre, afectacaja_id, afectacuenta_id, tipodocumento, estado]);
+    const result = await tipotransaccion.query('INSERT INTO tipotransaccion(nombre, afectacaja_id, afectacuenta_id, afectacomision_id, tipodocumento, estado) VALUES($1, $2, $3, $4, $5, $6) RETURNING *', [nombre, afectacaja_id, afectacuenta_id, afectacomision_id, tipodocumento, estado]);
     return result.rows[0];
   } finally {
     tipotransaccion.release();
@@ -27,10 +27,17 @@ async function getAllTiposTransaccion() {
   const client = await pool.connect();
   try {
     const query = `
-      SELECT tt.id_tipotransaccion, tt.nombre AS tipo_transaccion, tt.tipodocumento, ac.nombre AS afectacion_caja, acc.nombre AS afectacion_cuenta
+      SELECT 
+      tt.id_tipotransaccion, 
+      tt.nombre AS tipo_transaccion, 
+      tt.tipodocumento, 
+      ac.nombre AS afectacion_caja, 
+      acc.nombre AS afectacion_cuenta,
+      acs.nombre AS afectacion_comision
       FROM tipotransaccion tt
       INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
       INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
+      INNER JOIN afectacomision acs ON tt.afectacomision_id = acs.id_afectacomision
       ORDER BY tt.id_tipotransaccion; 
     `;
     const result = await client.query(query);
@@ -95,9 +102,9 @@ export const updateTipoTransaccionId = async (tipotransaccionId, newData) => {
   try {
     const transaccion = await pool.connect();
     // Construir la consulta SQL de actualización
-    const query = 'UPDATE tipotransaccion  SET nombre = $1, afectacaja_id = $2, afectacuenta_id = $3, tipodocumento = $4 WHERE id_tipotransaccion = $5';
+    const query = 'UPDATE tipotransaccion  SET nombre = $1, afectacaja_id = $2, afectacuenta_id = $3, afectacomision_id = $4, tipodocumento = $5 WHERE id_tipotransaccion = $6';
     // Ejecutar la consulta SQL con los nuevos datos y el ID de la entidad bancaria
-    await transaccion.query(query, [newData.nombre, newData.afectacaja_id, newData.afectacuenta_id, newData.tipodocumento, tipotransaccionId]);
+    await transaccion.query(query, [newData.nombre, newData.afectacaja_id, newData.afectacuenta_id, newData.afectacomision_id, newData.tipodocumento, tipotransaccionId]);
     
     // Liberar la conexión al pool de conexiones
     transaccion.release();
@@ -137,6 +144,20 @@ async function getAllAfectaCuenta() {
   }
 }
 
+async function getAllAfectaComision() {
+  const client = await pool.connect();
+  try {
+    const query = `
+          SELECT * FROM afectacomision ORDER BY id_afectacomision
+    `;
+    const result = await client.query(query);
+    return result.rows;
+  }
+  finally {
+    client.release();
+  }
+}
+
 //funcion para obtener todos los tipos de transacciones por tipo de documento
 async function getAllTiposTransaccionByTipoDocumento(tipodocumento) {
   const client = await pool.connect();
@@ -163,5 +184,6 @@ export default { addTipoTransaccion,
               getTipoTransaccionById, 
               getAllAfectaCaja,
               getAllAfectaCuenta,
+              getAllAfectaComision,
               getAllTiposTransaccionActivos,
               getAllTiposTransaccionByTipoDocumento};

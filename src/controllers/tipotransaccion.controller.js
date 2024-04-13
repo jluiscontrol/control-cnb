@@ -8,7 +8,7 @@ import TipotransaccionModel from "../models/tipotransaccion.model.js";
 
 
 export const createTipoTransaccion = async (req, res) => {
-  const { nombre, afectacuenta_id, afectacaja_id, tipodocumento } = req.body;
+  const { nombre, afectacuenta_id, afectacaja_id, afectacomision_id, tipodocumento } = req.body;
 
   // Verificar si algún campo requerido está vacío
   if (!nombre || !afectacuenta_id || !afectacaja_id || !tipodocumento) {
@@ -16,7 +16,7 @@ export const createTipoTransaccion = async (req, res) => {
   }
   try {
     // Llama a la función para registrar tipo de transaccion
-    const userSave = await addTipoTransaccion.addTipoTransaccion({ nombre, afectacuenta_id, afectacaja_id, tipodocumento });
+    const userSave = await addTipoTransaccion.addTipoTransaccion({ nombre, afectacuenta_id, afectacaja_id, afectacomision_id, tipodocumento });
     res.status(201).json(userSave);
   } catch (error) {
     if (error.message === 'El tipo de transacción ya existe' ) {
@@ -114,6 +114,19 @@ export const getTipoAfectaCuenta = async (req, res) => {
     res.status(200).json(afectaCuenta);
   } catch (error) {
     console.error('Error al obtener datos de afecta cuenta:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+export const getTipoAfectaComision = async (req, res) => {
+  try {
+    // Llamar a la función que obtiene todas las entidades bancarias desde tu modelo o servicio
+    const afectaComision = await getAllTiposTransaccion.getAllAfectaComision();
+
+    // Devolver las entidades bancarias en la respuesta
+    res.status(200).json(afectaComision);
+  } catch (error) {
+    console.error('Error al obtener datos de afecta comision:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 }

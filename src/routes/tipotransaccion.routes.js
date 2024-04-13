@@ -11,6 +11,7 @@ router.get('/activas', tipoTransaccionCtrl.getTTransaccionesActivas)
 //rutas para obtener afecta caja y cuenta
 router.get('/afectacaja', tipoTransaccionCtrl.getTipoAfectaCaja)
 router.get('/afectacuenta', tipoTransaccionCtrl.getTipoAfectaCuenta)
+router.get('/afectacomision', tipoTransaccionCtrl.getTipoAfectaComision)
 /***** */
 
 router.get('/:tipoTransacccionId', tipoTransaccionCtrl.getTipoTransaccionById)

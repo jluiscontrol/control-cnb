@@ -105,8 +105,8 @@ export async function getTotalSaldoCaja() {
   const client = await pool.connect();
   try {
     const result = await client.query(`
-        SELECT SUM(saldocaja) as total_saldo
-        FROM saldos
+        SELECT saldocaja as total_saldo
+        FROM caja
       `);
     return result.rows[0].total_saldo;
   } finally {

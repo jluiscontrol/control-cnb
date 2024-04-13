@@ -114,8 +114,7 @@ export async function getAllOperacionesUnique(id_caja) {
       u.nombre_usuario AS nombre_usuario_operacion,
       o.id_caja AS id_caja,
       c.nombre AS nombreCaja,
-      s.saldocuenta AS saldocuenta,
-      s.saldocaja AS saldocaja
+      s.saldocuenta AS saldocuenta
   FROM 
       operaciones o
   JOIN 
@@ -161,60 +160,65 @@ export async function getAllOperaciones(id_caja) {
     try {
       const resultado = await operaciones.query(`
       SELECT 
-          o.id_operacion,
-          e.id_entidadbancaria AS id_entidadbancaria,
-          e.entidad AS entidad,
-          e.acronimo AS acronimo,
-          e.sobregiro AS sobregiro,
-          e.estado AS estado,
-          tt.nombre AS tipotransaccion,
-          o.valor AS valor_operacion,
-          o.referencia AS referencia,
-          o.comentario AS comentario_operacion,
-          o.numtransaccion AS num_transaccion,
-          o.fecha_registro AS fecha_registro_operacion,
-          o.fecha_actualizacion AS fecha_actualizacion_operacion,
-          o.saldocomision AS saldocomision_operacion,
-          o.tipodocumento AS tipodocumento_operacion,
-          o.estado AS estado_operacion,
-          ac.nombre AS afectacion_caja,
-          au.nombre AS afectacion_cuenta,
-          u.nombre_usuario AS nombre_usuario_operacion,
-          s.saldocuenta AS saldocuenta,
-          s.saldocaja AS saldocaja,
-          o.id_caja AS caja_id,
-          c.nombre AS nombrecaja,
-          (o.valor + COALESCE(o.saldocomision, 0) + COALESCE(s.saldocuenta, 0)) AS valor_total_operacion
-      FROM 
-          operaciones o
-      JOIN 
-          entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-      JOIN 
-          tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-      LEFT JOIN
-          afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
-      LEFT JOIN
-          afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
-      LEFT JOIN
-          usuario u ON o.id_usuario = u.id_usuario
-      LEFT JOIN
-          caja c ON c.id_caja = o.id_caja
-      LEFT JOIN
-          (SELECT 
-              entidadbancaria_id,
-              SUM(saldocuenta) AS saldocuenta,
-              SUM(saldocaja) AS saldocaja
-          FROM 
-              saldos
-          GROUP BY 
-              entidadbancaria_id) s ON s.entidadbancaria_id = e.id_entidadbancaria
-          WHERE 
-              o.estado = true
-              AND o.id_caja = $1 
-              AND o.tipodocumento = 'OPR' 
-              AND date(o.fecha_registro) = CURRENT_DATE
-      ORDER BY 
-          o.fecha_registro DESC; -- Ordenar por entidad y fecha de registro para seleccionar la última operación por entidad
+    o.id_operacion,
+    e.id_entidadbancaria AS id_entidadbancaria,
+    e.entidad AS entidad,
+    e.acronimo AS acronimo,
+    e.sobregiro AS sobregiro,
+    e.estado AS estado,
+    tt.nombre AS tipotransaccion,
+    CASE 
+        WHEN tt.afectacaja_id = 2 THEN -o.valor 
+        ELSE o.valor 
+    END AS valor_operacion,
+    o.referencia AS referencia,
+    o.comentario AS comentario_operacion,
+    o.numtransaccion AS num_transaccion,
+    o.fecha_registro AS fecha_registro_operacion,
+    o.fecha_actualizacion AS fecha_actualizacion_operacion,
+    o.saldocomision AS saldocomision_operacion,
+    o.tipodocumento AS tipodocumento_operacion,
+    o.estado AS estado_operacion,
+    ac.nombre AS afectacion_caja,
+    au.nombre AS afectacion_cuenta,
+    u.nombre_usuario AS nombre_usuario_operacion,
+    s.saldocuenta AS saldocuenta,
+    o.id_caja AS caja_id,
+    c.nombre AS nombrecaja,
+    c.saldocaja AS saldocaja,
+    (CASE 
+        WHEN tt.afectacaja_id = 2 THEN -o.valor 
+        ELSE o.valor 
+    END + COALESCE(o.saldocomision, 0) + COALESCE(s.saldocuenta, 0) + COALESCE(c.saldocaja, 0)) AS valor_total_operacion
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+LEFT JOIN
+    afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+LEFT JOIN
+    afectacuenta au ON tt.afectacuenta_id = au.id_afectacuenta
+LEFT JOIN
+    usuario u ON o.id_usuario = u.id_usuario
+LEFT JOIN
+    caja c ON c.id_caja = o.id_caja
+LEFT JOIN
+    (SELECT 
+        entidadbancaria_id,
+        SUM(saldocuenta) AS saldocuenta
+    FROM 
+        saldos
+    GROUP BY 
+        entidadbancaria_id) s ON s.entidadbancaria_id = e.id_entidadbancaria
+WHERE 
+    o.estado = true
+    AND o.id_caja = $1 
+    AND o.tipodocumento = 'OPR' 
+    AND date(o.fecha_registro) = CURRENT_DATE
+ORDER BY 
+    o.fecha_registro DESC;
 
       `, [id_caja]);
 
@@ -258,7 +262,52 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
   const client = await pool.connect();
   try {
     const resultado = await client.query(`
-    SELECT o.id_operacion,
+    SELECT 
+    o.id_operacion,
+    o.id_entidadbancaria,
+    o.id_tipotransaccion,
+    CASE 
+        WHEN tt.afectacaja_id = 2 THEN -o.valor 
+        ELSE o.valor 
+    END AS valor,
+    o.referencia,
+    o.comentario,
+    o.numtransaccion,
+    o.fecha_registro,
+    o.fecha_actualizacion,
+    o.id_usuario,
+    o.saldocomision,
+    o.estado,
+    o.tipodocumento,
+    o.id_persona,
+    o.id_caja,
+    e.entidad AS entidad,
+    MAX(sa.saldocuenta) AS saldocuenta,
+    c.saldocaja AS saldocaja,
+    u.nombre_usuario,
+    tt.nombre AS tipotransaccion,
+    (CASE 
+        WHEN tt.afectacaja_id = 2 THEN -o.valor 
+        ELSE o.valor 
+    END + COALESCE(MAX(sa.saldocuenta), 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
+FROM 
+    operaciones o
+JOIN 
+    entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+JOIN 
+    tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+JOIN 
+    usuario u ON u.id_usuario = o.id_usuario
+LEFT JOIN 
+    caja c ON c.id_caja = o.id_caja
+LEFT JOIN 
+    saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
+WHERE 
+    o.id_entidadbancaria = $1
+    AND o.id_caja = $2
+    AND date(o.fecha_registro) = CURRENT_DATE
+GROUP BY 
+    o.id_operacion,
     o.id_entidadbancaria,
     o.id_tipotransaccion,
     o.valor,
@@ -273,39 +322,14 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
     o.tipodocumento,
     o.id_persona,
     o.id_caja,
-    e.entidad AS entidad,
-    MAX(sa.saldocuenta) AS saldocuenta,
-    MAX(sa.saldocaja) AS saldocaja,
+    e.entidad,
     u.nombre_usuario,
-    MAX(tt.nombre) AS tipotransaccion,
-    (o.valor + COALESCE(MAX(sa.saldocuenta), 0) + COALESCE(o.saldocomision, 0)) AS valor_total_operacion
-FROM operaciones o
-JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-JOIN usuario u ON u.id_usuario = o.id_usuario
-LEFT JOIN caja c ON c.id_caja = o.id_caja
-LEFT JOIN saldos sa ON sa.entidadbancaria_id = e.id_entidadbancaria
-WHERE o.id_entidadbancaria = $1
-  AND o.id_caja = $2
-  AND date(o.fecha_registro) = CURRENT_DATE
-GROUP BY o.id_operacion,
-      o.id_entidadbancaria,
-      o.id_tipotransaccion,
-      o.valor,
-      o.referencia,
-      o.comentario,
-      o.numtransaccion,
-      o.fecha_registro,
-      o.fecha_actualizacion,
-      o.id_usuario,
-      o.saldocomision,
-      o.estado,
-      o.tipodocumento,
-      o.id_persona,
-      o.id_caja,
-      e.entidad,
-      u.nombre_usuario
-ORDER BY o.fecha_registro; 
+    tt.nombre,  
+    c.saldocaja,
+    tt.afectacaja_id
+ORDER BY 
+    o.fecha_registro;
+
 `, [entidadId, id_caja]);
     
     return resultado.rows;
@@ -326,7 +350,6 @@ export async function getAllOperacionesFilter(fechaDesde, fechaHasta) {
       SELECT          
           e.entidad AS entidad,
           tt.nombre AS tipotransaccion,
-   
           o.valor AS valor_operacion,
           o.comentario AS comentario_operacion,
           o.numtransaccion AS num_transaccion,
@@ -516,8 +539,7 @@ export const totalcajadeldia = async (id_caja) => {
           INNER JOIN 
             tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
           WHERE 
-            o.id_caja = $1 AND 
-            DATE(o.fecha_registro) = CURRENT_DATE
+            o.id_caja = $1
         ) AS subquery;`;
     const result = await client.query(query, [id_caja]);
     return result.rows[0];
