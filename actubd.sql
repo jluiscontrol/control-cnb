@@ -1120,3 +1120,7 @@ REFERENCES listapermisos (id_listapermisos);
 
 
 CREATE UNIQUE INDEX idx_permisos_unique ON permisos (id_usuario, id_listapermisos);
+
+
+ALTER TABLE IF EXISTS public.entidadbancaria
+    ADD COLUMN por_cada numeric;
