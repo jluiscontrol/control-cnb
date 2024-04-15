@@ -1,11 +1,20 @@
+--- Query para resetear los valores de las tablas de la base de datos --
+
+BEGIN;
+
+-- Desactivar las restricciones de llave foránea
 ALTER TABLE operaciones DISABLE TRIGGER ALL;
 ALTER TABLE saldos DISABLE TRIGGER ALL;
 
-TRUNCATE TABLE operaciones, saldos RESTART IDENTITY CASCADE;
+-- Truncar la tabla y reiniciar la secuencia de ID
+TRUNCATE TABLE operaciones, saldos RESTART IDENTITY;
 
-ALTER TABLE operaciones ENABLE TRIGGER ALL;
+-- Reactivar las restricciones de llave foránea
+ALTER TABLE operaciones DISABLE TRIGGER ALL;
 ALTER TABLE saldos ENABLE TRIGGER ALL;
 
+-- Resetear los saldos de comisión y caja acumulados --
 UPDATE caja
-SET saldocaja = 0.00,
-    saldocomision = 0.00;
+SET saldocomision = 0.00, saldocaja = 0.00;
+
+COMMIT;

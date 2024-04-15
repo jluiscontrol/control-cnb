@@ -5,8 +5,8 @@ import pool from '../database.js';
 async function addEntidadBancaria(entidadBancaria) {
   const cliente = await pool.connect();
   try {
-    const { entidad, acronimo, estado = true, comision, sobregiro } = entidadBancaria;
-    if (!entidad || !acronimo || !sobregiro || !comision) {
+    const { entidad, acronimo, estado = true, comision, sobregiro, por_cada } = entidadBancaria;
+    if (!entidad || !acronimo || !sobregiro || !comision || !por_cada) {
       throw new Error('Todos los campos son requeridos');
     }
     // Iniciar una transacción
@@ -17,12 +17,13 @@ async function addEntidadBancaria(entidadBancaria) {
       throw new Error('La entidad bancaria ya existe');
     }
     // Insertar la nueva entidad bancaria
-    let comisionFormateada = parseFloat(comision).toFixed(2); // Asegurarse de que comision tiene formato de dinero
-    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision) VALUES ($1, $2, $3, $4, $5) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comisionFormateada]);    
+    let comisionFormateada = parseFloat(comision).toFixed(2);
+    let por_cadaFormateada = parseFloat(por_cada).toFixed(2);
+    const result = await cliente.query('INSERT INTO entidadbancaria(entidad, acronimo, estado, sobregiro, comision, por_cada) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id_entidadbancaria', [entidad, acronimo, estado, sobregiro, comisionFormateada, por_cadaFormateada]);
     const id_entidadbancaria = result.rows[0].id_entidadbancaria;
     // Confirmar la transacción
     await cliente.query('COMMIT');
-    return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro  };
+    return { id_entidadbancaria, entidad, acronimo, comision, estado, sobregiro };
   } catch (error) {
     // Si hay algún error, hacer rollback de la transacción
     await cliente.query('ROLLBACK');
@@ -63,7 +64,7 @@ async function getAllEntidadesBancariasActivas() {
 }
 
 // Función para obtener una entidad bancaria por su ID
-export const getEntidadBancariaById = async (entidadBancariaId ) => {
+export const getEntidadBancariaById = async (entidadBancariaId) => {
   try {
     const client = await pool.connect();
     const query = 'SELECT * FROM entidadbancaria WHERE id_entidadbancaria = $1';
@@ -84,12 +85,21 @@ export const getEntidadBancariaById = async (entidadBancariaId ) => {
 export const updateEntidadBancariaById = async (entidadBancariaId, newData) => {
   try {
     const client = await pool.connect();
-    const query = 'UPDATE entidadbancaria SET entidad = $1, acronimo = $2, sobregiro = $3, comision = $4 WHERE id_entidadbancaria = $5';
-    
+    const query = 'UPDATE entidadbancaria SET entidad = $1, acronimo = $2, sobregiro = $3, comision = $4, por_cada = $5 WHERE id_entidadbancaria = $6';
+
     // Asegurarse de que comision tiene formato de dinero
     newData.comision = parseFloat(newData.comision).toFixed(2);
-    
-    const result = await client.query(query, [newData.entidad, newData.acronimo,  newData.sobregiro, newData.comision ,entidadBancariaId]);
+
+    newData.comision = parseFloat(newData.comision).toFixed(2);
+    newData.por_cada = parseFloat(newData.por_cada).toFixed(2);
+
+    const result = await client.query(query, [
+      newData.entidad,
+      newData.acronimo,
+      newData.sobregiro,
+      newData.comision,
+      newData.por_cada,
+      entidadBancariaId]);
 
     if (result.rowCount === 0) {
       return { error: 'La entidad bancaria con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
@@ -111,12 +121,12 @@ export const deleteEntidadBancariaById = async (entidadBancariaId, newData) => {
     if (result.rowCount === 0) {
       return { error: 'La entidad bancaria con el ID proporcionado no existe' }; // Devuelve un objeto con el mensaje de error
     }
-   if(newData.estado == true){
-     return { message: 'Entidad bancaria activada correctamente' };
-   }else{
-    return { message: 'Entidad bancaria inactivada correctamente' };
+    if (newData.estado == true) {
+      return { message: 'Entidad bancaria activada correctamente' };
+    } else {
+      return { message: 'Entidad bancaria inactivada correctamente' };
 
-   }
+    }
   } catch (error) {
     throw new Error('Error al inactivar la entidad bancaria: ' + error.message);
   } finally {
@@ -167,9 +177,11 @@ export const saldosByCajaId = async (cajaId, userId, fecha) => {
 
 
 // Exportar las funciones del modelo
-export default { addEntidadBancaria, 
-           getAllEntidadesBancarias,
-    getAllEntidadesBancariasActivas, 
-             getEntidadBancariaById, 
-          deleteEntidadBancariaById,
-          saldosByCajaId };
+export default {
+  addEntidadBancaria,
+  getAllEntidadesBancarias,
+  getAllEntidadesBancariasActivas,
+  getEntidadBancariaById,
+  deleteEntidadBancariaById,
+  saldosByCajaId
+};
