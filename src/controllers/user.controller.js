@@ -231,3 +231,15 @@ export const deleteUserById = async (req, res) => {
   }
 }
 
+
+export const getSaldoActual = async (req, res) => {
+  try {
+    const id = req.params.cajaId;
+    const saldo = await User.getSaldoActualCaja(id);
+    res.status(200).json(saldo);
+  } catch (error) {
+    console.error('Error al obtener el saldo actual de la caja:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+

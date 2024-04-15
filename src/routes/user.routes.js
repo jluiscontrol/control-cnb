@@ -18,6 +18,7 @@ router.get('/u/empleados', userCtrl.getEmpleados)
 //creacion de caja
 router.post('/caja', userCtrl.createCaja)
 router.get('/caja/getAll', userCtrl.getCajas)
+router.get('/caja/saldoActual/:cajaId', userCtrl.getSaldoActual);
 router.get('/caja/activas', userCtrl.getCajasActivas)
 router.put('/caja/:cajaId', userCtrl.updateCaja)
 

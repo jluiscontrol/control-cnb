@@ -382,6 +382,21 @@ export const deleteUser = async (userDeleteId, newData) => {
 
 };
 
+export const getSaldoActualCaja = async (cajaId) => {
+  try {
+    const caja = await pool.connect();
+    const query = `SELECT * FROM caja WHERE id_caja = $1`;
+    const result = await caja.query(query, [cajaId]);
+    caja.release();
+    if (result.rows.length === 0) {
+      return { error: 'Caja no encontrada' };
+    }
+    return result.rows[0]; // Devuelve toda la información de la caja
+  } catch (error) {
+    throw new Error('Error al obtener el saldo de la caja: ' + error.message);
+  }
+};
+
 // Exportar las funciones del modelo
 export default {
   addUser,
@@ -394,5 +409,6 @@ export default {
   getAllCajasActivas,
   updateCajaById,
   addPersona,
-  getAllEmpleados
+  getAllEmpleados,
+  getSaldoActualCaja
 };
