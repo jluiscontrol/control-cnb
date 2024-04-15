@@ -977,12 +977,14 @@ ADD COLUMN saldocaja NUMERIC(10,2) DEFAULT 0.00;
 --------------------------------------------------------------
 
 -- FUNCTION: public.agregasaldo()
+
 -- DROP FUNCTION IF EXISTS public.agregasaldo();
+
 CREATE OR REPLACE FUNCTION public.agregasaldo()
-    RETURNS trigger
-    LANGUAGE 'plpgsql'
-    COST 100
-    VOLATILE NOT LEAKPROOF
+RETURNS trigger
+LANGUAGE 'plpgsql'
+COST 100
+VOLATILE NOT LEAKPROOF
 AS $BODY$
 DECLARE
     v_id_tipotransaccion INTEGER;
@@ -1021,13 +1023,16 @@ BEGIN
     WHERE id_entidadbancaria = v_entidadbancaria_id;
 
     -- Intentar obtener el saldo actual de la cuenta y caja
-    SELECT COALESCE(saldocuenta, 0.00) INTO v_saldocuenta_actual
-    FROM saldos
-    WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
-
+    -- Primero, intenta encontrar el registro existente o inicializar con 0.00 si no se encuentra
+    PERFORM 1 FROM saldos WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
     IF NOT FOUND THEN
         INSERT INTO saldos (entidadbancaria_id, caja_id, saldocuenta)
         VALUES (v_entidadbancaria_id, v_caja_id, 0.00);
+        v_saldocuenta_actual := 0.00;
+    ELSE
+        SELECT COALESCE(saldocuenta, 0.00) INTO v_saldocuenta_actual
+        FROM saldos
+        WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
     END IF;
 
     -- Obtener o inicializar el saldo de comisión y caja actual de la caja
@@ -1043,11 +1048,11 @@ BEGIN
     -- Calcular los nuevos saldos tentativos
     v_new_saldocaja := v_saldocaja_actual + CASE WHEN v_afectacaja_id = 1 THEN v_valor WHEN v_afectacaja_id = 2 THEN -v_valor ELSE 0 END;
     v_new_saldocomision := v_saldocomision_actual + CASE 
-	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 1 THEN v_saldocomision 
-	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 2 THEN -v_saldocomision 
-	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 1 THEN v_valor
-	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 2 THEN -v_valor
-	ELSE 0 END;
+    WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 1 THEN v_saldocomision 
+    WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 2 THEN -v_saldocomision 
+    WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 1 THEN v_valor
+    WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 2 THEN -v_valor
+    ELSE 0 END;
     v_new_saldocuenta := v_saldocuenta_actual + CASE WHEN v_afectacuenta_id = 1 THEN v_valor WHEN v_afectacuenta_id = 2 THEN -v_valor ELSE 0 END;
 
     -- Verificar condiciones antes de actualizar
@@ -1065,9 +1070,10 @@ BEGIN
         WHERE id_caja = v_caja_id;
 
         -- Actualizar la tabla saldos para la columna saldocuenta
-        UPDATE saldos
-        SET saldocuenta = v_new_saldocuenta
-        WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+	UPDATE saldos
+	SET saldocuenta = COALESCE(v_new_saldocuenta, 0.00)
+	WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+
     END IF;
 
     RETURN NEW;
