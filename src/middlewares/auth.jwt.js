@@ -59,50 +59,50 @@ export const verifyToken = async (req, res, next) => {
     }
 };
 */
-export const verifyPermissions = async (req, res, next) => {
-    try {
-        const userId = req.user?.id_usuario; // Obtener el ID de usuario desde el objeto de solicitud
-        const { entidad, accion } = req.params; // Obtener la entidad y la acción de la solicitud
+// export const verifyPermissions = async (req, res, next) => {
+//     try {
+//         const userId = req.user?.id_usuario; // Obtener el ID de usuario desde el objeto de solicitud
+//         const { entidad, accion } = req.params; // Obtener la entidad y la acción de la solicitud
 
-        if (!userId) {
-            return res.status(401).json({ message: "Usuario no autenticado" });
-        }
+//         if (!userId) {
+//             return res.status(401).json({ message: "Usuario no autenticado" });
+//         }
 
-        // Consultar los roles del usuario
-        const rolesQuery = `
-            SELECT r.id_rol
-            FROM usuario_rol ur
-            JOIN rol r ON ur.id_rol = r.id_rol
-            WHERE ur.id_usuario = $1;
-        `;
-        const rolesResult = await pool.query(rolesQuery, [userId]);
-        const roles = rolesResult.rows;
+//         // Consultar los roles del usuario
+//         const rolesQuery = `
+//             SELECT r.id_rol
+//             FROM usuario_rol ur
+//             JOIN rol r ON ur.id_rol = r.id_rol
+//             WHERE ur.id_usuario = $1;
+//         `;
+//         const rolesResult = await pool.query(rolesQuery, [userId]);
+//         const roles = rolesResult.rows;
 
-        // Verificar si alguno de los roles del usuario tiene permiso para la acción en la entidad
-        const hasPermission = roles.some(async (role) => {
-            const permissionQuery = `
-                SELECT permitido
-                FROM permisos
-                WHERE (id_rol = $1 OR id_usuario = $2)
-                AND entidad = $3
-                AND accion = $4;
-            `;
+//         // Verificar si alguno de los roles del usuario tiene permiso para la acción en la entidad
+//         const hasPermission = roles.some(async (role) => {
+//             const permissionQuery = `
+//                 SELECT permitido
+//                 FROM permisos
+//                 WHERE (id_rol = $1 OR id_usuario = $2)
+//                 AND entidad = $3
+//                 AND accion = $4;
+//             `;
            
-            const permissionResult = await pool.query(permissionQuery, [role.id_rol, userId, entidad, accion]);
-            const permission = permissionResult.rows[0];
+//             const permissionResult = await pool.query(permissionQuery, [role.id_rol, userId, entidad, accion]);
+//             const permission = permissionResult.rows[0];
             
-            return permission && permission.permitido === true;
-        });
-        if (hasPermission) {
-            return next();
-        } else {
-            return res.status(403).json({ message: "No tiene permiso para realizar esta acción" });
-        }
-    } catch (error) {
-        console.error("Error al verificar los permisos:", error);
-        return res.status(500).json({ message: "Error interno del servidor" });
-    }
-};
+//             return permission && permission.permitido === true;
+//         });
+//         if (hasPermission) {
+//             return next();
+//         } else {
+//             return res.status(403).json({ message: "No tiene permiso para realizar esta acción" });
+//         }
+//     } catch (error) {
+//         console.error("Error al verificar los permisos:", error);
+//         return res.status(500).json({ message: "Error interno del servidor" });
+//     }
+// };
 
 
 
