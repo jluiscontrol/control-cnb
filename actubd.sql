@@ -981,10 +981,10 @@ ADD COLUMN saldocaja NUMERIC(10,2) DEFAULT 0.00;
 -- DROP FUNCTION IF EXISTS public.agregasaldo();
 
 CREATE OR REPLACE FUNCTION public.agregasaldo()
-RETURNS trigger
-LANGUAGE 'plpgsql'
-COST 100
-VOLATILE NOT LEAKPROOF
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
 AS $BODY$
 DECLARE
     v_id_tipotransaccion INTEGER;
