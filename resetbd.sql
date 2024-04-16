@@ -10,7 +10,7 @@ ALTER TABLE saldos DISABLE TRIGGER ALL;
 TRUNCATE TABLE operaciones, saldos RESTART IDENTITY;
 
 -- Reactivar las restricciones de llave foránea
-ALTER TABLE operaciones DISABLE TRIGGER ALL;
+ALTER TABLE operaciones ENABLE TRIGGER ALL;
 ALTER TABLE saldos ENABLE TRIGGER ALL;
 
 -- Resetear los saldos de comisión y caja acumulados --

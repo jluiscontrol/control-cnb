@@ -926,7 +926,7 @@ ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
 
 
--- fin de actualizacion de trigger --
+-------- fin de actualizacion de trigger -----------------------------------------------------
 
 
 -- Abril 9 - 2024 --
@@ -971,7 +971,52 @@ DROP COLUMN saldocaja;
 ALTER TABLE caja
 ADD COLUMN saldocaja NUMERIC(10,2) DEFAULT 0.00;
 
---------------------------------------------------------------
+-- Abril 10 - 2024 --
+
+
+ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS id_rol;
+
+ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS entidad;
+
+ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS accion;
+
+ALTER TABLE IF EXISTS public.permisos
+    RENAME permitido TO estado;
+
+ALTER TABLE IF EXISTS public.permisos
+    ADD COLUMN permiso character varying;
+
+ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS permiso;
+
+ALTER TABLE IF EXISTS public.permisos
+    ADD COLUMN id_listapermisos integer;    
+
+
+CREATE TABLE public.listapermisos
+(
+    id_listapermisos integer NOT NULL,
+    nombre character varying,
+    PRIMARY KEY (id_listapermisos)
+);
+
+ALTER TABLE IF EXISTS public.listapermisos
+    OWNER to postgres;
+
+
+ALTER TABLE permisos
+ADD CONSTRAINT fk_listapermisos
+FOREIGN KEY (id_listapermisos)
+REFERENCES listapermisos (id_listapermisos);
+
+
+CREATE UNIQUE INDEX idx_permisos_unique ON permisos (id_usuario, id_listapermisos);
+
+
+ALTER TABLE IF EXISTS public.entidadbancaria
+    ADD COLUMN por_cada numeric;
+
+
+    --------------------------------------------------------------
 --------------------------------------------------------------
 --------- ACTUALIZACION DEL TRIGGER AGREGARSALDO -------------
 --------------------------------------------------------------
@@ -1084,49 +1129,3 @@ ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
 
 -- FIN DE ACTUALIZACION DEL TRIGGER --
-
-
-
--- Abril 10 - 2024 --
-
-
-ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS id_rol;
-
-ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS entidad;
-
-ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS accion;
-
-ALTER TABLE IF EXISTS public.permisos
-    RENAME permitido TO estado;
-
-ALTER TABLE IF EXISTS public.permisos
-    ADD COLUMN permiso character varying;
-
-ALTER TABLE IF EXISTS public.permisos DROP COLUMN IF EXISTS permiso;
-
-ALTER TABLE IF EXISTS public.permisos
-    ADD COLUMN id_listapermisos integer;    
-
-
-CREATE TABLE public.listapermisos
-(
-    id_listapermisos integer NOT NULL,
-    nombre character varying,
-    PRIMARY KEY (id_listapermisos)
-);
-
-ALTER TABLE IF EXISTS public.listapermisos
-    OWNER to postgres;
-
-
-ALTER TABLE permisos
-ADD CONSTRAINT fk_listapermisos
-FOREIGN KEY (id_listapermisos)
-REFERENCES listapermisos (id_listapermisos);
-
-
-CREATE UNIQUE INDEX idx_permisos_unique ON permisos (id_usuario, id_listapermisos);
-
-
-ALTER TABLE IF EXISTS public.entidadbancaria
-    ADD COLUMN por_cada numeric;
