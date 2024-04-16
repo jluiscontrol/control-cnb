@@ -950,6 +950,7 @@ VALUES
     (2, 'RESTA A COMISION', 2, true),
     (3, 'NO AFECTA A COMISION', 3, true);
 
+
 ALTER TABLE IF EXISTS public.tipotransaccion
     ADD COLUMN afectacomision_id integer;
 
@@ -1014,6 +1015,12 @@ CREATE UNIQUE INDEX idx_permisos_unique ON permisos (id_usuario, id_listapermiso
 
 ALTER TABLE IF EXISTS public.entidadbancaria
     ADD COLUMN por_cada numeric;
+
+
+INSERT INTO public.listapermisos (id_listapermisos, nombre)
+VALUES
+(1, 'Cambiar la comisión manualmente'),
+(2, 'Realizar movimientos');
 
 
     --------------------------------------------------------------
@@ -1129,3 +1136,6 @@ ALTER FUNCTION public.agregasaldo()
     OWNER TO postgres;
 
 -- FIN DE ACTUALIZACION DEL TRIGGER --
+
+
+-- Abril 15 - 2024 -- 
