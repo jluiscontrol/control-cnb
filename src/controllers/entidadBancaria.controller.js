@@ -140,10 +140,11 @@ export const getSaldosByCajaId = async (req, res) => {
     const fecha = req.params.fecha;
     const saldos = await EntidadBancaria.saldosByCajaId(cajaId, userId, fecha);
     const saldosByEntidad = await EntidadBancaria.saldosByEntidadAndCajaId(cajaId, userId, fecha);
+    const saldoinicial = await EntidadBancaria.saldoInicial(cajaId, userId, fecha);
     if (!saldos && !saldosByEntidad) {
       return res.status(404).json({ error: 'No se encontraron saldos para la entidad bancaria' });
     }
-    res.status(200).json([saldos, saldosByEntidad]);
+    res.status(200).json([saldos, saldosByEntidad, saldoinicial]);
   } catch (error) {
     console.error('Error al obtener los saldos de la entidad bancaria por ID:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
