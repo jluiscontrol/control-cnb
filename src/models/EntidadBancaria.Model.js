@@ -139,32 +139,67 @@ export const saldosByCajaId = async (cajaId, userId, fecha) => {
   const client = await pool.connect();
   try {
     const query = `
-  SELECT 
-    e.entidad AS nombre_entidad, 
-    COALESCE(SUM(CASE 
-      WHEN tt.afectacuenta_id = 1 THEN o.valor
-      WHEN tt.afectacuenta_id = 2 THEN -o.valor
-      ELSE 0
-    END), 0) AS saldocuenta,
-    COALESCE(SUM(CASE 
-      WHEN tt.afectacaja_id = 1 THEN o.valor
-      WHEN tt.afectacaja_id = 2 THEN -o.valor
-      ELSE 0
-    END), 0) AS saldocaja,
-    COALESCE(SUM(o.saldocomision), 0) AS sumacomisiones
-  FROM 
-    operaciones o
-  LEFT JOIN 
-    entidadbancaria e ON e.id_entidadbancaria = o.id_entidadbancaria
-  LEFT JOIN 
-    tipotransaccion tt ON tt.id_tipotransaccion = o.id_tipotransaccion
-  WHERE 
-    o.id_caja = $1 AND
-    o.id_usuario = $2 AND
+    SELECT 
+      SUM(CASE 
+        WHEN tt.afectacaja_id = 1 THEN o.valor
+        WHEN tt.afectacaja_id = 2 THEN -o.valor
+        ELSE 0
+      END) AS total_valor_caja,
+      SUM(CASE 
+        WHEN tt.afectacuenta_id = 1 THEN o.valor
+        WHEN tt.afectacuenta_id = 2 THEN -o.valor
+        ELSE 0
+      END) AS total_valor_cuenta,
+      SUM(CASE 
+        WHEN o.tipodocumento = 'MV' AND tt.afectacomision_id = 1 THEN o.valor
+        WHEN o.tipodocumento = 'MV' AND tt.afectacomision_id = 2 THEN -o.valor
+        WHEN o.tipodocumento = 'OPR' AND tt.afectacomision_id = 1 THEN o.saldocomision
+        WHEN o.tipodocumento = 'OPR' AND tt.afectacomision_id = 2 THEN -o.saldocomision
+        ELSE 0
+      END) AS total_comisiones
+    FROM operaciones o
+    JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+    WHERE 
+    o.id_caja = $1 AND 
+    o.id_usuario = $2 AND 
     DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
-  GROUP BY 
-    e.id_entidadbancaria, e.entidad;
-  `;
+    GROUP BY o.id_caja, o.id_usuario, DATE_TRUNC('day', o.fecha_registro)
+    `;
+    const result = await client.query(query, [cajaId, userId, fecha]);
+    console.log(result.rows)
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    client.release();
+  }
+};
+
+// Funcion para obtener los saldos por caja y entidad
+export const saldosByEntidadAndCajaId = async (cajaId, userId, fecha) => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+        e.id_entidadbancaria,
+        e.entidad,
+        SUM(CASE WHEN t.afectacaja_id = 1 THEN o.valor WHEN t.afectacaja_id = 2 THEN -o.valor ELSE 0 END) AS total_valor_caja,
+        SUM(CASE WHEN t.afectacuenta_id = 1 THEN o.valor WHEN t.afectacuenta_id = 2 THEN -o.valor ELSE 0 END) AS total_valor_cuenta,
+        SUM(CASE WHEN o.tipodocumento = 'MV' AND t.afectacomision_id = 1 THEN o.valor WHEN o.tipodocumento = 'MV' AND t.afectacomision_id = 2 THEN -o.valor ELSE 0 END) +
+        SUM(CASE WHEN o.tipodocumento = 'OPR' AND t.afectacomision_id = 1 THEN o.saldocomision WHEN o.tipodocumento = 'OPR' AND t.afectacomision_id = 2 THEN -o.saldocomision ELSE 0 END) AS total_comisiones
+      FROM 
+        operaciones o
+      INNER JOIN 
+        entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+      INNER JOIN 
+        tipotransaccion t ON o.id_tipotransaccion = t.id_tipotransaccion
+      WHERE 
+        o.id_caja = $1 AND
+        o.id_usuario = $2 AND
+        DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
+      GROUP BY 
+        e.id_entidadbancaria, e.entidad
+    `;
     const result = await client.query(query, [cajaId, userId, fecha]);
     console.log(result.rows)
     return result.rows;
@@ -176,6 +211,7 @@ export const saldosByCajaId = async (cajaId, userId, fecha) => {
 };
 
 
+
 // Exportar las funciones del modelo
 export default {
   addEntidadBancaria,
@@ -183,5 +219,6 @@ export default {
   getAllEntidadesBancariasActivas,
   getEntidadBancariaById,
   deleteEntidadBancariaById,
-  saldosByCajaId
+  saldosByCajaId,
+  saldosByEntidadAndCajaId
 };

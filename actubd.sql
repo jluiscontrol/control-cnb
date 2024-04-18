@@ -1020,8 +1020,8 @@ ALTER TABLE IF EXISTS public.entidadbancaria
 INSERT INTO public.listapermisos (id_listapermisos, nombre)
 VALUES
 (1, 'Cambiar la comisión manualmente'),
-(2, 'Realizar movimientos');
-
+(2, 'Realizar movimientos'),
+(3, 'Utilizar la comisión como saldo de caja');
 
     --------------------------------------------------------------
 --------------------------------------------------------------
@@ -1055,6 +1055,10 @@ DECLARE
     v_new_saldocomision NUMERIC(10,2);
     v_new_saldocaja NUMERIC(10,2);
     v_new_saldocuenta NUMERIC(10,2);
+	v_id_usuario INTEGER;
+	v_permiso_usar_comision BOOLEAN DEFAULT false;
+	v_rol_usuario INTEGER DEFAULT 0;
+	
 BEGIN
     -- Obtener los datos de la operación
     v_id_tipotransaccion := NEW.id_tipotransaccion;
@@ -1063,6 +1067,18 @@ BEGIN
     v_entidadbancaria_id := NEW.id_entidadbancaria;
     v_caja_id := NEW.id_caja;
     v_saldocomision := NEW.saldocomision;
+	v_id_usuario := NEW.id_usuario;
+
+    -- Verificar si el usuario tiene el permiso para usar la comisión como saldo de caja
+    -- La consulta ahora comprobará si existe tal permiso. Si no existe, v_permiso_usar_comision se quedará con el valor false.
+    SELECT estado INTO v_permiso_usar_comision
+    FROM permisos
+    WHERE id_usuario = v_id_usuario AND id_listapermisos = 3;
+
+	-- Consulta para obtener el rol del usuario
+    SELECT id_rol INTO v_rol_usuario
+    FROM usuario_rol
+    WHERE id_usuario = v_id_usuario;
 
     -- Obtener valores de afectación de la tabla tipotransaccion
     SELECT afectacaja_id, afectacuenta_id, afectacomision_id INTO v_afectacaja_id, v_afectacuenta_id, v_afectacomision_id
@@ -1075,12 +1091,12 @@ BEGIN
     WHERE id_entidadbancaria = v_entidadbancaria_id;
 
     -- Intentar obtener el saldo actual de la cuenta y caja
-    -- Primero, intenta encontrar el registro existente o inicializar con 0.00 si no se encuentra
     PERFORM 1 FROM saldos WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
     IF NOT FOUND THEN
         INSERT INTO saldos (entidadbancaria_id, caja_id, saldocuenta)
         VALUES (v_entidadbancaria_id, v_caja_id, 0.00);
         v_saldocuenta_actual := 0.00;
+        
     ELSE
         SELECT COALESCE(saldocuenta, 0.00) INTO v_saldocuenta_actual
         FROM saldos
@@ -1092,21 +1108,38 @@ BEGIN
     FROM caja
     WHERE id_caja = v_caja_id;
 
+    
+
     IF NOT FOUND THEN
         INSERT INTO caja (id_caja, saldocomision, saldocaja)
         VALUES (v_caja_id, 0.00, 0.00);
     END IF;
 
-    -- Calcular los nuevos saldos tentativos
-    v_new_saldocaja := v_saldocaja_actual + CASE WHEN v_afectacaja_id = 1 THEN v_valor WHEN v_afectacaja_id = 2 THEN -v_valor ELSE 0 END;
-    v_new_saldocomision := v_saldocomision_actual + CASE 
-    WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 1 THEN v_saldocomision 
-    WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 2 THEN -v_saldocomision 
-    WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 1 THEN v_valor
-    WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 2 THEN -v_valor
-    ELSE 0 END;
-    v_new_saldocuenta := v_saldocuenta_actual + CASE WHEN v_afectacuenta_id = 1 THEN v_valor WHEN v_afectacuenta_id = 2 THEN -v_valor ELSE 0 END;
-
+	  -- Calcular los nuevos saldos tentativos
+	v_new_saldocaja := v_saldocaja_actual + CASE WHEN v_afectacaja_id = 1 THEN v_valor WHEN v_afectacaja_id = 2 THEN -v_valor ELSE 0 END;
+	v_new_saldocomision := v_saldocomision_actual + CASE 
+	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 1 THEN v_saldocomision 
+	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 2 THEN -v_saldocomision 
+	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 1 THEN v_valor
+	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 2 THEN -v_valor
+	ELSE 0 END;
+	v_new_saldocuenta := v_saldocuenta_actual + CASE WHEN v_afectacuenta_id = 1 THEN v_valor WHEN v_afectacuenta_id = 2 THEN -v_valor ELSE 0 END;
+	
+	-- Si saldocaja es insuficiente y el permiso para usar la comisión como saldo de caja está activo,
+	-- intenta usar el saldo de comisión para cubrir el déficit de saldocaja
+	IF v_new_saldocaja < 0 AND (v_permiso_usar_comision OR v_rol_usuario = 1) THEN
+	    -- Calcular cuánto del saldocomision se puede usar para cubrir el déficit de saldocaja
+	    IF v_saldocomision_actual >= -v_new_saldocaja THEN
+	        -- Si hay suficiente saldocomision para cubrir el déficit de saldocaja
+	        v_new_saldocomision := v_new_saldocomision + v_new_saldocaja; -- Restamos el déficit de saldocomision
+	        v_new_saldocaja := 0; -- Seteamos saldocaja a 0 porque se cubrió el déficit con saldocomision
+	    ELSE
+	        -- Si NO hay suficiente saldocomision para cubrir completamente el déficit de saldocaja
+	        v_new_saldocaja := v_new_saldocaja + v_saldocomision_actual; -- Usamos todo el saldocomision disponible
+	        v_new_saldocomision := 0; -- El saldocomision queda en 0 porque se usó todo
+	    END IF;
+	
+	END IF;
     -- Verificar condiciones antes de actualizar
     IF v_new_saldocomision < 0 THEN
         RAISE EXCEPTION 'No hay suficiente saldo de comision.';
@@ -1125,9 +1158,7 @@ BEGIN
 	UPDATE saldos
 	SET saldocuenta = COALESCE(v_new_saldocuenta, 0.00)
 	WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
-
     END IF;
-
     RETURN NEW;
 END;
 $BODY$;
