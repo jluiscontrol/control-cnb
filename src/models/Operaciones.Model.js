@@ -270,6 +270,10 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
         WHEN tt.afectacaja_id = 2 THEN -o.valor 
         ELSE o.valor 
     END AS valor,
+    CASE
+        WHEN tt.afectacuenta_id = 2 THEN -o.valor
+        ELSE o.valor
+    END AS valor_cuenta,
     o.referencia,
     o.comentario,
     o.numtransaccion,
@@ -326,7 +330,8 @@ GROUP BY
     u.nombre_usuario,
     tt.nombre,  
     c.saldocaja,
-    tt.afectacaja_id
+    tt.afectacaja_id,
+    tt.afectacuenta_id
 ORDER BY 
     o.fecha_registro;
 

@@ -1,6 +1,6 @@
 import ArqueoModel from '../models/Arqueo.Model.js';
 import { getArqueoById as getArqueoByIdModel, updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
-import { getFilterFecha, getFilterFechaReporte} from '../models/Arqueo.Model.js'; // Importar la función getFilterFecha
+import { getFilterFecha} from '../models/Arqueo.Model.js'; // Importar la función getFilterFecha
 import { getDetallesArqueoById } from '../models/Arqueo.Model.js'; // Importar la función getDetallesArqueoById
 import { valoresArqueoByEncabezadoId } from '../models/Arqueo.Model.js'; // Importar la función valoresArqueoByEncabezadoId
 
@@ -39,22 +39,6 @@ export const getArqueo = async (req, res) => {
 };
 
 
-
-export const getArqueoReporte = async (req, res) => {
-  try {
-    const { fecha, nombreUsuario, cajaId} = req.query; // Obtener los parámetros de consulta fecha y nombreUsuario
-
-    if (!fecha) {
-      return res.status(400).json({ error: 'Se requiere el parámetro fecha para filtrar por una fecha específica.' });
-    }
-
-    const arqueo = await getFilterFechaReporte(fecha, nombreUsuario, cajaId); // Utilizar la función getFilterFechaReporte para filtrar los arqueos
-    res.status(200).json(arqueo);
-  } catch (error) {
-    console.error('Error al obtener los arqueos:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-};
 
 
 
