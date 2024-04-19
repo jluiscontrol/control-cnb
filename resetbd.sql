@@ -7,15 +7,23 @@ ALTER TABLE operaciones DISABLE TRIGGER ALL;
 ALTER TABLE saldos DISABLE TRIGGER ALL;
 ALTER TABLE encabezadoarqueo DISABLE TRIGGER ALL;
 ALTER TABLE detallearqueo DISABLE TRIGGER ALL;
+ALTER TABLE saldos_iniciales DISABLE TRIGGER ALL;
 
 -- Truncar la tabla y reiniciar la secuencia de ID
-TRUNCATE TABLE operaciones, saldos, encabezadoarqueo, detallearqueo RESTART IDENTITY;
+TRUNCATE TABLE 
+operaciones, 
+saldos, 
+encabezadoarqueo, 
+detallearqueo, 
+saldos_iniciales 
+RESTART IDENTITY;
 
 -- Reactivar las restricciones de llave foránea
 ALTER TABLE operaciones ENABLE TRIGGER ALL;
 ALTER TABLE saldos ENABLE TRIGGER ALL;
 ALTER TABLE encabezadoarqueo ENABLE TRIGGER ALL;
 ALTER TABLE detallearqueo ENABLE TRIGGER ALL;
+ALTER TABLE saldos_iniciales ENABLE TRIGGER ALL;
 
 -- Resetear los saldos de comisión y caja acumulados --
 UPDATE caja

@@ -213,6 +213,29 @@ export const saldosByEntidadAndCajaId = async (cajaId, userId, fecha) => {
   }
 };
 
+// Funcion para obtener el saldo inicial
+export const saldoInicial = async (cajaId, userId, fecha) => {
+  const client = await pool.connect();
+  try {
+    const query = `
+      SELECT 
+        SUM(saldo_inicial_caja + saldo_inicial_comision) AS saldo_inicial
+      FROM
+        saldos_iniciales
+      WHERE
+        caja_id = $1 AND
+        id_usuario = $2 AND
+        DATE_TRUNC('day', fecha) = DATE_TRUNC('day', $3::TIMESTAMP)
+    `;
+    const result = await client.query(query, [cajaId, userId, fecha]);
+    console.log(result.rows)
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    client.release();
+  }   
+}
 
 
 // Exportar las funciones del modelo
@@ -223,5 +246,6 @@ export default {
   getEntidadBancariaById,
   deleteEntidadBancariaById,
   saldosByCajaId,
-  saldosByEntidadAndCajaId
+  saldosByEntidadAndCajaId,
+  saldoInicial
 };

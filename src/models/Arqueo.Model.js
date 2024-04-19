@@ -79,8 +79,8 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
   const client = await pool.connect();
   try {
     // Actualizar los datos del encabezado del arqueo
-    const query = 'UPDATE encabezadoarqueo SET caja_id = $1, usuario_id = $2, comentario = $3 WHERE id_encabezadoarqueo = $4';
-    const result = await client.query(query, [newData.caja_id, newData.usuario_id, newData.comentario, encabezadoarqueoId]);
+    const query = 'UPDATE encabezadoarqueo SET caja_id = $1, comentario = $2 WHERE id_encabezadoarqueo = $3';
+    const result = await client.query(query, [newData.caja_id, newData.comentario, encabezadoarqueoId]);
 
     if (result.rowCount === 0) {
       return { error: 'El arqueo con el ID proporcionado no existe' };

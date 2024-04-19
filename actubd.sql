@@ -1169,4 +1169,65 @@ ALTER FUNCTION public.agregasaldo()
 -- FIN DE ACTUALIZACION DEL TRIGGER --
 
 
--- Abril 15 - 2024 -- 
+-- Abril 18 - 2024 -- 
+
+---------- TABLA PARA REGISTRAR LOS SALDOS INICIALES DE CAJA ----------
+
+CREATE TABLE IF NOT EXISTS saldos_iniciales (
+    id_saldo_inicial SERIAL PRIMARY KEY,
+    caja_id INTEGER NOT NULL,
+    id_usuario INTEGER NOT NULL,
+    fecha DATE NOT NULL,
+    saldo_inicial_caja NUMERIC(10,2) NOT NULL,
+    saldo_inicial_comision NUMERIC(10,2) NOT NULL
+);
+
+ALTER TABLE saldos_iniciales
+ADD CONSTRAINT fk_caja
+    FOREIGN KEY (caja_id) 
+    REFERENCES caja (id_caja)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+
+ADD CONSTRAINT fk_usuario
+    FOREIGN KEY (id_usuario) 
+    REFERENCES usuario (id_usuario)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE;
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+----------- NUEVO TRIGGER PARA ESTABLECER LOS SALDOS INICIALES -----------
+--------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION registrar_saldo_inicial()
+RETURNS TRIGGER AS $$
+DECLARE
+    existe_registro INTEGER;
+    saldocaja_actual NUMERIC(10,2);
+    saldocomision_actual NUMERIC(10,2);
+BEGIN
+    -- Obtener los saldos actuales de la tabla caja para el id_caja específico
+    SELECT saldocaja, saldocomision INTO saldocaja_actual, saldocomision_actual
+    FROM caja
+    WHERE id_caja = NEW.id_caja;
+
+    -- Comprobar si ya existe un registro de saldo inicial para el usuario y la caja en la fecha actual
+    SELECT COUNT(*) INTO existe_registro FROM saldos_iniciales
+    WHERE id_usuario = NEW.id_usuario AND caja_id = NEW.id_caja AND fecha = CURRENT_DATE;
+
+    -- Si no existe, insertar el nuevo saldo inicial
+    IF existe_registro = 0 THEN
+        INSERT INTO saldos_iniciales (caja_id, id_usuario, fecha, saldo_inicial_caja, saldo_inicial_comision)
+        VALUES (NEW.id_caja, NEW.id_usuario, CURRENT_DATE, saldocaja_actual, saldocomision_actual);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+--------------------------- CREAMOS EL EVENTO DEL TRIGGER -----------------------------
+CREATE TRIGGER trigger_registrar_saldo_inicial
+BEFORE INSERT ON operaciones
+FOR EACH ROW
+EXECUTE FUNCTION registrar_saldo_inicial();
+
