@@ -6,10 +6,11 @@ export async function getLast15Operations() {
 
   try {
     const result = await client.query(`
-        SELECT o.*, e.entidad, t.nombre as tipo_transaccion 
+        SELECT o.*, e.entidad, t.nombre as tipo_transaccion, c.nombre as caja
         FROM operaciones o 
         JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria 
         JOIN tipotransaccion t ON o.id_tipotransaccion = t.id_tipotransaccion 
+        JOIN caja c ON o.id_caja = c.id_caja
         WHERE DATE(o.fecha_registro) = CURRENT_DATE 
         ORDER BY o.fecha_registro DESC 
         LIMIT 15
@@ -54,13 +55,18 @@ export async function getMonthlyOperationsDataForDashboard() {
   const client = await pool.connect();
   try {
     const result = await client.query(`
-        SELECT EXTRACT(MONTH FROM o.fecha_registro) as mes,
-               SUM(o.valor) as total_valor,
-               SUM(o.saldocomision) as total_saldocomision
-        FROM operaciones o
-        INNER JOIN entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
-        GROUP BY mes
-        ORDER BY mes
+    SELECT 
+      EXTRACT(MONTH FROM o.fecha_registro) AS mes,
+      SUM(o.valor) AS total_valor,
+      SUM(o.saldocomision) AS total_saldocomision
+    FROM 
+        operaciones o
+    INNER JOIN 
+        entidadbancaria e ON o.id_entidadbancaria = e.id_entidadbancaria
+    GROUP BY 
+        mes
+    ORDER BY 
+        mes;
       `);
     return result.rows.map(row => ({
       mes: row.mes,
@@ -105,8 +111,15 @@ export async function getTotalSaldoCaja() {
   const client = await pool.connect();
   try {
     const result = await client.query(`
-        SELECT saldocaja as total_saldo
-        FROM caja
+      SELECT 
+      SUM(CASE 
+        WHEN tt.afectacaja_id = 1 THEN o.valor
+        WHEN tt.afectacaja_id = 2 THEN -o.valor
+        ELSE 0
+      END) AS total_saldo
+      FROM operaciones o
+      JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+      WHERE  o.tipodocumento = 'OPR'
       `);
     return result.rows[0].total_saldo;
   } finally {
