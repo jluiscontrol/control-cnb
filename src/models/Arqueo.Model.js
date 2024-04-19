@@ -117,10 +117,12 @@ export const getFilterFecha = async (desde, hasta, usuario_id, id_caja) => {
         d.tipodinero AS tipoDinero,
         d.valor,
         d.cantidad,
-        c.nombre AS nombre_caja
+        c.nombre AS nombre_caja,
+        u.nombre_usuario
       FROM encabezadoarqueo e 
       LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
       LEFT JOIN caja c ON c.id_caja = e.caja_id
+      LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
       WHERE e.fechacreacion BETWEEN $1 AND (DATE_TRUNC('day', $2::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')
       `;
 
@@ -146,7 +148,7 @@ export const getFilterFecha = async (desde, hasta, usuario_id, id_caja) => {
             arqueo.release();
           }
         };
-        
+
 
 export const getFilterFechaReporte = async (fecha, nombreUsuario, cajaId) => {
   const arqueo = await pool.connect();
