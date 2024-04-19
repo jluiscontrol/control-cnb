@@ -82,8 +82,8 @@ export const getTipoTransaccionById = async (tipotransaccionId) => {
       acc.id_afectacuenta AS id_afectacuenta,
       acc.nombre AS afectacion_cuenta
       FROM tipotransaccion tt 
-      INNER JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
-      INNER JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
+      LEFT JOIN afectacaja ac ON tt.afectacaja_id = ac.id_afectacaja
+      LEFT JOIN afectacuenta acc ON tt.afectacuenta_id = acc.id_afectacuenta
       WHERE tt.id_tipotransaccion = $1
       ORDER tt.id_tipotransaccion;
     `;

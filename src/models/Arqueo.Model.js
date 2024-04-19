@@ -103,7 +103,7 @@ export const updateArqueoById = async (encabezadoarqueoId, newData) => {
   }
 };
 
-export const getFilterFecha = async (desde, hasta, nombreUsuario, id_caja) => {
+export const getFilterFecha = async (desde, hasta, usuario_id, id_caja) => {
   const arqueo = await pool.connect();
   try {
     let query = `
@@ -117,39 +117,38 @@ export const getFilterFecha = async (desde, hasta, nombreUsuario, id_caja) => {
         d.tipodinero AS tipoDinero,
         d.valor,
         d.cantidad,
-        c.nombre AS nombre_caja,
-        u.nombre_usuario
+        c.nombre AS nombre_caja
       FROM encabezadoarqueo e 
       LEFT JOIN detallearqueo d ON e.id_encabezadoarqueo = d.encabezadoarqueo_id
       LEFT JOIN caja c ON c.id_caja = e.caja_id
-      LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
       WHERE e.fechacreacion BETWEEN $1 AND (DATE_TRUNC('day', $2::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')
       `;
 
-    const params = [desde, hasta];
+            let params = [desde, hasta];
+            let paramCount = 3;
 
-    // Verificar si se proporcionó el nombre de usuario y agregarlo como filtro
-    if (nombreUsuario) {
-      query += ` AND u.nombre_usuario = $${params.length + 1}`;
-      params.push(nombreUsuario);
-    }
+            // Verificar si se proporcionó el nombre de usuario y agregarlo como filtro
+            if (usuario_id) {
+              query += ` AND e.usuario_id = $${paramCount++}`;
+              params.push(usuario_id);
+            }
 
-    if (id_caja) {
-      query += ` AND c.id_caja = $${params.length + 1}`;
-      params.push(id_caja);
-    }
+            if (id_caja) {
+              query += ` AND c.id_caja = $${paramCount++}`;
+              params.push(id_caja);
+            }
 
-    query += ` ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
+            query += ` ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
 
-    const result = await arqueo.query(query, params);
-    return result.rows;
-  } finally {
-    arqueo.release();
-  }
-};
+            const result = await arqueo.query(query, params);
+            return result.rows;
+          } finally {
+            arqueo.release();
+          }
+        };
+        
 
-
-export const getFilterFechaReporte = async (fecha, nombreUsuario) => {
+export const getFilterFechaReporte = async (fecha, nombreUsuario, cajaId) => {
   const arqueo = await pool.connect();
   try {
     let query = `
@@ -171,14 +170,23 @@ export const getFilterFechaReporte = async (fecha, nombreUsuario) => {
       LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
       WHERE DATE_TRUNC('day', e.fechacreacion) = $1`;
 
-    const params = [fecha];
+    let params = [fecha];
+    let paramCount = 2;
+    let whereAdded = false;
 
     // Verificar si se proporcionó el nombre de usuario y agregarlo como filtro
     if (nombreUsuario) {
-      query += ` AND u.nombre_usuario = $2`;
+      query += whereAdded ? ' AND' : ' WHERE';
+      query +=  ` AND u.nombre_usuario = $${paramCount++}`;
       params.push(nombreUsuario);
+      whereAdded = true;
     }
-
+    if (cajaId) {
+      query += whereAdded ? ' AND' : ' WHERE';
+      query +=  ` AND c.id_caja = $${paramCount++}`;
+      params.push(cajaId);
+      whereAdded = true;
+    }
     query += ` ORDER BY e.id_encabezadoarqueo, e.fechacreacion DESC`;
 
     const result = await arqueo.query(query, params);

@@ -26,16 +26,11 @@ export const createArqueo = async (req, res) => {
 //Funcion para obtener todos los arqueos
 export const getArqueo = async (req, res) => {
   try {
-    const { desde, hasta, nombreUsuario, id_caja } = req.query; // Obtener los parámetros de consulta desde, hasta y nombreUsuario
-
+    const { desde, hasta, usuario_id, id_caja } = req.query; // Obtener los parámetros de consulta desde, hasta y nombreUsuario
     if (!desde || !hasta) {
       return res.status(400).json({ error: 'Se requieren parámetros desde y hasta para filtrar por fecha.' });
     }
-
-    const arqueo = await getFilterFecha(desde, hasta, nombreUsuario, id_caja); // Utilizar la función getFilterFecha para filtrar los arqueos
-    if (!arqueo || arqueo.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron arqueos en el rango de fechas y nombre de usuario especificados.' });
-    }
+    const arqueo = await getFilterFecha(desde, hasta, usuario_id, id_caja); // Utilizar la función getFilterFecha para filtrar los arqueos    
     res.status(200).json(arqueo);
   } catch (error) {
     console.error('Error al obtener los arqueos:', error);
@@ -47,16 +42,13 @@ export const getArqueo = async (req, res) => {
 
 export const getArqueoReporte = async (req, res) => {
   try {
-    const { fecha, nombreUsuario } = req.query; // Obtener los parámetros de consulta fecha y nombreUsuario
+    const { fecha, nombreUsuario, cajaId} = req.query; // Obtener los parámetros de consulta fecha y nombreUsuario
 
     if (!fecha) {
       return res.status(400).json({ error: 'Se requiere el parámetro fecha para filtrar por una fecha específica.' });
     }
 
-    const arqueo = await getFilterFechaReporte(fecha, nombreUsuario); // Utilizar la función getFilterFechaReporte para filtrar los arqueos
-    if (!arqueo || arqueo.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron arqueos para la fecha especificada y el nombre de usuario proporcionado.' });
-    }
+    const arqueo = await getFilterFechaReporte(fecha, nombreUsuario, cajaId); // Utilizar la función getFilterFechaReporte para filtrar los arqueos
     res.status(200).json(arqueo);
   } catch (error) {
     console.error('Error al obtener los arqueos:', error);
