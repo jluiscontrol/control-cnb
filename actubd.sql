@@ -1231,3 +1231,7 @@ BEFORE INSERT ON operaciones
 FOR EACH ROW
 EXECUTE FUNCTION registrar_saldo_inicial();
 
+INSERT INTO public.listapermisos (id_listapermisos, nombre)
+VALUES
+    (4, 'Realizar arqueo con cualquier caja');
+
