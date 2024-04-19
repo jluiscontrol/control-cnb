@@ -63,11 +63,9 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
       whereAdded = true;
     }
     if (startDate && endDate) {
-      const hastaFinDia = new Date(endDate);
-      hastaFinDia.setHours(23, 59, 59, 999);
       query += whereAdded ? ' AND' : ' WHERE';
-      query += ` operaciones.fecha_registro BETWEEN $${paramCount++} AND $${paramCount++}`;
-      params.push(startDate, hastaFinDia);
+      query += ` operaciones.fecha_registro BETWEEN $${paramCount++} AND (DATE_TRUNC('day', $${paramCount++}::timestamp with time zone) + INTERVAL '1 day' - INTERVAL '1 second')`;
+      params.push(startDate, endDate);
     }
     query += ' ORDER BY operaciones.fecha_registro';
     const result = await client.query(query, params);

@@ -168,15 +168,20 @@ export async function getAllOperaciones(id_caja) {
     e.estado AS estado,
     tt.nombre AS tipotransaccion,
     CASE 
-        WHEN tt.afectacaja_id = 2 THEN -o.valor 
-        ELSE o.valor 
+        WHEN tt.afectacaja_id = 1 THEN o.valor
+        WHEN tt.afectacaja_id = 2 THEN -o.valor      
+        ELSE 0 
     END AS valor_operacion,
     o.referencia AS referencia,
     o.comentario AS comentario_operacion,
     o.numtransaccion AS num_transaccion,
     o.fecha_registro AS fecha_registro_operacion,
     o.fecha_actualizacion AS fecha_actualizacion_operacion,
-    o.saldocomision AS saldocomision_operacion,
+    CASE 
+        WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+        WHEN tt.afectacomision_id = 2 THEN -o.saldocomision
+        ELSE 0
+    END AS saldocomision_operacion,
     o.tipodocumento AS tipodocumento_operacion,
     o.estado AS estado_operacion,
     ac.nombre AS afectacion_caja,
@@ -185,11 +190,7 @@ export async function getAllOperaciones(id_caja) {
     s.saldocuenta AS saldocuenta,
     o.id_caja AS caja_id,
     c.nombre AS nombrecaja,
-    c.saldocaja AS saldocaja,
-    (CASE 
-        WHEN tt.afectacaja_id = 2 THEN -o.valor 
-        ELSE o.valor 
-    END + COALESCE(o.saldocomision, 0) + COALESCE(s.saldocuenta, 0) + COALESCE(c.saldocaja, 0)) AS valor_total_operacion
+    c.saldocaja AS saldocaja
 FROM 
     operaciones o
 JOIN 
@@ -215,7 +216,6 @@ LEFT JOIN
 WHERE 
     o.estado = true
     AND o.id_caja = $1 
-    AND o.tipodocumento = 'OPR' 
     AND date(o.fecha_registro) = CURRENT_DATE
 ORDER BY 
     o.fecha_registro DESC;
@@ -266,13 +266,10 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
     o.id_operacion,
     o.id_entidadbancaria,
     o.id_tipotransaccion,
-    CASE 
-        WHEN tt.afectacaja_id = 2 THEN -o.valor 
-        ELSE o.valor 
-    END AS valor,
     CASE
+        WHEN tt.afectacuenta_id = 1 THEN o.valor
         WHEN tt.afectacuenta_id = 2 THEN -o.valor
-        ELSE o.valor
+        ELSE 0
     END AS valor_cuenta,
     o.referencia,
     o.comentario,
@@ -280,7 +277,11 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
     o.fecha_registro,
     o.fecha_actualizacion,
     o.id_usuario,
-    o.saldocomision,
+    CASE 
+        WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+        WHEN tt.afectacomision_id = 2 THEN -o.saldocomision
+        ELSE 0
+    END AS saldocomision,
     o.estado,
     o.tipodocumento,
     o.id_persona,
@@ -331,7 +332,8 @@ GROUP BY
     tt.nombre,  
     c.saldocaja,
     tt.afectacaja_id,
-    tt.afectacuenta_id
+    tt.afectacuenta_id,
+    tt.afectacomision_id
 ORDER BY 
     o.fecha_registro;
 
