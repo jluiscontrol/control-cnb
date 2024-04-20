@@ -140,9 +140,12 @@ export async function getLicenciaCliente(nident) {
     const fechaVencimiento = new Date(fechaPago.setMonth(fechaPago.getMonth() + meses));
 
     // Calcular los días restantes
-    const fechaActual = new Date();
-    const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
-
+    
+    const fechaActual = new Date().toLocaleString('en-US', { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const [_, mes, dia, anio, hora, minutos, segundos] = fechaActual.match(/(\d{2})\/(\d{2})\/(\d{4}), (\d{2}):(\d{2}):(\d{2})/);
+    const fechaFormateada = `${anio}-${mes}-${dia}T${hora}:${minutos}:${segundos}`;
+    const diasRestantes = Math.ceil((new Date(fechaVencimiento) - new Date(fechaFormateada)) / (1000 * 60 * 60 * 24));
+    
     // Devolver solo los días restantes
     return diasRestantes;
   } catch (error) {

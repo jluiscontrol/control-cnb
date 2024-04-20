@@ -9,12 +9,25 @@ async function addEncabezadoarqueo(encabezadoarqueo, detalles) {
       throw new Error('Todos los campos son requeridos');
     }
 
+
+    
     // Verificar si ya existe un arqueo para el mismo usuario en la misma fecha
-    const fechaActual = new Date().toISOString();
-    const arqueoExistente = await arqueo.query("SELECT * FROM encabezadoarqueo WHERE usuario_id = $1 AND caja_id = $2 AND DATE_TRUNC('day', fechacreacion) = DATE_TRUNC('day', $3::TIMESTAMP)", [usuario_id, caja_id, fechaActual]);
+    // Obtener la fecha actual en la zona horaria de Guayaquil, Ecuador (GMT-5)
+    const fechaActual = new Date().toLocaleDateString(undefined, { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+    const [dia, mes, anio] = fechaActual.split('/');
+    const fechaFormateada = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`; 
+    const arqueoExistente = await arqueo.query(`
+      SELECT * 
+        FROM encabezadoarqueo 
+      WHERE 
+        caja_id = $1 AND 
+        usuario_id = $2 AND 
+        DATE_TRUNC('day', fechacreacion) = DATE_TRUNC('day', $3::timestamp)`, [caja_id, usuario_id, fechaFormateada]);
     if (arqueoExistente.rows.length > 0) {
       throw new Error('Ya existe un arqueo para este usuario en esta caja en la fecha actual');
     }
+   
+
 
     // Insertar el encabezado del arqueo
     const arqueoInsertResult = await arqueo.query('INSERT INTO encabezadoarqueo(caja_id, usuario_id, comentario, estado) VALUES($1, $2, $3, $4) RETURNING id_encabezadoarqueo', [caja_id, usuario_id, comentario, true]);    const encabezadoarqueoId = arqueoInsertResult.rows[0].id_encabezadoarqueo;

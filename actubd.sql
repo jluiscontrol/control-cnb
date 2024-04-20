@@ -1231,7 +1231,10 @@ BEFORE INSERT ON operaciones
 FOR EACH ROW
 EXECUTE FUNCTION registrar_saldo_inicial();
 
+----- Abril 19 - 2024 ----
+
 INSERT INTO public.listapermisos (id_listapermisos, nombre)
 VALUES
     (4, 'Realizar arqueo con cualquier caja');
+    (5, 'Realizar operaciones desde cualquier caja');
 
