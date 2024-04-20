@@ -480,22 +480,30 @@ export const totalcomisionesdiaanterior = async (id_caja) => {
   const client = await pool.connect(); // Obtiene una conexión del pool
   try {
     const query = `SELECT 
-    COALESCE(SUM(saldocomision), 0) AS total_comision, 
-    COALESCE(SUM(valor), 0) AS total_valor 
+    SUM(CASE
+        WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+        WHEN tt.afectacomision_id = 2 THEN -o.saldocomision
+        ELSE 0 END) AS total_comision, 
+    SUM(CASE
+        WHEN tt.afectacaja_id = 1 THEN o.valor
+        WHEN tt.afectacaja_id = 2 THEN -o.valor
+        ELSE 0 END) AS total_valor
     FROM operaciones o 
+    JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
     WHERE o.id_caja = $1 
     AND DATE(o.fecha_registro) < CURRENT_DATE 
-    AND o.tipodocumento = 'OPR' 
     AND o.estado = true`;
+    console.log(query);
     const result = await client.query(query, [id_caja]);
-    client.release(); // Libera la conexión al pool
     if (result.rowCount === 0) {
       return { error: 'no existe comision en esta operacion' };
     }
     return result.rows[0];
   } catch (error) {
-    client.release(); // Asegúrate de liberar la conexión incluso si hay un error
-    throw new Error('Error al seleccionar la operación: ' + error.message);
+    console.error('Error al obtener el total de comisiones del día anterior:', error);
+    throw error;
+  } finally {
+    client.release();
   }
 }
 
