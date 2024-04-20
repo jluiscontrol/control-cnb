@@ -1235,6 +1235,6 @@ EXECUTE FUNCTION registrar_saldo_inicial();
 
 INSERT INTO public.listapermisos (id_listapermisos, nombre)
 VALUES
-    (4, 'Realizar arqueo con cualquier caja');
+    (4, 'Realizar arqueo con cualquier caja'),
     (5, 'Realizar operaciones desde cualquier caja');
 

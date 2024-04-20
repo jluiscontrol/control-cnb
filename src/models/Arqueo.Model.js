@@ -9,13 +9,12 @@ async function addEncabezadoarqueo(encabezadoarqueo, detalles) {
       throw new Error('Todos los campos son requeridos');
     }
 
-
-    
     // Verificar si ya existe un arqueo para el mismo usuario en la misma fecha
     // Obtener la fecha actual en la zona horaria de Guayaquil, Ecuador (GMT-5)
-    const fechaActual = new Date().toLocaleDateString(undefined, { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
-    const [dia, mes, anio] = fechaActual.split('/');
-    const fechaFormateada = `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`; 
+    const fechaActual = new Date();
+    const fechaFormateada = fechaActual.toISOString();
+    console.log('fecha actual:', fechaFormateada)
+    console.log('fecha formateada:', fechaFormateada)
     const arqueoExistente = await arqueo.query(`
       SELECT * 
         FROM encabezadoarqueo 
