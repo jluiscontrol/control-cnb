@@ -511,13 +511,19 @@ export const totalcomisionesdiaanteriorporentidad = async (id_entidadbancaria, i
   const client = await pool.connect(); 
   try {
     const query = `SELECT 
-    COALESCE(SUM(saldocomision), 0) AS total_comision, 
-    COALESCE(SUM(valor), 0) AS total_valor 
+    SUM(CASE
+      WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+      WHEN tt.afectacomision_id = 2 THEN -o.saldocomision
+      ELSE 0 END) AS total_comision,
+    SUM(CASE
+      WHEN tt.afectacuenta_id = 1 THEN o.valor
+      WHEN tt.afectacuenta_id = 2 THEN -o.valor
+      ELSE 0 END) AS total_valor
     FROM operaciones o 
+    JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
     WHERE o.id_entidadbancaria= $1 
     AND o.id_caja = $2 
     AND DATE(o.fecha_registro) < CURRENT_DATE
-    AND o.tipodocumento = 'OPR' 
     AND o.estado = true`;
     const values = [id_entidadbancaria, id_caja];
     const result = await client.query(query, values);
