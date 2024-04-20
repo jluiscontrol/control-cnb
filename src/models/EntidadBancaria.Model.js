@@ -162,7 +162,6 @@ export const saldosByCajaId = async (cajaId, userId, fecha) => {
     WHERE 
     o.id_caja = $1 AND 
     o.id_usuario = $2 AND 
-    o.tipodocumento = 'OPR' AND
     DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
 
     GROUP BY o.id_caja, o.id_usuario, DATE_TRUNC('day', o.fecha_registro)
@@ -198,7 +197,6 @@ export const saldosByEntidadAndCajaId = async (cajaId, userId, fecha) => {
       WHERE 
         o.id_caja = $1 AND
         o.id_usuario = $2 AND
-        o.tipodocumento = 'OPR' AND
         DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
       GROUP BY 
         e.id_entidadbancaria, e.entidad

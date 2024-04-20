@@ -455,27 +455,6 @@ export const deleteOperacionesById = async (operacionesId, newData) => {
 };
 
 
-export const ObtenerComisionByBankandTransa = async (newData) => {
-  try {
-    const client = await pool.connect();
-    const query = `SELECT          
-          e.valorcomision AS saldocomision,    
-          WHERE entidadbancaria_id = $1 && tipotransaccion_id = $2`;
-    const result = await client.query(query, [
-      newData.id_tipotransaccion,
-      newData.id_entidadbancaria,
-
-    ]);
-
-    if (result.rowCount === 0) {
-      return { error: 'no existe comision en esta operacion' }; // Devuelve un objeto con el mensaje de error
-    }
-
-  } catch (error) {
-    throw new Error('Error al seleccionar la operación: ' + error.message);
-  }
-}
-
 export const totalcomisionesdiaanterior = async (id_caja) => {
   const client = await pool.connect(); // Obtiene una conexión del pool
   try {
@@ -554,7 +533,11 @@ export const totalcajadeldia = async (id_caja) => {
               WHEN tt.afectacaja_id = 2 THEN -o.valor
               ELSE 0
             END) AS total_valor,
-            SUM(o.saldocomision) AS total_comision
+            SUM(CASE
+              WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+              WHEN tt.afectacomision_id = 2 THEN -o.saldocomision
+              ELSE 0
+            END) AS total_comision
           FROM 
             operaciones o
           INNER JOIN 
@@ -578,7 +561,6 @@ export default {
   updateOperacionesById,
   getAllOperacionesFilter,
   deleteOperacionesById,
-  ObtenerComisionByBankandTransa,
   getOperacionesByEntidadBancariaId,
   getAllOperacionesUnique,
   totalcomisionesdiaanterior,
