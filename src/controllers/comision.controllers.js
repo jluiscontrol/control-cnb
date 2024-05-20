@@ -14,7 +14,7 @@ export const createComision = async (req, res) => {
 
     // Verificar si la comisión ya existe
     if (resultSave && resultSave.exists) {
-      return res.status(400).json({ error: 'La entidad bancaria elegida ya cuenta con valores de comisión.' });
+      return res.status(400).json({ error: 'La entidad bancaria elegida ya cuenta con una comisión para este tipo de transacción.' });
     }
 
     // Convertir valorcomision a formato JSON

@@ -9,8 +9,8 @@ export async function addComision({ valorcomision, entidadbancaria_id, tipotrans
     await comisionDatos.query("BEGIN");
 
     // Verificar si la comisión ya se ha asignado anteriormente
-    const existingComisionAsignadaQuery = `SELECT * FROM comision WHERE entidadbancaria_id = $1`;
-    const existingComisionResult = await comisionDatos.query(existingComisionAsignadaQuery, [entidadbancaria_id]);
+    const existingComisionAsignadaQuery = `SELECT * FROM comision WHERE entidadbancaria_id = $1 AND tipotransaccion_id = $2`;
+    const existingComisionResult = await comisionDatos.query(existingComisionAsignadaQuery, [entidadbancaria_id, tipotransaccion_id]);
     if (existingComisionResult.rows.length > 0) {
       return { exists: true };
     }
