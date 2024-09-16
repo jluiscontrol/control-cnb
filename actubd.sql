@@ -1238,3 +1238,142 @@ VALUES
     (4, 'Realizar arqueo con cualquier caja'),
     (5, 'Realizar operaciones desde cualquier caja');
 
+---- Septiembre 16 - 2024 ------
+INSERT INTO public.listapermisos (id_listapermisos, nombre)
+VALUES
+    (6, 'Reversar Operacion');
+
+
+CREATE OR REPLACE FUNCTION public.reversa_operacion()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+DECLARE
+    v_id_tipotransaccion INTEGER;
+    v_valor NUMERIC(10,2);
+    v_saldocomision NUMERIC (10,2);
+    v_tipodocumento VARCHAR(3);
+    v_afectacaja_id INTEGER;
+    v_afectacuenta_id INTEGER;
+    v_afectacomision_id INTEGER;
+    v_caja_id INTEGER;
+    v_entidadbancaria_id INTEGER;
+    v_saldocuenta_actual NUMERIC(10,2) DEFAULT 0.00;
+    v_saldocaja_actual NUMERIC(10,2) DEFAULT 0.00;
+    v_saldocomision_actual NUMERIC(10,2) DEFAULT 0.00;
+    v_sobregiro NUMERIC(10,2);
+    v_new_saldocomision NUMERIC(10,2);
+    v_new_saldocaja NUMERIC(10,2);
+    v_new_saldocuenta NUMERIC(10,2);
+	v_id_usuario INTEGER;
+	v_permiso_usar_comision BOOLEAN DEFAULT false;
+	v_rol_usuario INTEGER DEFAULT 0;
+	
+BEGIN
+    -- Obtener los datos de la operación
+    v_id_tipotransaccion := OLD.id_tipotransaccion;
+    v_valor := OLD.valor;
+    v_tipodocumento := OLD.tipodocumento;
+    v_entidadbancaria_id := OLD.id_entidadbancaria;
+    v_caja_id := OLD.id_caja;
+    v_saldocomision := OLD.saldocomision;
+	v_id_usuario := OLD.id_usuario;
+
+    -- Verificar si el usuario tiene el permiso para usar la comisión como saldo de caja
+    -- La consulta ahora comprobará si existe tal permiso. Si no existe, v_permiso_usar_comision se quedará con el valor false.
+    SELECT estado INTO v_permiso_usar_comision
+    FROM permisos
+    WHERE id_usuario = v_id_usuario AND id_listapermisos = 3;
+
+	-- Consulta para obtener el rol del usuario
+    SELECT id_rol INTO v_rol_usuario
+    FROM usuario_rol
+    WHERE id_usuario = v_id_usuario;
+
+    -- Obtener valores de afectación de la tabla tipotransaccion
+    SELECT afectacaja_id, afectacuenta_id, afectacomision_id INTO v_afectacaja_id, v_afectacuenta_id, v_afectacomision_id
+    FROM tipotransaccion
+    WHERE id_tipotransaccion = v_id_tipotransaccion;
+
+    -- Obtener el valor de sobregiro para la entidad bancaria
+    SELECT COALESCE(sobregiro, 0.00) INTO v_sobregiro
+    FROM entidadbancaria
+    WHERE id_entidadbancaria = v_entidadbancaria_id;
+
+    -- Intentar obtener el saldo actual de la cuenta y caja
+    PERFORM 1 FROM saldos WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+    IF NOT FOUND THEN
+        INSERT INTO saldos (entidadbancaria_id, caja_id, saldocuenta)
+        VALUES (v_entidadbancaria_id, v_caja_id, 0.00);
+        v_saldocuenta_actual := 0.00;
+        
+    ELSE
+        SELECT COALESCE(saldocuenta, 0.00) INTO v_saldocuenta_actual
+        FROM saldos
+        WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+    END IF;
+
+    -- Obtener o inicializar el saldo de comisión y caja actual de la caja
+    SELECT COALESCE(saldocomision, 0.00), COALESCE(saldocaja, 0.00) INTO v_saldocomision_actual, v_saldocaja_actual
+    FROM caja
+    WHERE id_caja = v_caja_id;
+
+    
+
+    IF NOT FOUND THEN
+        INSERT INTO caja (id_caja, saldocomision, saldocaja)
+        VALUES (v_caja_id, 0.00, 0.00);
+    END IF;
+
+	  -- Calcular los nuevos saldos tentativos
+	v_new_saldocaja := v_saldocaja_actual - CASE WHEN v_afectacaja_id = 1 THEN v_valor WHEN v_afectacaja_id = 2 THEN -v_valor ELSE 0 END; -- Resta en lugar de sumar
+	v_new_saldocomision := v_saldocomision_actual - CASE 
+	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 1 THEN v_saldocomision 
+	WHEN v_tipodocumento = 'OPR' AND v_afectacomision_id = 2 THEN -v_saldocomision 
+	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 1 THEN v_valor
+	WHEN v_tipodocumento = 'MV' AND v_afectacomision_id = 2 THEN -v_valor
+	ELSE 0 END; -- Resta en lugar de sumar
+	v_new_saldocuenta := v_saldocuenta_actual - CASE WHEN v_afectacuenta_id = 1 THEN v_valor WHEN v_afectacuenta_id = 2 THEN -v_valor ELSE 0 END; -- Resta en lugar de sumar
+	
+	-- Si saldocaja es insuficiente y el permiso para usar la comisión como saldo de caja está activo,
+	-- intenta usar el saldo de comisión para cubrir el déficit de saldocaja
+	IF v_new_saldocaja < 0 AND (v_permiso_usar_comision OR v_rol_usuario = 1) THEN
+	    -- Calcular cuánto del saldocomision se puede usar para cubrir el déficit de saldocaja
+	    IF v_saldocomision_actual >= -v_new_saldocaja THEN
+	        -- Si hay suficiente saldocomision para cubrir el déficit de saldocaja
+	        v_new_saldocomision := v_new_saldocomision + v_new_saldocaja; -- Restamos el déficit de saldocomision
+	        v_new_saldocaja := 0; -- Seteamos saldocaja a 0 porque se cubrió el déficit con saldocomision
+	    ELSE
+	        -- Si NO hay suficiente saldocomision para cubrir completamente el déficit de saldocaja
+	        v_new_saldocaja := v_new_saldocaja + v_saldocomision_actual; -- Usamos todo el saldocomision disponible
+	        v_new_saldocomision := 0; -- El saldocomision queda en 0 porque se usó todo
+	    END IF;
+	
+	END IF;
+    -- Verificar condiciones antes de actualizar
+    IF v_new_saldocomision < 0 THEN
+        RAISE EXCEPTION 'No hay suficiente saldo de comision.';
+    ELSIF v_new_saldocaja < 0 THEN
+        RAISE EXCEPTION 'No hay suficiente saldo de caja.';
+    ELSIF v_new_saldocuenta < -v_sobregiro THEN
+        RAISE EXCEPTION 'Se está excediendo el valor de sobregiro.';
+    ELSE
+        -- Actualizar la tabla caja para saldocomision y saldocaja
+        UPDATE caja
+        SET saldocomision = v_new_saldocomision, 
+            saldocaja = v_new_saldocaja
+        WHERE id_caja = v_caja_id;
+
+        -- Actualizar la tabla saldos para la columna saldocuenta
+	UPDATE saldos
+	SET saldocuenta = COALESCE(v_new_saldocuenta, 0.00)
+	WHERE entidadbancaria_id = v_entidadbancaria_id AND caja_id = v_caja_id;
+    END IF;
+    RETURN NEW;
+END;
+$BODY$;
+
+ALTER FUNCTION public.reversa_operacion()
+    OWNER TO postgres;

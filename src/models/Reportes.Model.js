@@ -13,6 +13,7 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
         tipotransaccion.afectacuenta_id,
         tipotransaccion.afectacomision_id,
         operaciones.valor,
+        operaciones.estado,
         operaciones.saldocomision,
         usuario.nombre_usuario,
         persona.nombre AS nombre_persona,
@@ -25,16 +26,20 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
       JOIN tipotransaccion ON operaciones.id_tipotransaccion = tipotransaccion.id_tipotransaccion
       JOIN usuario ON operaciones.id_usuario = usuario.id_usuario
       LEFT JOIN persona ON operaciones.id_persona = persona.id_persona
-      `;
+    `;
     let params = [];
     let paramCount = 1;
     let whereAdded = false;
+    query += whereAdded ? ' AND' : ' WHERE';
+    query += ` operaciones.estado = true`;
+    whereAdded = true;
+    
     if (tipodocumento) {
       query += whereAdded ? ' AND' : ' WHERE';
       query += ` operaciones.tipodocumento = $${paramCount++}`;
       params.push(tipodocumento);
       whereAdded = true;
-      // console.log(`tipodocumento: ${tipodocumento}`);
+       // console.log(`tipodocumento: ${tipodocumento}`);
       // console.log(`Final SQL query: ${query}`);
       // console.log(`Query parameters: ${params}`);
     }
@@ -75,7 +80,35 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
   }
 }
 
+export async function updateOperationStatus(id_operacion, newState) {
+  const client = await pool.connect();
+  try {
+
+    await client.query('BEGIN');
+
+    const updateQuery = `
+      UPDATE operaciones
+      SET estado = $1
+      WHERE id_operacion = $2
+      RETURNING id_operacion, estado;
+    `;
+
+    const updateResult = await client.query(updateQuery, [newState, id_operacion]);
+    if (updateResult.rowCount === 0) {
+      throw new Error(`Operación con id ${id_operacion} no encontrada.`);
+    }
+
+    await client.query('COMMIT');
+    return updateResult.rows[0];
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
 export default {
-  getOperationsReport
+  getOperationsReport,
+  updateOperationStatus
 };

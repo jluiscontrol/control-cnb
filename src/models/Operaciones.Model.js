@@ -276,6 +276,7 @@ export async function getOperacionesByEntidadBancariaId(entidadId, id_caja) {
     o.numtransaccion,
     o.fecha_registro,
     o.fecha_actualizacion,
+    o.estado,
     o.id_usuario,
     CASE 
         WHEN tt.afectacomision_id = 1 THEN o.saldocomision
@@ -311,6 +312,7 @@ WHERE
     o.id_entidadbancaria = $1
     AND o.id_caja = $2
     AND date(o.fecha_registro) = CURRENT_DATE
+    AND o.estado = TRUE
 GROUP BY 
     o.id_operacion,
     o.id_entidadbancaria,
