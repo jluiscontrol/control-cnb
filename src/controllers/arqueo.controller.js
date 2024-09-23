@@ -2,18 +2,17 @@ import ArqueoModel from '../models/Arqueo.Model.js';
 import { getArqueoById as getArqueoByIdModel, updateArqueoById as updateArqueoByIdModel } from '../models/Arqueo.Model.js';
 import { getFilterFecha} from '../models/Arqueo.Model.js'; // Importar la función getFilterFecha
 import { getDetallesArqueoById } from '../models/Arqueo.Model.js'; // Importar la función getDetallesArqueoById
-import { valoresArqueoByEncabezadoId } from '../models/Arqueo.Model.js'; // Importar la función valoresArqueoByEncabezadoId
+import { valoresArqueoByEncabezadoId, valoresArqueoByApertura } from '../models/Arqueo.Model.js'; // Importar la función valoresArqueoByEncabezadoId
 
 // Función para crear un arqueo
 export const createArqueo = async (req, res) => {
-  const { caja_id, usuario_id, comentarios, detalles } = req.body;
-
-  if (!caja_id || !usuario_id || !comentarios || !detalles || detalles.length === 0) {
+  const { caja_id, usuario_id, comentarios, detalles, fecha, tipo_documento  } = req.body;
+  if (!caja_id || !usuario_id || !comentarios || !detalles || detalles.length === 0 || !fecha || !tipo_documento) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
   }
 
   try {
-    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario: comentarios }, detalles);
+    const arqueoSave = await ArqueoModel.addEncabezadoarqueo({ caja_id, usuario_id, comentario: comentarios, fecha, tipo_documento }, detalles);
     res.status(201).json(arqueoSave);
   } catch (error) {
     console.error('Error al crear el arqueo:', error);
@@ -37,9 +36,6 @@ export const getArqueo = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-
-
-
 
 
 //Funcion para obtener un arqueo en especifico
@@ -78,7 +74,6 @@ export const updateArqueoById = async (req, res) => {
 
     const result = await updateArqueoByIdModel(encabezadoarqueoId, newData);
 
-
     if (result.error) {
       return res.status(404).json({ error: result.error });
     }
@@ -111,6 +106,20 @@ export const getValoresArqueoByEncabezadoId = async (req, res) => {
   const { encabezadoarqueoId } = req.params;
   try {
     const detalles = await valoresArqueoByEncabezadoId(encabezadoarqueoId);
+    if (!detalles || detalles.error) {
+      return res.status(404).json({ error: 'No se encontraron detalles para el arqueo especificado.' });
+    }
+    res.status(200).json(detalles);
+  } catch (error) {
+    console.error('Error al obtener los detalles del arqueo:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
+
+export const getvaloresArqueoByApertura = async (req, res) => {
+  const { encabezadoarqueoId } = req.params;
+  try {
+    const detalles = await valoresArqueoByApertura(encabezadoarqueoId);
     if (!detalles || detalles.error) {
       return res.status(404).json({ error: 'No se encontraron detalles para el arqueo especificado.' });
     }

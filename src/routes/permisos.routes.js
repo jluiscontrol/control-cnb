@@ -8,6 +8,6 @@ import { verifyToken,  verifyEmpleado } from "../middlewares/auth.jwt.js";
 router.post('/', permisosCtrl.createPermisos)
 router.get('/',permisosCtrl.getPermisos)
 router.get('/:id_usuario',permisosCtrl.getPermisosUsuario)
-
+router.get('/parametrizacion',permisosCtrl.getParametrizacion)
 
 export default router;

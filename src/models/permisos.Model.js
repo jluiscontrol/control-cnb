@@ -60,10 +60,32 @@ export const getPermisosUsuario = async (id_usuario) => {
   }
 }
 
+export const getParametrizacion = async (id_usuario) => {
+  try {
+    // Consulta SQL para obtener los permisos de un usuario
+    const query = `
+      SELECT p.*, lp.nombre
+      FROM permisos p
+      JOIN listapermisos lp ON p.id_listapermisos = lp.id_listapermisos
+      WHERE p.id_usuario = $1 AND p.estado = true
+      `;
+
+    // Ejecuta la consulta con el id_usuario proporcionado
+    const { rows } = await pool.query(query, [id_usuario]);
+
+    return rows; // Devuelve los permisos del usuario
+  }
+  catch (error) {
+    throw new Error(`Error al obtener permisos del usuario: ${error.message}`);
+  }
+}
+
+
 
 export default {
   insertOrUpdatePermiso,
   getAllPermisos,
-  getPermisosUsuario
+  getPermisosUsuario,
+  getParametrizacion
 };
 

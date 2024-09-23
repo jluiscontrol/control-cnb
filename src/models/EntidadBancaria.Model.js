@@ -162,12 +162,11 @@ export const saldosByCajaId = async (cajaId, userId, fecha) => {
     WHERE 
     o.id_caja = $1 AND 
     o.id_usuario = $2 AND 
-    DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
-
+    DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP) AND
+    o.estado = true 
     GROUP BY o.id_caja, o.id_usuario, DATE_TRUNC('day', o.fecha_registro)
     `;
     const result = await client.query(query, [cajaId, userId, fecha]);
-    console.log(result.rows)
     return result.rows;
   } catch (err) {
     console.error(err);
@@ -197,12 +196,12 @@ export const saldosByEntidadAndCajaId = async (cajaId, userId, fecha) => {
       WHERE 
         o.id_caja = $1 AND
         o.id_usuario = $2 AND
-        DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP)
+        DATE_TRUNC('day', o.fecha_registro) = DATE_TRUNC('day', $3::TIMESTAMP) AND
+        o.estado = true 
       GROUP BY 
         e.id_entidadbancaria, e.entidad
     `;
     const result = await client.query(query, [cajaId, userId, fecha]);
-    console.log(result.rows)
     return result.rows;
   } catch (err) {
     console.error(err);
@@ -226,7 +225,6 @@ export const saldoInicial = async (cajaId, userId, fecha) => {
         DATE_TRUNC('day', fecha) = DATE_TRUNC('day', $3::TIMESTAMP)
     `;
     const result = await client.query(query, [cajaId, userId, fecha]);
-    console.log(result.rows)
     return result.rows;
   } catch (err) {
     console.error(err);

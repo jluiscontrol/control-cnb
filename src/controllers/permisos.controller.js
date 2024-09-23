@@ -45,3 +45,12 @@ export const getPermisosUsuario = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const getParametrizacion = async (req, res) => {
+  try {   
+      const permisosUsuario = await permisos.getPermisosUsuario(req.params.id_usuario);
+      res.status(200).json(permisosUsuario);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+}
