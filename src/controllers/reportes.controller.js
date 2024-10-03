@@ -2,10 +2,10 @@ import { getOperationsReport, updateOperationStatus } from '../models/Reportes.M
 
 //funcion para obtener el reporte de operaciones por usuario
 export const reporteOperaciones = async (req, res) => {
-    const { id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion } = req.query;
+    const { id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion, estado } = req.query;
 
     try {
-        const reporte = await getOperationsReport(id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion);
+        const reporte = await getOperationsReport(id_usuario, id_caja, tipodocumento, desde, hasta, entidad, tipo_transaccion, estado);
         res.status(200).json(reporte);
     } catch (error) {
         console.error('Error al obtener el reporte de operaciones:', error);
@@ -16,10 +16,10 @@ export const reporteOperaciones = async (req, res) => {
 //funcion para cambiar el estado de la operacion
 export const reporteEstadoOperaciones = async (req, res) => {
     const operacionId = req.params.operacionId;
-    const { estado } = req.body;
+    const { estado, comentario } = req.body;
 
     try {
-        const reporte = await updateOperationStatus(operacionId, estado);
+        const reporte = await updateOperationStatus(operacionId, estado, comentario);
         res.status(200).json(reporte);
     } catch (error) {
         console.error('Error al obtener el reporte de operaciones:', error);

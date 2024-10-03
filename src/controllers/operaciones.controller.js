@@ -17,7 +17,8 @@ export const createOperaciones = async (req, res) => {
     saldocomision,
     estado,
     tipodocumento,
-    id_caja
+    id_caja,
+    codigoMovil
   } = req.body;
 
   if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
@@ -54,7 +55,8 @@ export const createOperaciones = async (req, res) => {
       saldocomision,
       estado,
       tipodocumento,
-      id_caja
+      id_caja,
+      codigoMovil
     });
 
     if (error) {

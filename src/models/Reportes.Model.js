@@ -1,6 +1,6 @@
 import pool from '../database.js';
 
-export async function getOperationsReport(userId, id_caja, tipodocumento, startDate, endDate, entidad, tipoTransaccion) {
+export async function getOperationsReport(userId, id_caja, tipodocumento, startDate, endDate, entidad, tipoTransaccion, estado) {
   const client = await pool.connect();
   try {
     let query = `
@@ -30,18 +30,21 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
     let params = [];
     let paramCount = 1;
     let whereAdded = false;
-    query += whereAdded ? ' AND' : ' WHERE';
-    query += ` operaciones.estado = true`;
-    whereAdded = true;
-    
+    if (estado) {
+      query += whereAdded ? ' AND' : ' WHERE';
+      query += ` operaciones.estado = $${paramCount++}`;
+      params.push(estado);
+      whereAdded = true;
+    } else {
+      query += whereAdded ? ' AND' : ' WHERE';
+      query += ` operaciones.estado = true`;
+      whereAdded = true;
+    }
     if (tipodocumento) {
       query += whereAdded ? ' AND' : ' WHERE';
       query += ` operaciones.tipodocumento = $${paramCount++}`;
       params.push(tipodocumento);
       whereAdded = true;
-       // console.log(`tipodocumento: ${tipodocumento}`);
-      // console.log(`Final SQL query: ${query}`);
-      // console.log(`Query parameters: ${params}`);
     }
     if (userId) {
       query += whereAdded ? ' AND' : ' WHERE';
@@ -80,7 +83,7 @@ export async function getOperationsReport(userId, id_caja, tipodocumento, startD
   }
 }
 
-export async function updateOperationStatus(id_operacion, newState) {
+export async function updateOperationStatus(id_operacion, newState, comentario) {
   const client = await pool.connect();
   try {
 
@@ -88,12 +91,12 @@ export async function updateOperationStatus(id_operacion, newState) {
 
     const updateQuery = `
       UPDATE operaciones
-      SET estado = $1
-      WHERE id_operacion = $2
-      RETURNING id_operacion, estado;
+      SET estado = $1, comentario = $2 
+      WHERE id_operacion = $3
+      RETURNING id_operacion, estado, comentario;
     `;
 
-    const updateResult = await client.query(updateQuery, [newState, id_operacion]);
+    const updateResult = await client.query(updateQuery, [newState, comentario, id_operacion]);
     if (updateResult.rowCount === 0) {
       throw new Error(`Operación con id ${id_operacion} no encontrada.`);
     }

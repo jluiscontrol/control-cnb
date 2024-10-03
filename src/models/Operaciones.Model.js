@@ -18,7 +18,8 @@ export async function addOperaciones(operaciones) {
       saldocomision,
       estado = true,
       tipodocumento,
-      id_caja
+      id_caja,
+      codigoMovil
     } = operaciones;
     // Validar campos obligatorios
     if (!id_entidadbancaria || !id_tipotransaccion || !valor || !tipodocumento) {
@@ -31,6 +32,14 @@ export async function addOperaciones(operaciones) {
     ) {
       throw new Error('Los tipos de datos de los campos son incorrectos.');
     }
+    const codigoMovilQuery = await operacion.query(`
+    SELECT 1 FROM operaciones WHERE codigomovil = $1
+  `, [codigoMovil]);
+
+  if (codigoMovilQuery.rows.length > 0) {
+    throw new Error(`Esta operacion ya está registrada.`);
+  }
+
     // Consultar el valor de sobregiro de la entidad bancaria
     const entidadBancariaQuery = await operacion.query(`
       SELECT sobregiro FROM entidadbancaria WHERE id_entidadbancaria = $1`, [id_entidadbancaria]);
@@ -57,8 +66,9 @@ export async function addOperaciones(operaciones) {
                   saldocomision,
                   estado,
                   tipodocumento,
-                  id_caja) 
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+                  id_caja,
+                  codigomovil)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
       RETURNING *`, [
       id_entidadbancaria,
       id_tipotransaccion,
@@ -71,7 +81,8 @@ export async function addOperaciones(operaciones) {
       saldocomision,
       estado,
       tipodocumento,
-      id_caja
+      id_caja,
+      codigoMovil
     ]);
 
     await operacion.query("COMMIT");
