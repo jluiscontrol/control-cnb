@@ -1,9 +1,5 @@
 --ACTULIZACION DE LA BD DE CONTROLCNB
 
-
-
-
-
 ALTER TABLE entidadbancaria
 ADD COLUMN acronimo VARCHAR(10),
 ADD COLUMN estado BOOLEAN;
@@ -1376,4 +1372,96 @@ END;
 $BODY$;
 
 ALTER FUNCTION public.reversa_operacion()
+    OWNER TO postgres;
+
+-- Trigger: trigger_reversa_operacion
+
+-- DROP TRIGGER IF EXISTS trigger_reversa_operacion ON public.operaciones;
+
+CREATE TRIGGER trigger_reversa_operacion
+    AFTER UPDATE 
+    ON public.operaciones
+    FOR EACH ROW
+    WHEN (old.estado = true AND new.estado = false)
+    EXECUTE FUNCTION public.reversa_operacion();
+
+    
+-- ***************************** 23 DE septiembre del 2024 ****************************************
+
+-- Trigger: trigger_reversa_operacion
+
+-- DROP TRIGGER IF EXISTS trigger_reversa_operacion ON public.operaciones;
+
+CREATE TRIGGER trigger_reversa_operacion
+    AFTER UPDATE 
+    ON public.operaciones
+    FOR EACH ROW
+    WHEN (old.estado = true AND new.estado = false)
+    EXECUTE FUNCTION public.reversa_operacion();
+
+INSERT INTO public.listapermisos (id_listapermisos, nombre) VALUES (7, 'Hacer Apertura');
+INSERT INTO public.listapermisos (id_listapermisos, nombre) VALUES (8, 'Configuracion con apertura');
+
+ALTER TABLE public.encabezadoarqueo
+ADD COLUMN tipo_documento VARCHAR(3) DEFAULT 'ARQ';
+
+ALTER TABLE operaciones
+ADD COLUMN codigomovil VARCHAR(50);
+
+UPDATE operaciones
+SET codigomovil =  to_char(fecha_registro, 'YYYYMMDDHH24MISS') || id_usuario::text;
+
+
+-- *********************** FUNCION PARA NUEVO REPORTE DE CAJAS  05-10-2024  **********************************************
+
+CREATE OR REPLACE FUNCTION public.get_operaciones_por_fecha(
+	p_desde date,
+	p_hasta date,
+	p_id_caja integer DEFAULT NULL::integer)
+    RETURNS TABLE(id_operacion integer, entidadbancaria character varying, tipotransaccion character varying, valor numeric, referencia character varying, comentario character varying, numtransaccion character varying, fecha_registro timestamp without time zone, nombre_usuario character varying, saldocomision numeric, estado boolean, tipodocumento character varying, persona character varying, id_caja integer, saldo_caja numeric, saldo_comision numeric, saldo_cuenta numeric) 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
+
+AS $BODY$
+BEGIN
+    RETURN QUERY
+    SELECT o.id_operacion,
+    eb.entidad AS entidadbancaria,
+    tt.nombre AS tipotransaccion,
+    o.valor,
+    o.referencia,
+    o.comentario,
+    o.numtransaccion,
+    o.fecha_registro,
+    u.nombre_usuario,
+    o.saldocomision,
+    o.estado,
+    CASE
+      WHEN o.tipodocumento = 'OPR' THEN 'OPERACIÓN'
+      WHEN o.tipodocumento = 'MV' THEN 'MOVIMIENTO'
+    ELSE o.tipodocumento
+    END AS tipodocumento, p.nombre AS persona, o.id_caja,
+    SUM(CASE WHEN tt.afectacaja_id = 1 THEN o.valor
+       WHEN tt.afectacaja_id = 2 THEN -o.valor
+       ELSE 0 END) AS saldo_caja,
+    SUM(CASE WHEN tt.afectacomision_id = 1 THEN o.saldocomision
+       WHEN tt.afectacomision_id = 2 THEN -o.saldocomision 
+       ELSE 0 END) AS saldo_comision,
+     SUM(CASE WHEN tt.afectacuenta_id = 1 THEN o.valor
+        WHEN tt.afectacuenta_id = 2 THEN -o.valor
+        ELSE 0 END) AS saldo_cuenta
+    FROM public.operaciones o
+    JOIN public.tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
+    JOIN public.entidadbancaria eb ON o.id_entidadbancaria = eb.id_entidadbancaria
+    JOIN public.usuario u ON o.id_usuario = u.id_usuario
+    LEFT JOIN public.persona p ON o.id_persona = p.id_persona
+    WHERE o.fecha_registro >= p_desde::timestamp AND o.fecha_registro <= p_hasta::timestamp + interval '1 day' - interval '1 second' AND o.estado = true
+    AND (p_id_caja IS NULL OR o.id_caja = p_id_caja)
+    GROUP BY o.id_operacion, eb.entidad, tt.nombre, u.nombre_usuario, p.nombre, o.tipodocumento;
+END;
+$BODY$;
+
+ALTER FUNCTION public.get_operaciones_por_fecha(date, date, integer)
     OWNER TO postgres;

@@ -112,15 +112,10 @@ export async function getTotalSaldoCaja() {
   try {
     const result = await client.query(`
       SELECT 
-      SUM(CASE 
-        WHEN tt.afectacaja_id = 1 THEN o.valor
-        WHEN tt.afectacaja_id = 2 THEN -o.valor
-        ELSE 0
-      END) AS total_saldo
-      FROM operaciones o
-      JOIN tipotransaccion tt ON o.id_tipotransaccion = tt.id_tipotransaccion
-      WHERE  o.tipodocumento = 'OPR'
-      `);
+        SUM(saldocaja) AS total_saldo
+      FROM caja
+      WHERE estado = true
+    `);
     return result.rows[0].total_saldo;
   } finally {
     client.release();

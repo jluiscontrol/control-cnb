@@ -1,4 +1,4 @@
-import { getOperationsReport, updateOperationStatus } from '../models/Reportes.Model.js';
+import { getOperationsReport, updateOperationStatus, getCajasReport } from '../models/Reportes.Model.js';
 
 //funcion para obtener el reporte de operaciones por usuario
 export const reporteOperaciones = async (req, res) => {
@@ -24,5 +24,16 @@ export const reporteEstadoOperaciones = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener el reporte de operaciones:', error);
         res.status(500).json({ error: error });
+    }
+}
+
+export const reporteCajas = async (req, res) => {
+    const { fecha_desde, fecha_hasta, caja_id } = req.query;
+    try {
+        const reporte = await getCajasReport(fecha_desde, fecha_hasta, caja_id);
+        res.status(200).json(reporte);
+    } catch (error) {
+        console.error('Error al obtener el reporte de las cajas:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
