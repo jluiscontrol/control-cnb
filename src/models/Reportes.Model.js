@@ -111,12 +111,12 @@ export async function updateOperationStatus(id_operacion, newState, comentario) 
   }
 }
 
-export async function getCajasReport(startDate, endDate, caja_id) {
+export async function getCajasReport(startDate, endDate, caja_id, id_usuario) {
   const client = await pool.connect();
   try {
     const result = await client.query(
-      'SELECT * FROM public.get_operaciones_por_fecha($1, $2, $3)',
-      [startDate, endDate, caja_id]
+      'SELECT * FROM public.get_operaciones_por_fecha($1, $2, $3, $4)',
+      [startDate, endDate, caja_id, id_usuario]
     );
     return result.rows;
   } finally {

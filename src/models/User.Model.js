@@ -186,7 +186,7 @@ async function getAllEmpleados() {
     LEFT JOIN usuario_rol ur ON u.id_usuario = ur.id_usuario
     LEFT JOIN rol r ON ur.id_rol = r.id_rol
     LEFT JOIN persona p ON u.persona_id = p.id_persona
-    WHERE  r.nombre = 'empleado'
+    WHERE  r.nombre IN ('empleado', 'administrador') 
     ORDER BY u.id_usuario; 
     `);
     return resultado.rows;

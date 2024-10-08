@@ -28,9 +28,9 @@ export const reporteEstadoOperaciones = async (req, res) => {
 }
 
 export const reporteCajas = async (req, res) => {
-    const { fecha_desde, fecha_hasta, caja_id } = req.query;
+    const { fecha_desde, fecha_hasta, caja_id, id_usuario } = req.query;
     try {
-        const reporte = await getCajasReport(fecha_desde, fecha_hasta, caja_id);
+        const reporte = await getCajasReport(fecha_desde, fecha_hasta, caja_id, id_usuario);
         res.status(200).json(reporte);
     } catch (error) {
         console.error('Error al obtener el reporte de las cajas:', error);
